@@ -1,0 +1,28 @@
+{
+  "name": "santakadev/event-store",
+  "type": "library",
+  "description": "Event Store for PHP",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Daniel Santamaría",
+      "email": "santaka87@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^5.6 || ^7.0",
+    "doctrine/annotations": "^1.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {"": "src/"}
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  }
+}
