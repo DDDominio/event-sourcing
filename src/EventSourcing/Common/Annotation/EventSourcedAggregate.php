@@ -1,6 +1,6 @@
 <?php
 
-namespace EventStore\Common\Annotation;
+namespace EventSourcing\Common\Annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
 

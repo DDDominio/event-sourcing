@@ -1,7 +1,7 @@
 {
-  "name": "santakadev/event-store",
+  "name": "santakadev/event-sourcing",
   "type": "library",
-  "description": "Event Store for PHP",
+  "description": "Event Sourcing for PHP",
   "minimum-stability": "stable",
   "license": "MIT",
   "authors": [

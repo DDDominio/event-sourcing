@@ -1,10 +1,10 @@
 <?php
 
-namespace tests\EventStore\Common\Annotation;
+namespace Tests\EventSourcing\Common\Annotation;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use EventStore\Common\Annotation\PublishDomainEvent;
+use EventSourcing\Common\Annotation\PublishDomainEvent;
 
 class PublishDomainEventTest extends \PHPUnit_Framework_TestCase
 {
@@ -14,7 +14,7 @@ class PublishDomainEventTest extends \PHPUnit_Framework_TestCase
     public function itShouldReadPublishDomainEventAnnotation()
     {
         AnnotationRegistry::registerAutoloadNamespace(
-            'EventStore\Common\Annotation',
+            'EventSourcing\Common\Annotation',
             __DIR__ . '/../../../../src'
         );
 
