@@ -10,11 +10,6 @@ trait EventSourcedAggregate
     private $changes = [];
 
     /**
-     * @var bool
-     */
-    private $applyingDomainEvent = false;
-
-    /**
      * @var int
      */
     private $version = 0;
@@ -29,9 +24,10 @@ trait EventSourcedAggregate
 
     /**
      * @param DomainEvent $domainEvent
+     * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply(DomainEvent $domainEvent)
+    public function apply(DomainEvent $domainEvent, $trackChanges = true)
     {
         $methodName = 'when' . (new \ReflectionClass($domainEvent))->getShortName();
 
@@ -39,49 +35,16 @@ trait EventSourcedAggregate
             throw new DomainEventNotUnderstandableException();
         }
 
-        $this->disableDomainEventPublication();
         $this->$methodName($domainEvent);
-        $this->increaseAggregateVersion();
-        $this->enableDomainEventPublication();
-    }
-
-    private function disableDomainEventPublication()
-    {
-        $this->setApplyingDomainEvent(true);
-    }
-
-    private function enableDomainEventPublication()
-    {
-        $this->setApplyingDomainEvent(false);
-    }
-
-    /**
-     * @param boolean $applyingDomainEvent
-     */
-    private function setApplyingDomainEvent($applyingDomainEvent)
-    {
-        $this->applyingDomainEvent = $applyingDomainEvent;
-    }
-
-    /**
-     * @param DomainEvent $domainEvent
-     */
-    protected function publishDomainEvent(DomainEvent $domainEvent)
-    {
-        if ($this->isDomainEventsPublicationEnabled()) {
+        if ($trackChanges) {
             $this->changes[] = $domainEvent;
-            $this->increaseAggregateVersion();
         }
+        $this->increaseAggregateVersion();
     }
 
     private function increaseAggregateVersion()
     {
         $this->version++;
-    }
-
-    private function isDomainEventsPublicationEnabled()
-    {
-        return !$this->applyingDomainEvent;
     }
 
     /**
@@ -92,6 +55,9 @@ trait EventSourcedAggregate
         return $this->changes;
     }
 
+    /**
+     * @return int
+     */
     public function version()
     {
         return $this->version;

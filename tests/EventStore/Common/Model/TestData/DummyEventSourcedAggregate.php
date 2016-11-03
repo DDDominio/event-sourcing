@@ -24,14 +24,17 @@ class DummyEventSourcedAggregate
      */
     public function __construct($name, $description)
     {
-        $this->changeName($name);
-        $this->changeDescription($description);
-        $this->publishDomainEvent(new DummyCreated($name, $description));
+        $this->assertValidName($name);
+        $this->apply(new DummyCreated($name, $description));
     }
 
+    /**
+     * @param DummyCreated $event
+     */
     public function whenDummyCreated(DummyCreated $event)
     {
-        $this->__construct($event->name(), $event->description());
+        $this->name = $event->name();
+        $this->description = $event->description();
     }
 
     /**
@@ -47,8 +50,18 @@ class DummyEventSourcedAggregate
      */
     public function changeName($name)
     {
-        $this->name = $name;
-        $this->publishDomainEvent(new NameChanged($name));
+        $this->assertValidName($name);
+        $this->apply(new NameChanged($name));
+    }
+
+    /**
+     * @param string $name
+     */
+    private function assertValidName($name)
+    {
+        if (strlen($name) < 2) {
+            throw new \InvalidArgumentException('name should contain at least 2 characters.');
+        }
     }
 
     /**
@@ -56,7 +69,7 @@ class DummyEventSourcedAggregate
      */
     private function whenNameChanged(NameChanged $event)
     {
-        $this->changeName($event->name());
+        $this->name = $event->name();
     }
 
     /**
@@ -72,8 +85,7 @@ class DummyEventSourcedAggregate
      */
     public function changeDescription($description)
     {
-        $this->description = $description;
-        $this->publishDomainEvent(new DescriptionChanged($description));
+        $this->apply(new DescriptionChanged($description));
     }
 
     /**
@@ -81,6 +93,6 @@ class DummyEventSourcedAggregate
      */
     private function whenDescriptionChanged(DescriptionChanged $event)
     {
-        $this->changeDescription($event->description());
+        $this->description = $event->description();
     }
 }

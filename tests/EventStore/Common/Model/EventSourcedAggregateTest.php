@@ -23,15 +23,60 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function applyADomainEvent()
+    public function applyADomainEventWithoutTrackingChanges()
+    {
+        $nameChangedEvent = new NameChanged('new name');
+
+        $this->eventSourcedAggregate->apply($nameChangedEvent, false);
+
+        $changes = $this->eventSourcedAggregate->changes();
+        $this->assertEquals(0, count($changes));
+        $this->assertEquals('new name', $this->eventSourcedAggregate->name());
+    }
+
+    /**
+     * @test
+     */
+    public function applyADomainEventTrackingChanges()
     {
         $nameChangedEvent = new NameChanged('new name');
 
         $this->eventSourcedAggregate->apply($nameChangedEvent);
 
         $changes = $this->eventSourcedAggregate->changes();
-        $this->assertEquals(0, count($changes));
+        $this->assertEquals(1, count($changes));
         $this->assertEquals('new name', $this->eventSourcedAggregate->name());
+    }
+
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function buildAndInvalidAggregateThrowsAnException()
+    {
+        new DummyEventSourcedAggregate('a', 'description');
+    }
+
+    /**
+     * @test
+     */
+    public function buildAndInvalidAggregateWithOldEventIsOk()
+    {
+        $oldEvent = new DummyCreated('a', 'description');
+
+        $this->eventSourcedAggregate->apply($oldEvent, false);
+
+        $this->assertEquals('a', $oldEvent->name());
+    }
+
+
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function buildAndInvalidArgumentThrowsAnException()
+    {
+        new DummyEventSourcedAggregate('a', 'description');
     }
 
     /**
@@ -44,7 +89,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
         $events[] = new NameChanged('new new name');
 
         foreach ($events as $event) {
-            $this->eventSourcedAggregate->apply($event);
+            $this->eventSourcedAggregate->apply($event, false);
         }
 
         $changes = $this->eventSourcedAggregate->changes();
@@ -59,7 +104,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     {
         $descriptionChangedEvent = new DescriptionChanged('new description');
 
-        $this->eventSourcedAggregate->apply($descriptionChangedEvent);
+        $this->eventSourcedAggregate->apply($descriptionChangedEvent, false);
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(0, count($changes));
@@ -169,5 +214,26 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('name', $emptyAggregate->name());
         $this->assertEquals('description', $emptyAggregate->description());
+    }
+
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function executeACommandThatBreaksCurrentValidationThrowsAnException()
+    {
+        $this->eventSourcedAggregate->changeName('a');
+    }
+
+    /**
+     * @test
+     */
+    public function applyAnOldDomainEventThatBreaksCurrentValidationIsOk()
+    {
+        $oldDomainEvent = new NameChanged('a');
+
+        $this->eventSourcedAggregate->apply($oldDomainEvent, false);
+
+        $this->assertEquals('a', $this->eventSourcedAggregate->name());
     }
 }
