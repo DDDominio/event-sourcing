@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventStore\Common\Model\TestData;
+namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventStore\Common\Model\EventSourcedAggregate;
+use EventSourcing\Common\Model\EventSourcedAggregate;
 
 class DummyEventSourcedAggregate
 {
@@ -31,7 +31,7 @@ class DummyEventSourcedAggregate
     /**
      * @param DummyCreated $event
      */
-    public function whenDummyCreated(DummyCreated $event)
+    private function whenDummyCreated(DummyCreated $event)
     {
         $this->name = $event->name();
         $this->description = $event->description();

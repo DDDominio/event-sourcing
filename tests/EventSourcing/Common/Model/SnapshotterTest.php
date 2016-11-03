@@ -1,11 +1,11 @@
 <?php
 
-namespace tests\EventStore\Common\Model;
+namespace tests\EventSourcing\Common\Model;
 
-use EventStore\Common\Model\Snapshot;
-use EventStore\Common\Model\SnapshotStrategy;
-use EventStore\Common\Model\Snapshotter;
-use Tests\EventStore\Common\Model\TestData\DummyEventSourcedAggregate;
+use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Common\Model\SnapshotStrategy;
+use EventSourcing\Common\Model\Snapshotter;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 
 class SnapshotterTest extends \PHPUnit_Framework_TestCase
 {

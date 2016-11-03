@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\EventStore\Common\Annotation;
+namespace Tests\EventSourcing\Common\Annotation;
 
-use EventStore\Common\Annotation\EventSourcedAggregate;
-use EventStore\Common\Annotation\PublishDomainEvent;
+use EventSourcing\Common\Annotation\EventSourcedAggregate;
+use EventSourcing\Common\Annotation\PublishDomainEvent;
 
 /**
  * @EventSourcedAggregate()

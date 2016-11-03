@@ -1,8 +1,8 @@
 <?php
 
-namespace EventStore\Common\Model;
+namespace EventSourcing\Common\Model;
 
-use Tests\EventStore\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 
 class AggregateReconstructor
 {

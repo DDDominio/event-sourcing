@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\EventStore\Common\Annotation;
+namespace Tests\EventSourcing\Common\Annotation;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use EventStore\Common\Annotation\EventSourcedAggregate;
+use EventSourcing\Common\Annotation\EventSourcedAggregate;
 
 class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,7 +13,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function itShouldReadEventSourcedAggregateAnnotation()
     {
-        AnnotationRegistry::registerAutoloadNamespace('EventStore\Common\Annotation', __DIR__ . '/../../../../src');
+        AnnotationRegistry::registerAutoloadNamespace('EventSourcing\Common\Annotation', __DIR__ . '/../../../../src');
 
         $reader = new AnnotationReader();
 

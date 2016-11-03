@@ -1,6 +1,6 @@
 <?php
 
-namespace EventStore\Common\Model;
+namespace EventSourcing\Common\Model;
 
 class Snapshotter
 {

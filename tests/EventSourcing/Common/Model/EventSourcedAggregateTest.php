@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\EventStore\Common\Model;
+namespace Tests\EventSourcing\Common\Model;
 
-use Tests\EventStore\Common\Model\TestData\DescriptionChanged;
-use Tests\EventStore\Common\Model\TestData\DummyCreated;
-use Tests\EventStore\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventStore\Common\Model\TestData\NameChanged;
-use Tests\EventStore\Common\Model\TestData\NotUnderstandableDomainEvent;
+use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
+use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\NameChanged;
+use Tests\EventSourcing\Common\Model\TestData\NotUnderstandableDomainEvent;
 
 class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 {
@@ -113,7 +113,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \EventStore\Common\Model\DomainEventNotUnderstandableException
+     * @expectedException \EventSourcing\Common\Model\DomainEventNotUnderstandableException
      */
     public function aggregateDoesNotUnderstandADomainEvent()
     {

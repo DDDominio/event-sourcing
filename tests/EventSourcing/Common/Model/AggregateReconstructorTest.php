@@ -1,13 +1,13 @@
 <?php
 
-namespace tests\EventStore\Common\Model;
+namespace tests\EventSourcing\Common\Model;
 
-use EventStore\Common\Model\AggregateReconstructor;
-use EventStore\Common\Model\Snapshot;
-use EventStore\Common\Model\Snapshotter;
-use Tests\EventStore\Common\Model\TestData\DummyCreated;
-use Tests\EventStore\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventStore\Common\Model\TestData\NameChanged;
+use EventSourcing\Common\Model\AggregateReconstructor;
+use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Common\Model\Snapshotter;
+use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 {

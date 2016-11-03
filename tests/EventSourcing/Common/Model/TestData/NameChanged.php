@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventStore\Common\Model\TestData;
+namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventStore\Common\Model\DomainEvent;
+use EventSourcing\Common\Model\DomainEvent;
 
 class NameChanged implements DomainEvent
 {
