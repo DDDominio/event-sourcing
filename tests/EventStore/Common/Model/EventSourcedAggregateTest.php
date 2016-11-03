@@ -2,8 +2,10 @@
 
 namespace Tests\EventStore\Common\Model;
 
-use EventStore\Common\Model\DomainEvent;
-use EventStore\Common\Model\EventSourcedAggregate;
+use Tests\EventStore\Common\Model\TestData\DescriptionChanged;
+use Tests\EventStore\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventStore\Common\Model\TestData\NameChanged;
+use Tests\EventStore\Common\Model\TestData\NotUnderstandableDomainEvent;
 
 class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 {
@@ -140,131 +142,4 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($initialVersion + 1, $this->eventSourcedAggregate->version());
     }
-}
-
-class DummyEventSourcedAggregate
-{
-    use EventSourcedAggregate;
-
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var string
-     */
-    private $description;
-
-    /**
-     * @param string $name
-     * @param string $description
-     */
-    public function __construct($name, $description)
-    {
-        $this->name = $name;
-        $this->description = $description;
-    }
-
-    /**
-     * @return string
-     */
-    public function name()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function changeName($name)
-    {
-        $this->name = $name;
-        $this->publishDomainEvent(new NameChanged($name));
-    }
-
-    /**
-     * @param NameChanged $event
-     */
-    private function whenNameChanged(NameChanged $event)
-    {
-        $this->changeName($event->name());
-    }
-
-    /**
-     * @return string
-     */
-    public function description()
-    {
-        return $this->description;
-    }
-
-    /**
-     * @param string $description
-     */
-    public function changeDescription($description)
-    {
-        $this->description = $description;
-        $this->publishDomainEvent(new DescriptionChanged($description));
-    }
-
-    /**
-     * @param DescriptionChanged $event
-     */
-    private function whenDescriptionChanged(DescriptionChanged $event)
-    {
-        $this->changeDescription($event->description());
-    }
-}
-
-class NameChanged implements DomainEvent
-{
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @param string $name
-     */
-    public function __construct($name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * @return string
-     */
-    public function name()
-    {
-        return $this->name;
-    }
-}
-
-class DescriptionChanged implements DomainEvent
-{
-    /**
-     * @var string
-     */
-    private $description;
-
-    /**
-     * @param string $description
-     */
-    public function __construct($description)
-    {
-        $this->description = $description;
-    }
-
-    /**
-     * @return string
-     */
-    public function description()
-    {
-        return $this->description;
-    }
-}
-
-class NotUnderstandableDomainEvent implements DomainEvent
-{
 }

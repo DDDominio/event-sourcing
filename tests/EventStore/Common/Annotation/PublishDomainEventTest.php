@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\EventStore\Common\Annotation;
+namespace Tests\EventStore\Common\Annotation;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
