@@ -24,8 +24,14 @@ class DummyEventSourcedAggregate
      */
     public function __construct($name, $description)
     {
-        $this->name = $name;
-        $this->description = $description;
+        $this->changeName($name);
+        $this->changeDescription($description);
+        $this->publishDomainEvent(new DummyCreated($name, $description));
+    }
+
+    public function whenDummyCreated(DummyCreated $event)
+    {
+        $this->__construct($event->name(), $event->description());
     }
 
     /**

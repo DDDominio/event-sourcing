@@ -3,6 +3,7 @@
 namespace Tests\EventStore\Common\Model;
 
 use Tests\EventStore\Common\Model\TestData\DescriptionChanged;
+use Tests\EventStore\Common\Model\TestData\DummyCreated;
 use Tests\EventStore\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventStore\Common\Model\TestData\NameChanged;
 use Tests\EventStore\Common\Model\TestData\NotUnderstandableDomainEvent;
@@ -16,7 +17,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->eventSourcedAggregate = new DummyEventSourcedAggregate('name', 'description');
+        $this->eventSourcedAggregate = DummyEventSourcedAggregate::buildEmpty();
     }
 
     /**
@@ -141,5 +142,32 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
         $this->eventSourcedAggregate->changeName('new name');
 
         $this->assertEquals($initialVersion + 1, $this->eventSourcedAggregate->version());
+    }
+
+    /**
+     * @test
+     */
+    public function createAnEmptyEventSourcedAggregateObject()
+    {
+        /** @var DummyEventSourcedAggregate $emptyAggregate */
+        $emptyAggregate = DummyEventSourcedAggregate::buildEmpty();
+
+        $this->assertEquals(null, $emptyAggregate->name());
+        $this->assertEquals(null, $emptyAggregate->description());
+    }
+
+    /**
+     * @test
+     */
+    public function applyConstructorDomainEvent()
+    {
+        /** @var DummyEventSourcedAggregate $emptyAggregate */
+        $emptyAggregate = DummyEventSourcedAggregate::buildEmpty();
+        $dummyCreatedEvent = new DummyCreated('name', 'description');
+
+        $emptyAggregate->apply($dummyCreatedEvent);
+
+        $this->assertEquals('name', $emptyAggregate->name());
+        $this->assertEquals('description', $emptyAggregate->description());
     }
 }

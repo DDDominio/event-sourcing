@@ -20,6 +20,14 @@ trait EventSourcedAggregate
     private $version = 0;
 
     /**
+     * @return mixed
+     */
+    public static function buildEmpty()
+    {
+        return (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
+    }
+
+    /**
      * @param DomainEvent $domainEvent
      * @throws DomainEventNotUnderstandableException
      */
