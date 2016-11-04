@@ -62,4 +62,17 @@ trait EventSourcedAggregate
     {
         return $this->version;
     }
+
+    /**
+     * @return int
+     */
+    public function originalVersion()
+    {
+        return $this->version - count($this->changes());
+    }
+
+    public function commitChanges()
+    {
+        $this->changes = [];
+    }
 }

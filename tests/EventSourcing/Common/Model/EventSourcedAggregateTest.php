@@ -236,4 +236,28 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('a', $this->eventSourcedAggregate->name());
     }
+
+    /**
+     * @test
+     */
+    public function afterApplyAChangeOriginalVersionWillNotChange()
+    {
+        $aggregate = new DummyEventSourcedAggregate('name', 'description');
+        $aggregate->changeName('name');
+
+        $this->assertEquals(0, $aggregate->originalVersion());
+    }
+
+    /**
+     * @test
+     */
+    public function commitAggregateChangesWillClearChanges()
+    {
+        $aggregate = new DummyEventSourcedAggregate('name', 'description');
+        $aggregate->changeName('name');
+
+        $aggregate->commitChanges();
+
+        $this->assertCount(0, $aggregate->changes());
+    }
 }

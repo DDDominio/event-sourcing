@@ -12,20 +12,20 @@ class AggregateReconstructor
     private $snapshooter;
 
     /**
-     * @param Snapshotter $snapshooter
+     * @param Snapshotter $snapshotter
      */
-    public function __construct($snapshooter)
+    public function __construct($snapshotter)
     {
-        $this->snapshooter = $snapshooter;
+        $this->snapshooter = $snapshotter;
     }
 
     /**
      * @param string $class
-     * @param DomainEvent[] $events
+     * @param EventStream $eventStream
      * @param Snapshot $snapshot
      * @return DummyEventSourcedAggregate
      */
-    public function reconstitute($class, $events, $snapshot = null)
+    public function reconstitute($class, $eventStream, $snapshot = null)
     {
         $this->assertValidClass($class);
 
@@ -35,7 +35,7 @@ class AggregateReconstructor
             $aggregate = $class::buildEmpty();
         }
 
-        foreach ($events as $event) {
+        foreach ($eventStream as $event) {
             $aggregate->apply($event, false);
         }
 

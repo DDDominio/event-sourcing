@@ -1,8 +1,9 @@
 <?php
 
-namespace tests\EventSourcing\Common\Model;
+namespace Tests\EventSourcing\Common\Model;
 
 use EventSourcing\Common\Model\AggregateReconstructor;
+use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Common\Model\Snapshotter;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
@@ -19,9 +20,9 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
         $dummyCreatedEvent = new DummyCreated('name', 'description');
-        $events = [$dummyCreatedEvent];
+        $eventStream = new EventStream([$dummyCreatedEvent]);
 
-        $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $events);
+        $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
 
         $this->assertEquals(1, $aggregate->version());
         $this->assertEquals('name', $aggregate->name());
@@ -37,10 +38,9 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
         $reconstructor = new AggregateReconstructor($snapshotter);
         $dummyCreatedEvent = new DummyCreated('name', 'description');
         $dummyNameChanged = new NameChanged('new name');
+        $eventStream = new EventStream([$dummyCreatedEvent, $dummyNameChanged]);
 
-        $events = [$dummyCreatedEvent, $dummyNameChanged];
-
-        $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $events);
+        $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
 
         $this->assertEquals(2, $aggregate->version());
         $this->assertEquals('new name', $aggregate->name());
@@ -56,7 +56,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
 
-        $reconstructor->reconstitute(__CLASS__, []);
+        $reconstructor->reconstitute(__CLASS__, new EventStream([]));
     }
 
     /**
@@ -77,7 +77,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 
         $reconstructedAggregate = $reconstructor->reconstitute(
             DummyEventSourcedAggregate::class,
-            [],
+            new EventStream([]),
             $snapshot
         );
 
