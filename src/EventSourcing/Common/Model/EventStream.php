@@ -20,11 +20,36 @@ class EventStream implements \IteratorAggregate
     }
 
     /**
+     * @return EventStream
+     */
+    public static function buildEmpty()
+    {
+        return new self([]);
+    }
+
+    /**
+     * @param DomainEvent $events
+     * @return EventStream
+     */
+    public function append($events)
+    {
+        return new self(array_merge($this->events(), $events));
+    }
+
+    /**
      * @return DomainEvent[]
      */
     public function events()
     {
         return $this->events;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return count($this->events) === 0;
     }
 
     /**

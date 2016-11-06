@@ -30,7 +30,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->method('originalVersion')
             ->willReturn($originalVersion);
         $eventStore = $this->getMockBuilder(EventStore::class)
-            ->setMethods(['appendToStream'])
+            ->setMethods(['appendToStream', 'readFullStream'])
             ->getMock();
         $eventStore->expects($this->once())
             ->method('appendToStream')
