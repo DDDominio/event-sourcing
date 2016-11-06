@@ -4,7 +4,7 @@ namespace EventSourcing\Common\Model;
 
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 
-class EventSourcedAggregateRepository
+abstract class EventSourcedAggregateRepository
 {
     /**
      * @var EventStore
@@ -67,8 +67,19 @@ class EventSourcedAggregateRepository
      * @param $aggregate
      * @return string
      */
-    private function streamIdFromAggregate($aggregate)
+    protected function streamIdFromAggregate($aggregate)
     {
-        return $aggregate->id();
+        return $this->aggregateType() . '-' . $this->aggregateId($aggregate);
     }
+
+    /**
+     * @return string
+     */
+    protected abstract function aggregateType();
+
+    /**
+     * @param EventSourcedAggregate $aggregate
+     * @return string
+     */
+    protected abstract function aggregateId($aggregate);
 }

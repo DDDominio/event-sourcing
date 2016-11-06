@@ -5,12 +5,12 @@ namespace Tests\EventSourcing\Common\Model;
 use EventSourcing\Common\Model\AggregateReconstructor;
 use EventSourcing\Common\Model\EventSourcedAggregate;
 use EventSourcing\Common\Model\DomainEvent;
-use EventSourcing\Common\Model\EventSourcedAggregateRepository;
 use EventSourcing\Common\Model\EventStore;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\InMemoryEventStore;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregateRepository;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
@@ -21,7 +21,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function addAnAggregate()
     {
         $eventStore = new InMemoryEventStore();
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
         );
@@ -30,7 +30,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->add($aggregate);
 
-        $stream = $eventStore->readFullStream('id');
+        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-id');
         $this->assertCount(3, $stream->events());
     }
 
@@ -40,7 +40,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function addAnotherAggregate()
     {
         $eventStore = new InMemoryEventStore();
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
         );
@@ -49,7 +49,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->add($aggregate);
 
-        $stream = $eventStore->readFullStream('anotherId');
+        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-anotherId');
         $this->assertCount(3, $stream->events());
     }
 
@@ -59,9 +59,9 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function saveAnAggregate()
     {
         $eventStore = new InMemoryEventStore([
-            'id' => new EventStream($this->buildDummyDomainEvents(2))
+            'DummyEventSourcedAggregate-id' => new EventStream($this->buildDummyDomainEvents(2))
         ]);
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
         );
@@ -71,7 +71,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->save($aggregate);
 
-        $stream = $eventStore->readFullStream('id');
+        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-id');
         $this->assertCount(5, $stream->events());
     }
 
@@ -81,9 +81,9 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function saveAnotherAggregate()
     {
         $eventStore = new InMemoryEventStore([
-            'anotherId' => new EventStream($this->buildDummyDomainEvents(2))
+            'DummyEventSourcedAggregate-anotherId' => new EventStream($this->buildDummyDomainEvents(2))
         ]);
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
         );
@@ -93,7 +93,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->save($aggregate);
 
-        $stream = $eventStore->readFullStream('anotherId');
+        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-anotherId');
         $this->assertCount(5, $stream->events());
     }
 
@@ -116,7 +116,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->willReturn(new DummyEventSourcedAggregate('id', 'new name', 'description'));
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $aggregateReconstructor
         );
@@ -135,7 +135,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $eventStore = $this->createMock(EventStore::class);
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
         );
@@ -152,7 +152,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $eventStore = $this->createMock(EventStore::class);
-        $repository = new EventSourcedAggregateRepository(
+        $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
         );
