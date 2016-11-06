@@ -11,6 +11,11 @@ class DummyEventSourcedAggregate
     /**
      * @var string
      */
+    private $id;
+
+    /**
+     * @var string
+     */
     private $name;
 
     /**
@@ -19,13 +24,14 @@ class DummyEventSourcedAggregate
     private $description;
 
     /**
+     * @param $id
      * @param string $name
      * @param string $description
      */
-    public function __construct($name, $description)
+    public function __construct($id, $name, $description)
     {
         $this->assertValidName($name);
-        $this->apply(new DummyCreated($name, $description));
+        $this->apply(new DummyCreated($id, $name, $description));
     }
 
     /**
@@ -33,8 +39,17 @@ class DummyEventSourcedAggregate
      */
     private function whenDummyCreated(DummyCreated $event)
     {
+        $this->id = $event->id();
         $this->name = $event->name();
         $this->description = $event->description();
+    }
+
+    /**
+     * @return string
+     */
+    public function id()
+    {
+        return $this->id;
     }
 
     /**

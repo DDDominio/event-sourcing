@@ -54,7 +54,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function buildAndInvalidAggregateThrowsAnException()
     {
-        new DummyEventSourcedAggregate('a', 'description');
+        new DummyEventSourcedAggregate('id', 'a', 'description');
     }
 
     /**
@@ -62,7 +62,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function buildAndInvalidAggregateWithOldEventIsOk()
     {
-        $oldEvent = new DummyCreated('a', 'description');
+        $oldEvent = new DummyCreated('id', 'a', 'description');
 
         $this->eventSourcedAggregate->apply($oldEvent, false);
 
@@ -76,7 +76,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function buildAndInvalidArgumentThrowsAnException()
     {
-        new DummyEventSourcedAggregate('a', 'description');
+        new DummyEventSourcedAggregate('id', 'a', 'description');
     }
 
     /**
@@ -208,7 +208,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     {
         /** @var DummyEventSourcedAggregate $emptyAggregate */
         $emptyAggregate = DummyEventSourcedAggregate::buildEmpty();
-        $dummyCreatedEvent = new DummyCreated('name', 'description');
+        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
 
         $emptyAggregate->apply($dummyCreatedEvent);
 
@@ -242,7 +242,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function afterApplyAChangeOriginalVersionWillNotChange()
     {
-        $aggregate = new DummyEventSourcedAggregate('name', 'description');
+        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $aggregate->changeName('name');
 
         $this->assertEquals(0, $aggregate->originalVersion());
@@ -253,7 +253,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function commitAggregateChangesWillClearChanges()
     {
-        $aggregate = new DummyEventSourcedAggregate('name', 'description');
+        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $aggregate->changeName('name');
 
         $aggregate->commitChanges();

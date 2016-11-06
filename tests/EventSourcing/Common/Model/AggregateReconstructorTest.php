@@ -19,7 +19,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
     {
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
-        $dummyCreatedEvent = new DummyCreated('name', 'description');
+        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
         $eventStream = new EventStream([$dummyCreatedEvent]);
 
         $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
@@ -36,7 +36,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
     {
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
-        $dummyCreatedEvent = new DummyCreated('name', 'description');
+        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
         $dummyNameChanged = new NameChanged('new name');
         $eventStream = new EventStream([$dummyCreatedEvent, $dummyNameChanged]);
 

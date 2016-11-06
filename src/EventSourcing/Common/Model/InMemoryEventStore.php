@@ -63,7 +63,7 @@ class InMemoryEventStore implements EventStore
      */
     private function assertOptimisticConcurrency($streamId, $expectedVersion)
     {
-        if (count($this->streams[$streamId]) !== $expectedVersion) {
+        if (count($this->streams[$streamId]->events()) !== $expectedVersion) {
             throw new ConcurrencyException();
         }
     }
