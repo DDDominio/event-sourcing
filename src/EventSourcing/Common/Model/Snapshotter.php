@@ -8,7 +8,7 @@ class Snapshotter
 
     /**
      * @param string $aggregateClass
-     * @param SnapshotStrategy $snapshotStrategy
+     * @param ReflectionSnapshotTranslator $snapshotStrategy
      */
     public function addSnapshotStrategy($aggregateClass, $snapshotStrategy)
     {

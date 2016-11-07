@@ -8,4 +8,9 @@ interface Snapshot
      * @return string
      */
     public function aggregateClass();
+
+    /**
+     * @return int
+     */
+    public function version();
 }

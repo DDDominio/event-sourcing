@@ -18,4 +18,17 @@ interface EventStore
      * @return EventStream
      */
     public function readFullStream($streamId);
+
+    /**
+     * @param string $streamId
+     * @param Snapshot $snapshot
+     * @return
+     */
+    public function addSnapshot($streamId, $snapshot);
+
+    /**
+     * @param string $streamId
+     * @return Snapshot|null
+     */
+    public function findLastSnapshot($streamId);
 }

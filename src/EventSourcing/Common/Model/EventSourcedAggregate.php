@@ -15,7 +15,7 @@ trait EventSourcedAggregate
     private $version = 0;
 
     /**
-     * @return mixed
+     * @return static
      */
     public static function buildEmpty()
     {

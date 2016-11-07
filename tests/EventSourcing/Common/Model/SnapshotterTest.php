@@ -3,7 +3,7 @@
 namespace tests\EventSourcing\Common\Model;
 
 use EventSourcing\Common\Model\Snapshot;
-use EventSourcing\Common\Model\SnapshotStrategy;
+use EventSourcing\Common\Model\ReflectionSnapshotTranslator;
 use EventSourcing\Common\Model\Snapshotter;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 
@@ -34,7 +34,7 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
     public function buildAnAggregateFromSnapshotCooperatesWithSnapshotStrategyAndSnapshot()
     {
         $snapshot = $this->getMockBuilder(Snapshot::class)
-            ->setMethods(['aggregateClass'])
+            ->setMethods(['aggregateClass', 'version'])
             ->getMock();
         $snapshot
             ->expects($this->once())
@@ -58,8 +58,14 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
      */
     private function makeSnapshotStrategyMock()
     {
-        return $this->getMockBuilder(SnapshotStrategy::class)
-            ->setMethods(['buildSnapshotFromAggregate', 'buildAggregateFromSnapshot'])
+        return $this->getMockBuilder(ReflectionSnapshotTranslator::class)
+            ->setMethods([
+                'buildSnapshotFromAggregate',
+                'buildAggregateFromSnapshot',
+                'aggregateClass',
+                'snapshotClass',
+                'aggregateToSnapshotPropertyDictionary'
+            ])
             ->getMock();
     }
 

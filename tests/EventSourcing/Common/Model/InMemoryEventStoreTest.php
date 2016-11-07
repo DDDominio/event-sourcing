@@ -5,6 +5,7 @@ namespace tests\EventSourcing\Common\Model;
 use EventSourcing\Common\Model\DomainEvent;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\InMemoryEventStore;
+use EventSourcing\Common\Model\Snapshot;
 
 class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -91,5 +92,39 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($stream->isEmpty());
         $this->assertCount(0, $stream);
+    }
+
+    /**
+     * @test
+     */
+    public function findLastSnapshotOfAStream()
+    {
+        $snapshot = $this->createMock(Snapshot::class);
+        $lastSnapshot = $this->createMock(Snapshot::class);
+        $lastSnapshot
+            ->method('aggregateClass')
+            ->willReturn('lastSnapshot');
+        $eventStore = new InMemoryEventStore([], [
+            'streamId' => [$snapshot, $lastSnapshot]
+        ]);
+
+        $retrievedSnapshot = $eventStore->findLastSnapshot('streamId');
+
+        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertEquals('lastSnapshot', $retrievedSnapshot->aggregateClass());
+    }
+
+    /**
+     * @test
+     */
+    public function addAnSnapshot()
+    {
+        $snapshot = $this->createMock(Snapshot::class);
+        $eventStore = new InMemoryEventStore();
+
+        $eventStore->addSnapshot('streamId', $snapshot);
+
+        $retrievedSnapshot = $eventStore->findLastSnapshot('streamId');
+        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
     }
 }

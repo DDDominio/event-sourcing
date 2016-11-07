@@ -8,6 +8,8 @@ use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Common\Model\Snapshotter;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\DummyReflectionSnapshotTranslator;
+use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
@@ -49,9 +51,36 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     */
+    public function reconstructAnAggregateUsingAnSnapshot()
+    {
+        $snapshotTranslator = new DummyReflectionSnapshotTranslator();
+        $snapshotter = new Snapshotter();
+        $snapshotter->addSnapshotStrategy(
+            DummyEventSourcedAggregate::class,
+            $snapshotTranslator
+        );
+        $reconstructor = new AggregateReconstructor($snapshotter);
+        $snapshot = new DummySnapshot('id', 'name', 'description', 2);
+        $eventStream = new EventStream([new NameChanged('new name')]);
+
+        $aggregate = $reconstructor->reconstitute(
+            DummyEventSourcedAggregate::class,
+            $eventStream,
+            $snapshot
+        );
+
+        $this->assertEquals(3, $aggregate->version());
+        $this->assertEquals('id', $aggregate->id());
+        $this->assertEquals('new name', $aggregate->name());
+        $this->assertEquals('description', $aggregate->description());
+    }
+
+    /**
+     * @test
      * @expectedException \InvalidArgumentException
      */
-    public function notEventSourcedAggregatCanNotBeReconstructed()
+    public function notEventSourcedAggregateCanNotBeReconstructed()
     {
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);

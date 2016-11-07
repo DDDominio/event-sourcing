@@ -10,11 +10,18 @@ class InMemoryEventStore implements EventStore
     private $streams;
 
     /**
-     * @param array $streams
+     * @var Snapshot[]
      */
-    public function __construct(array $streams = [])
+    private $snapshots;
+
+    /**
+     * @param array $streams
+     * @param array $snapshots
+     */
+    public function __construct(array $streams = [], array $snapshots = [])
     {
         $this->streams = $streams;
+        $this->snapshots = $snapshots;
     }
 
     /**
@@ -43,6 +50,30 @@ class InMemoryEventStore implements EventStore
     {
         return isset($this->streams[$streamId]) ?
             $this->streams[$streamId] : EventStream::buildEmpty();
+    }
+
+    /**
+     * @param string $streamId
+     * @param Snapshot $snapshot
+     */
+    public function addSnapshot($streamId, $snapshot)
+    {
+        $this->snapshots['streamId'][] = $snapshot;
+    }
+
+    /**
+     * @param string $streamId
+     * @return Snapshot|null
+     */
+    public function findLastSnapshot($streamId)
+    {
+        if (!isset($this->snapshots[$streamId])) {
+            return null;
+        }
+
+        $snapshots = $this->snapshots[$streamId];
+
+        return end($snapshots);
     }
 
     /**

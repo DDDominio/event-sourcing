@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Common\Model;
 
-interface SnapshotStrategy
+interface SnapshotTranslator
 {
     /**
      * @param EventSourcedAggregate $aggregate
