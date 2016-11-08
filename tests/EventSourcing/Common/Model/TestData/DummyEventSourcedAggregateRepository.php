@@ -9,7 +9,7 @@ class DummyEventSourcedAggregateRepository extends EventSourcedAggregateReposito
     /**
      * @return string
      */
-    protected function aggregateType()
+    protected function aggregateClass()
     {
         return 'DummyEventSourcedAggregate';
     }

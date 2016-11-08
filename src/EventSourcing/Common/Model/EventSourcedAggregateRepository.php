@@ -2,8 +2,6 @@
 
 namespace EventSourcing\Common\Model;
 
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-
 abstract class EventSourcedAggregateRepository
 {
     /**
@@ -53,29 +51,40 @@ abstract class EventSourcedAggregateRepository
 
     /**
      * @param string $id
-     * @return DummyEventSourcedAggregate
+     * @return EventSourcedAggregate
      */
     public function findById($id)
     {
         return $this->aggregateReconstructor->reconstitute(
-            DummyEventSourcedAggregate::class,
-            $this->eventStore->readFullStream($id)
+            $this->aggregateClass(),
+            $this->eventStore->readFullStream(
+                $this->streamIdFromAggregateId($id)
+            )
         );
     }
 
     /**
-     * @param $aggregate
+     * @param EventSourcedAggregate $aggregate
      * @return string
      */
     protected function streamIdFromAggregate($aggregate)
     {
-        return $this->aggregateType() . '-' . $this->aggregateId($aggregate);
+        return $this->aggregateClass() . '-' . $this->aggregateId($aggregate);
+    }
+
+    /**
+     * @param string $aggregateId
+     * @return string
+     */
+    protected function streamIdFromAggregateId($aggregateId)
+    {
+        return $this->aggregateClass() . '-' . $aggregateId;
     }
 
     /**
      * @return string
      */
-    protected abstract function aggregateType();
+    protected abstract function aggregateClass();
 
     /**
      * @param EventSourcedAggregate $aggregate
