@@ -53,25 +53,25 @@ class InMemoryEventStore implements EventStore
     }
 
     /**
-     * @param string $streamId
      * @param Snapshot $snapshot
      */
-    public function addSnapshot($streamId, $snapshot)
+    public function addSnapshot($snapshot)
     {
-        $this->snapshots['streamId'][] = $snapshot;
+        $this->snapshots[$snapshot->aggregateClass()][$snapshot->aggregateId()][] = $snapshot;
     }
 
     /**
-     * @param string $streamId
+     * @param string $aggregateClass
+     * @param string $aggregateId
      * @return Snapshot|null
      */
-    public function findLastSnapshot($streamId)
+    public function findLastSnapshot($aggregateClass, $aggregateId)
     {
-        if (!isset($this->snapshots[$streamId])) {
+        if (!isset($this->snapshots[$aggregateClass][$aggregateId])) {
             return null;
         }
 
-        $snapshots = $this->snapshots[$streamId];
+        $snapshots = $this->snapshots[$aggregateClass][$aggregateId];
 
         return end($snapshots);
     }

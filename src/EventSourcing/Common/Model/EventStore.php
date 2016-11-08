@@ -20,15 +20,14 @@ interface EventStore
     public function readFullStream($streamId);
 
     /**
-     * @param string $streamId
      * @param Snapshot $snapshot
-     * @return
      */
-    public function addSnapshot($streamId, $snapshot);
+    public function addSnapshot($snapshot);
 
     /**
-     * @param string $streamId
+     * @param string $aggregateClass
+     * @param string $aggregateId
      * @return Snapshot|null
      */
-    public function findLastSnapshot($streamId);
+    public function findLastSnapshot($aggregateClass, $aggregateId);
 }

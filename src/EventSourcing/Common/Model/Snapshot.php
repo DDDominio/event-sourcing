@@ -10,6 +10,11 @@ interface Snapshot
     public function aggregateClass();
 
     /**
+     * @return string
+     */
+    public function aggregateId();
+
+    /**
      * @return int
      */
     public function version();

@@ -34,7 +34,7 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
     public function buildAnAggregateFromSnapshotCooperatesWithSnapshotStrategyAndSnapshot()
     {
         $snapshot = $this->getMockBuilder(Snapshot::class)
-            ->setMethods(['aggregateClass', 'version'])
+            ->setMethods(['aggregateClass', 'aggregateId', 'version'])
             ->getMock();
         $snapshot
             ->expects($this->once())

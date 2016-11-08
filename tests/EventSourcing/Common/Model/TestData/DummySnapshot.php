@@ -51,6 +51,14 @@ class DummySnapshot implements Snapshot
     /**
      * @return string
      */
+    public function aggregateId()
+    {
+        return $this->id();
+    }
+
+    /**
+     * @return string
+     */
     public function id()
     {
         return $this->id;

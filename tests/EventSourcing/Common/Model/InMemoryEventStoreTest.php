@@ -103,15 +103,19 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $lastSnapshot = $this->createMock(Snapshot::class);
         $lastSnapshot
             ->method('aggregateClass')
-            ->willReturn('lastSnapshot');
+            ->willReturn('aggregateClass');
+        $lastSnapshot
+            ->method('aggregateId')
+            ->willReturn('aggregateId');
         $eventStore = new InMemoryEventStore([], [
-            'streamId' => [$snapshot, $lastSnapshot]
+            'aggregateClass' => ['aggregateId' => [$snapshot, $lastSnapshot]]
         ]);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot('streamId');
+        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
 
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-        $this->assertEquals('lastSnapshot', $retrievedSnapshot->aggregateClass());
+        $this->assertEquals('aggregateClass', $retrievedSnapshot->aggregateClass());
+        $this->assertEquals('aggregateId', $retrievedSnapshot->aggregateId());
     }
 
     /**
@@ -120,11 +124,17 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function addAnSnapshot()
     {
         $snapshot = $this->createMock(Snapshot::class);
+        $snapshot
+            ->method('aggregateClass')
+            ->willReturn('aggregateClass');
+        $snapshot
+            ->method('aggregateId')
+            ->willReturn('aggregateId');
         $eventStore = new InMemoryEventStore();
 
-        $eventStore->addSnapshot('streamId', $snapshot);
+        $eventStore->addSnapshot($snapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot('streamId');
+        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
     }
 }
