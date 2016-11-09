@@ -28,7 +28,7 @@ class EventStream implements \IteratorAggregate
     }
 
     /**
-     * @param DomainEvent $events
+     * @param DomainEvent[] $events
      * @return EventStream
      */
     public function append($events)
