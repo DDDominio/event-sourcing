@@ -63,9 +63,10 @@ class InMemoryEventStore implements EventStore
     /**
      * @param string $streamId
      * @param int $start
+     * @param int $count
      * @return EventStream
      */
-    public function readStreamEventsForward($streamId, $start, $count = null)
+    public function readStreamEventsForward($streamId, $start = 1, $count = null)
     {
         $events = $this->streams[$streamId];
 

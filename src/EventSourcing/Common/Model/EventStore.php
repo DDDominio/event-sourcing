@@ -16,9 +16,10 @@ interface EventStore
     /**
      * @param string $streamId
      * @param int $start
+     * @param int $count
      * @return EventStream
      */
-    public function readStreamEventsForward($streamId, $start);
+    public function readStreamEventsForward($streamId, $start = 1, $count = null);
 
     /**
      * @param string $streamId
