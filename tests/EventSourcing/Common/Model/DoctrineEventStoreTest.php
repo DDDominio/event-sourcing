@@ -8,6 +8,8 @@ use EventSourcing\Common\Model\DoctrineEventStore;
 use EventSourcing\Common\Model\DomainEvent;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\Snapshot;
+use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
+use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -166,5 +168,66 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventsForward()
+    {
+        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore->appendToStream('streamId', [
+            new NameChanged('new name'),
+            new DescriptionChanged('new description'),
+            new NameChanged('another name'),
+            new NameChanged('my name'),
+        ]);
+
+        $stream = $eventStore->readStreamEventsForward('streamId', 2);
+
+        $this->assertCount(3, $stream);
+        $events = $stream->events();
+        $this->assertEquals('new description', $events[0]->description());
+        $this->assertEquals('another name', $events[1]->name());
+        $this->assertEquals('my name', $events[2]->name());
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventsForwardWithEventCount()
+    {
+        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore->appendToStream('streamId', [
+            new NameChanged('new name'),
+            new DescriptionChanged('new description'),
+            new NameChanged('another name'),
+            new NameChanged('my name'),
+        ]);
+
+        $stream = $eventStore->readStreamEventsForward('streamId', 2, 2);
+
+        $this->assertCount(2, $stream);
+        $events = $stream->events();
+        $this->assertEquals('new description', $events[0]->description());
+        $this->assertEquals('another name', $events[1]->name());
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
+    {
+        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore->appendToStream('streamId', [
+            new NameChanged('new name'),
+            new DescriptionChanged('new description'),
+            new NameChanged('another name'),
+            new NameChanged('my name'),
+        ]);
+
+        $stream = $eventStore->readStreamEventsForward('streamId', 5);
+
+        $this->assertTrue($stream->isEmpty());
     }
 }

@@ -6,6 +6,8 @@ use Doctrine\DBAL\Connection;
 
 class DoctrineEventStore implements EventStore
 {
+    const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
+
     /**
      * @var Connection
      */
@@ -62,6 +64,32 @@ class DoctrineEventStore implements EventStore
             $stmt->bindValue(':event', serialize($domainEvent));
             $stmt->execute();
         }
+    }
+
+    /**
+     * @param string $streamId
+     * @param int $start
+     * @param int $count
+     * @return EventStream
+     */
+    public function readStreamEventsForward($streamId, $start = 1, $count = null)
+    {
+        if (!isset($count)) {
+            $count = self::MAX_UNSIGNED_BIG_INT;
+        }
+        $stmt = $this->connection
+            ->prepare('SELECT event FROM events WHERE stream_id = :streamId LIMIT :limit OFFSET :offset');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':offset', (int) $start - 1, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $count, \PDO::PARAM_INT);
+        $stmt->execute();
+        $serializedEvents = $stmt->fetchAll();
+
+        $unserializedEvents = array_map(function($event) {
+            return unserialize($event['event']);
+        }, $serializedEvents);
+
+        return new EventStream($unserializedEvents);
     }
 
     /**
