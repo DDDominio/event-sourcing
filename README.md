@@ -1,2 +1,2 @@
-PHP Event Store
+PHP Event Sourcing library
 ================
