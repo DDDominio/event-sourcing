@@ -55,11 +55,21 @@ abstract class EventSourcedAggregateRepository
      */
     public function findById($id)
     {
+        $snapshot = $this->eventStore
+            ->findLastSnapshot($this->aggregateClass(), $id);
+
+        $streamId = $this->streamIdFromAggregateId($id);
+        if ($snapshot) {
+            $stream = $this->eventStore
+                ->readStreamEventsForward($streamId, $snapshot->version() + 1);
+        } else {
+            $stream = $this->eventStore->readFullStream($streamId);
+        }
+
         return $this->aggregateReconstructor->reconstitute(
             $this->aggregateClass(),
-            $this->eventStore->readFullStream(
-                $this->streamIdFromAggregateId($id)
-            )
+            $stream,
+            $snapshot
         );
     }
 

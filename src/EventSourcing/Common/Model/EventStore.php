@@ -15,6 +15,13 @@ interface EventStore
 
     /**
      * @param string $streamId
+     * @param int $start
+     * @return EventStream
+     */
+    public function readStreamEventsForward($streamId, $start);
+
+    /**
+     * @param string $streamId
      * @return EventStream
      */
     public function readFullStream($streamId);

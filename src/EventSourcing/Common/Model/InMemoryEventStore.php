@@ -61,6 +61,27 @@ class InMemoryEventStore implements EventStore
     }
 
     /**
+     * @param string $streamId
+     * @param int $start
+     * @return EventStream
+     */
+    public function readStreamEventsForward($streamId, $start, $count = null)
+    {
+        $events = $this->streams[$streamId];
+
+        if (isset($count)) {
+            $filteredEvents = array_splice($events, $start - 1, $count);
+        } else {
+            $filteredEvents = array_splice($events, $start - 1);
+        }
+
+        $stream = new EventStream($filteredEvents);
+
+        return isset($this->streams[$streamId]) ?
+            $stream : EventStream::buildEmpty();
+    }
+
+    /**
      * @param string $aggregateClass
      * @param string $aggregateId
      * @return Snapshot|null

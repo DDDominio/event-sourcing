@@ -11,6 +11,7 @@ use EventSourcing\Common\Model\InMemoryEventStore;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregateRepository;
+use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
@@ -100,6 +101,41 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function afterAddAnAggregateItShouldNotContainChanges()
+    {
+        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
+        $eventStore = $this->createMock(EventStore::class);
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $this->createMock(AggregateReconstructor::class)
+        );
+
+        $repository->add($aggregate);
+
+        $this->assertCount(0, $aggregate->changes());
+    }
+
+    /**
+     * @test
+     */
+    public function afterSaveAnAggregateItShouldNotContainChanges()
+    {
+        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
+        $eventStore = $this->createMock(EventStore::class);
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $this->createMock(AggregateReconstructor::class)
+        );
+
+        $repository->save($aggregate);
+
+        $this->assertCount(0, $aggregate->changes());
+    }
+
+
+    /**
+     * @test
+     */
     public function findAnAggregateCooperatesWithAggregateReconstructor()
     {
         $eventStore = new InMemoryEventStore([
@@ -131,35 +167,39 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function afterAddAnAggregateItShouldNotContainChanges()
+    public function findAnAggregateThatHasStoredSnapshotsShouldUseItsLastSnapshot()
     {
-        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
+        $snapshot = new DummySnapshot(
+            'id',
+            'name',
+            'description',
+            10
+        );
+        $stream = new EventStream([
+            new NameChanged('new name'),
+            new NameChanged('another name'),
+        ]);
         $eventStore = $this->createMock(EventStore::class);
+        $eventStore
+            ->expects($this->once())
+            ->method('findLastSnapshot')
+            ->willReturn($snapshot);
+        $eventStore
+            ->expects($this->once())
+            ->method('readStreamEventsForward')
+            ->with('DummyEventSourcedAggregate-id', $snapshot->version() + 1)
+            ->willReturn($stream);
+        $aggregateReconstructor = $this->createMock(AggregateReconstructor::class);
+        $aggregateReconstructor
+            ->expects($this->once())
+            ->method('reconstitute')
+            ->with('DummyEventSourcedAggregate', $stream, $snapshot);
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
-            $this->createMock(AggregateReconstructor::class)
+            $aggregateReconstructor
         );
 
-        $repository->add($aggregate);
-
-        $this->assertCount(0, $aggregate->changes());
-    }
-
-    /**
-     * @test
-     */
-    public function afterSaveAnAggregateItShouldNotContainChanges()
-    {
-        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
-        $eventStore = $this->createMock(EventStore::class);
-        $repository = new DummyEventSourcedAggregateRepository(
-            $eventStore,
-            $this->createMock(AggregateReconstructor::class)
-        );
-
-        $repository->save($aggregate);
-
-        $this->assertCount(0, $aggregate->changes());
+        $repository->findById('id');
     }
 
     /**
