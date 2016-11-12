@@ -2,8 +2,6 @@
 
 namespace EventSourcing\Common\Model;
 
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-
 class AggregateReconstructor
 {
     /**
@@ -23,13 +21,13 @@ class AggregateReconstructor
      * @param string $class
      * @param EventStream $eventStream
      * @param Snapshot $snapshot
-     * @return DummyEventSourcedAggregate
+     * @return EventSourcedAggregate
      */
     public function reconstitute($class, $eventStream, $snapshot = null)
     {
         $this->assertValidClass($class);
 
-        if (isset($snapshot)) {
+        if ($snapshot instanceof Snapshot) {
             $aggregate = $this->snapshooter->translateSnapshot($snapshot);
         } else {
             $aggregate = $class::buildEmpty();
