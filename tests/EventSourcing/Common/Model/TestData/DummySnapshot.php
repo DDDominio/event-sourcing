@@ -3,26 +3,35 @@
 namespace Tests\EventSourcing\Common\Model\TestData;
 
 use EventSourcing\Common\Model\Snapshot;
+use JMS\Serializer\Annotation as Serializer;
 
 class DummySnapshot implements Snapshot
 {
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $id;
 
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $name;
 
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $description;
 
     /**
      * @var int
+     *
+     * @Serializer\Type("integer")
      */
     private $version;
 
