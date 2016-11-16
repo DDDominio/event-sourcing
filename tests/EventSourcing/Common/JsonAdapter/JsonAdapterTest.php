@@ -151,6 +151,19 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @test
+     */
+    public function addAKeyNotInRoot()
+    {
+        $json = '{"a": 10, "b": {"c": 4, "d": "text"}}';
+        $jsonAdapter = $this->buildJsonAdapter();
+
+        $modifiedJson = $jsonAdapter->addKey($json, 'b.new', 'test');
+
+        $this->assertEquals('{"a":10,"b":{"c":4,"d":"text","new":"test"}}', $modifiedJson);
+    }
+
+    /**
      * @return JsonAdapter
      */
     private function buildJsonAdapter()
