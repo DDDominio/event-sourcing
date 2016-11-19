@@ -1,5 +1,5 @@
 {
-  "name": "santakadev/event-sourcing",
+  "name": "dddominio/event-sourcing",
   "type": "library",
   "description": "Event Sourcing for PHP",
   "minimum-stability": "stable",
