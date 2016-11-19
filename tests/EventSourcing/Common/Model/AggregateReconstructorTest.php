@@ -7,6 +7,7 @@ use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Common\Model\Snapshotter;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
+use Tests\EventSourcing\Common\Model\TestData\DummyDeleted;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummyReflectionSnapshotTranslator;
 use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
@@ -111,5 +112,22 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals(10, $reconstructedAggregate->version());
+    }
+
+    /**
+     * @test
+     */
+    public function whenLastEventIsAnAggregateDeleterItShouldReturnNull()
+    {
+        $snapshotter = $this->createMock(Snapshotter::class);
+        $reconstructor = new AggregateReconstructor($snapshotter);
+        $eventStream = new EventStream([
+            new DummyCreated('id', 'name', 'description'),
+            new DummyDeleted('id')
+        ]);
+
+        $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
+
+        $this->assertNull($aggregate);
     }
 }
