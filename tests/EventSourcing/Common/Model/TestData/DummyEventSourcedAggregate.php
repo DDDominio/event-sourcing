@@ -24,6 +24,16 @@ class DummyEventSourcedAggregate
     private $description;
 
     /**
+     * @var DummyEntity[]
+     */
+    private $entityCollection;
+
+    /**
+     * @var DummyEntity
+     */
+    private $entityMember;
+
+    /**
      * @param $id
      * @param string $name
      * @param string $description
@@ -42,6 +52,7 @@ class DummyEventSourcedAggregate
         $this->id = $event->id();
         $this->name = $event->name();
         $this->description = $event->description();
+        $this->entityCollection = [];
     }
 
     /**
@@ -109,5 +120,48 @@ class DummyEventSourcedAggregate
     private function whenDescriptionChanged(DescriptionChanged $event)
     {
         $this->description = $event->description();
+    }
+
+    /**
+     * @return DummyEntity|null
+     */
+    public function entity($entityId)
+    {
+        return isset($this->entityCollection[$entityId]) ? $this->entityCollection[$entityId]
+            : null;
+    }
+
+    /**
+     * @param string $id
+     * @param string $name
+     */
+    public function addDummyEntity($id, $name)
+    {
+        $this->apply(new DummyEntityAdded($id, $name));
+    }
+
+    /**
+     * @param DummyEntityAdded $event
+     */
+    public function whenDummyEntityAdded(DummyEntityAdded $event)
+    {
+        $this->entityCollection[$event->id()] = new DummyEntity($event->id(), $this, $event->name());
+    }
+
+    /**
+     * @return DummyEntity
+     */
+    public function entityMember()
+    {
+        return $this->entityMember;
+    }
+
+    /**
+     * @param string $id
+     * @param string $name
+     */
+    public function setEntityMember($id, $name)
+    {
+        $this->entityMember = new DummyEntity($id, $this, $name);
     }
 }

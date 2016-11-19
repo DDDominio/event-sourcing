@@ -4,6 +4,7 @@ namespace Tests\EventSourcing\Common\Model;
 
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
+use tests\EventSourcing\Common\Model\TestData\DummyEntityNameChanged;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 use Tests\EventSourcing\Common\Model\TestData\NotUnderstandableDomainEvent;
@@ -259,5 +260,39 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
         $aggregate->commitChanges();
 
         $this->assertCount(0, $aggregate->changes());
+    }
+
+    /**
+     * @test
+     */
+    public function applyADomainEventToAnAggregateEntity()
+    {
+        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
+        $aggregate->setEntityMember('entityId', 'entityName');
+        $entity = $aggregate->entityMember();
+
+        $entity->changeName('new entity name');
+
+        $changes = $aggregate->changes();
+        $lastChange = end($changes);
+        $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange);
+        $this->assertEquals('new entity name', $lastChange->name());
+    }
+
+    /**
+     * @test
+     */
+    public function applyADomainEventToAnAggregateEntityCollection()
+    {
+        $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
+        $aggregate->addDummyEntity('entityId', 'entityName');
+        $entity = $aggregate->entity('entityId');
+
+        $entity->changeName('new entity name');
+
+        $changes = $aggregate->changes();
+        $lastChange = end($changes);
+        $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange);
+        $this->assertEquals('new entity name', $lastChange->name());
     }
 }
