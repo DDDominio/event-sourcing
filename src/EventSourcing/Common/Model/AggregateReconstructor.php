@@ -27,6 +27,12 @@ class AggregateReconstructor
     {
         $this->assertValidClass($class);
 
+        $events = $eventStream->events();
+        $lastEvent = end($events);
+        if ($lastEvent instanceof AggregateDeleter) {
+            return null;
+        }
+
         if ($snapshot instanceof Snapshot) {
             $aggregate = $this->snapshooter->translateSnapshot($snapshot);
         } else {
