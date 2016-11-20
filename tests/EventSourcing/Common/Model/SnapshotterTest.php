@@ -77,7 +77,7 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
     {
         $snapshotter = new Snapshotter();
         foreach ($strategies as $aggregateClass => $strategy) {
-            $snapshotter->addSnapshotStrategy($aggregateClass, $strategy);
+            $snapshotter->addSnapshotTranslator($aggregateClass, $strategy);
         }
         return $snapshotter;
     }

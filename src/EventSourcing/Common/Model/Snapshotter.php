@@ -10,7 +10,7 @@ class Snapshotter
      * @param string $aggregateClass
      * @param ReflectionSnapshotTranslator $snapshotStrategy
      */
-    public function addSnapshotStrategy($aggregateClass, $snapshotStrategy)
+    public function addSnapshotTranslator($aggregateClass, $snapshotStrategy)
     {
         $this->snapshotStrategies[$aggregateClass] = $snapshotStrategy;
     }

@@ -120,4 +120,30 @@ class InMemoryEventStore implements EventStore
             throw new ConcurrencyException();
         }
     }
+
+    /**
+     * @param string $aggregateClass
+     * @param string $aggregateId
+     * @param int $version
+     * @return Snapshot|null
+     */
+    public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version)
+    {
+        if (!isset($this->snapshots[$aggregateClass][$aggregateId])) {
+            return null;
+        }
+
+        /** @var Snapshot[] $snapshots */
+        $snapshots = $this->snapshots[$aggregateClass][$aggregateId];
+
+        $previousSnapshot = null;
+        foreach ($snapshots as $snapshot) {
+            if ($snapshot->version() < $version) {
+                $previousSnapshot = $snapshot;
+            } else {
+                break;
+            }
+        }
+        return $previousSnapshot;
+    }
 }

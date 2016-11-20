@@ -74,6 +74,39 @@ abstract class EventSourcedAggregateRepository
     }
 
     /**
+     * @param string $id
+     * @param int $version
+     * @return EventSourcedAggregate
+     */
+    public function findByIdAndVersion($id, $version)
+    {
+        $snapshot = $this->eventStore
+            ->findNearestSnapshotToVersion($this->aggregateClass(), $id, $version);
+
+        $streamId = $this->streamIdFromAggregateId($id);
+        if ($snapshot) {
+            $stream = $this->eventStore
+                ->readStreamEventsForward(
+                    $streamId,
+                    $snapshot->version() + 1,
+                    $version - $snapshot->version()
+                );
+        } else {
+            $stream = $this->eventStore
+                ->readStreamEventsForward(
+                    $streamId,
+                    1,
+                    $version
+                );
+        }
+        return $this->aggregateReconstructor->reconstitute(
+            $this->aggregateClass(),
+            $stream,
+            $snapshot
+        );
+    }
+
+    /**
      * @param EventSourcedAggregate $aggregate
      * @return string
      */
