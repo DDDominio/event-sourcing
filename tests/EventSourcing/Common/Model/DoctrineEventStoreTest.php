@@ -2,18 +2,31 @@
 
 namespace Tests\EventSourcing\Common\Model;
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use EventSourcing\Common\Model\DoctrineEventStore;
-use EventSourcing\Common\Model\DomainEvent;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\Snapshot;
+use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var Connection
+     */
     private $connection;
+
+    /**
+     * @var Serializer
+     */
+    private $serializer;
 
     public function setUp()
     {
@@ -29,6 +42,14 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->connection->query('TRUNCATE events')->execute();
         $this->connection->query('DELETE FROM streams')->execute();
+
+        AnnotationRegistry::registerAutoloadNamespace(
+            'JMS\Serializer\Annotation',
+            __DIR__ . '/../../../../vendor/jms/serializer/src'
+        );
+
+        $this->serializer = SerializerBuilder::create()
+            ->build();
     }
 
     /**
@@ -36,8 +57,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
-        $domainEvent = $this->createMock(DomainEvent::class);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
+        $domainEvent = new NameChanged('name');
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
 
@@ -51,8 +75,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToAnExistentStream()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
-        $domainEvent = $this->createMock(DomainEvent::class);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
+        $domainEvent = new NameChanged('name');
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $eventStore->appendToStream('streamId', [$domainEvent], 1);
@@ -67,8 +94,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
-        $domainEvent = $this->createMock(DomainEvent::class);
-        $eventStore = new DoctrineEventStore($this->connection);
+        $domainEvent = new NameChanged('name');
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
         $eventStore->appendToStream('streamId', [$domainEvent]);
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
@@ -80,8 +110,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
-        $domainEvent = $this->createMock(DomainEvent::class);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
+        $domainEvent = new NameChanged('name');
 
         $eventStore->appendToStream('newStreamId', [$domainEvent], 10);
     }
@@ -91,8 +124,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEventStream()
     {
-        $event = $this->createMock(DomainEvent::class);
-        $eventStore = new DoctrineEventStore($this->connection);
+        $event = new NameChanged('name');
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
         $eventStore->appendToStream('streamId', [$event]);
 
         $stream = $eventStore->readFullStream('streamId');
@@ -105,7 +141,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEmptyStream()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
 
         $stream = $eventStore->readFullStream('NonExistentStreamId');
 
@@ -118,36 +157,32 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findLastSnapshotOfAStream()
     {
-        $snapshot = $this->createMock(Snapshot::class);
-        $snapshot
-            ->method('aggregateClass')
-            ->willReturn('aggregateClass');
-        $snapshot
-            ->method('aggregateId')
-            ->willReturn('aggregateId');
-        $snapshot
-            ->method('version')
-            ->willReturn(10);
-        $lastSnapshot = $this->createMock(Snapshot::class);
-        $lastSnapshot
-            ->method('aggregateClass')
-            ->willReturn('aggregateClass');
-        $lastSnapshot
-            ->method('aggregateId')
-            ->willReturn('aggregateId');
-        $lastSnapshot
-            ->method('version')
-            ->willReturn(20);
-        $eventStore = new DoctrineEventStore($this->connection);
+        $snapshot = new DummySnapshot(
+            'id',
+            'name',
+            'description',
+            3
+        );
+        $lastSnapshot = new DummySnapshot(
+            'id',
+            'name',
+            'description',
+            10
+        );
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
         $eventStore->addSnapshot($snapshot);
         $eventStore->addSnapshot($lastSnapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
+        $retrievedSnapshot = $eventStore->findLastSnapshot(
+            DummyEventSourcedAggregate::class,
+            'id'
+        );
 
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-        $this->assertEquals('aggregateClass', $retrievedSnapshot->aggregateClass());
-        $this->assertEquals('aggregateId', $retrievedSnapshot->aggregateId());
-        $this->assertEquals(20, $retrievedSnapshot->version());
+        $this->assertEquals(10, $retrievedSnapshot->version());
     }
 
     /**
@@ -155,19 +190,28 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function addAnSnapshot()
     {
-        $snapshot = $this->createMock(Snapshot::class);
-        $snapshot
-            ->method('aggregateClass')
-            ->willReturn('aggregateClass');
-        $snapshot
-            ->method('aggregateId')
-            ->willReturn('aggregateId');
-        $eventStore = new DoctrineEventStore($this->connection);
+        $snapshot = new DummySnapshot(
+            'id',
+            'name',
+            'description',
+            3
+        );
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
 
         $eventStore->addSnapshot($snapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
+        $retrievedSnapshot = $eventStore->findLastSnapshot(
+            DummyEventSourcedAggregate::class,
+            'id'
+        );
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertEquals('id', $retrievedSnapshot->id());
+        $this->assertEquals('name', $retrievedSnapshot->name());
+        $this->assertEquals('description', $retrievedSnapshot->description());
+        $this->assertEquals(3, $retrievedSnapshot->version());
     }
 
     /**
@@ -175,7 +219,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForward()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name'),
             new DescriptionChanged('new description'),
@@ -197,7 +244,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardWithEventCount()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name'),
             new DescriptionChanged('new description'),
@@ -218,7 +268,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
-        $eventStore = new DoctrineEventStore($this->connection);
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer
+        );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name'),
             new DescriptionChanged('new description'),

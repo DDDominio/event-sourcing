@@ -3,6 +3,7 @@
 namespace EventSourcing\Common\Model;
 
 use Doctrine\DBAL\Connection;
+use JMS\Serializer\Serializer;
 
 class DoctrineEventStore implements EventStore
 {
@@ -14,11 +15,18 @@ class DoctrineEventStore implements EventStore
     private $connection;
 
     /**
-     * @param Connection $connection
+     * @var Serializer
      */
-    public function __construct($connection)
+    private $serializer;
+
+    /**
+     * @param Connection $connection
+     * @param Serializer $serializer
+     */
+    public function __construct($connection, $serializer)
     {
         $this->connection = $connection;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -59,9 +67,10 @@ class DoctrineEventStore implements EventStore
 
         foreach ($domainEvents as $domainEvent) {
             $stmt = $this->connection
-                ->prepare('INSERT INTO events (stream_id, event) VALUES (:streamId, :event)');
+                ->prepare('INSERT INTO events (stream_id, type, event) VALUES (:streamId, :type, :event)');
             $stmt->bindValue(':streamId', $streamId);
-            $stmt->bindValue(':event', serialize($domainEvent));
+            $stmt->bindValue(':type', get_class($domainEvent));
+            $stmt->bindValue(':event', $this->serializer->serialize($domainEvent, 'json'));
             $stmt->execute();
         }
     }
@@ -78,7 +87,7 @@ class DoctrineEventStore implements EventStore
             $count = self::MAX_UNSIGNED_BIG_INT;
         }
         $stmt = $this->connection
-            ->prepare('SELECT event FROM events WHERE stream_id = :streamId LIMIT :limit OFFSET :offset');
+            ->prepare('SELECT type, event FROM events WHERE stream_id = :streamId LIMIT :limit OFFSET :offset');
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':offset', (int) $start - 1, \PDO::PARAM_INT);
         $stmt->bindValue(':limit', $count, \PDO::PARAM_INT);
@@ -86,7 +95,7 @@ class DoctrineEventStore implements EventStore
         $serializedEvents = $stmt->fetchAll();
 
         $unserializedEvents = array_map(function($event) {
-            return unserialize($event['event']);
+            return $this->serializer->deserialize($event['event'], $event['type'], 'json');
         }, $serializedEvents);
 
         return new EventStream($unserializedEvents);
@@ -99,13 +108,13 @@ class DoctrineEventStore implements EventStore
     public function readFullStream($streamId)
     {
         $stmt = $this->connection
-            ->prepare('SELECT event FROM events WHERE stream_id = :streamId');
+            ->prepare('SELECT type, event FROM events WHERE stream_id = :streamId');
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $serializedEvents = $stmt->fetchAll();
 
         $unserializedEvents = array_map(function($event) {
-            return unserialize($event['event']);
+            return $this->serializer->deserialize($event['event'], $event['type'], 'json');
         }, $serializedEvents);
 
         return new EventStream($unserializedEvents);
@@ -117,10 +126,11 @@ class DoctrineEventStore implements EventStore
     public function addSnapshot($snapshot)
     {
         $stmt = $this->connection
-            ->prepare('INSERT INTO snapshots (aggregate_type, aggregate_id, snapshot) VALUES (:aggregateType, :aggregateId, :snapshot)');
+            ->prepare('INSERT INTO snapshots (aggregate_type, aggregate_id, type, snapshot) VALUES (:aggregateType, :aggregateId, :type, :snapshot)');
         $stmt->bindValue(':aggregateType', $snapshot->aggregateClass());
         $stmt->bindValue(':aggregateId', $snapshot->aggregateId());
-        $stmt->bindValue(':snapshot', serialize($snapshot));
+        $stmt->bindValue(':type', get_class($snapshot));
+        $stmt->bindValue(':snapshot', $this->serializer->serialize($snapshot, 'json'));
         $stmt->execute();
     }
 
@@ -132,11 +142,11 @@ class DoctrineEventStore implements EventStore
     public function findLastSnapshot($aggregateClass, $aggregateId)
     {
         $stmt = $this->connection
-            ->prepare('SELECT snapshot FROM snapshots WHERE aggregate_type = :aggregateType AND aggregate_id = :aggregateId ORDER BY id DESC LIMIT 1');
+            ->prepare('SELECT type, snapshot FROM snapshots WHERE aggregate_type = :aggregateType AND aggregate_id = :aggregateId ORDER BY id DESC LIMIT 1');
         $stmt->bindValue(':aggregateType', $aggregateClass);
         $stmt->bindValue(':aggregateId', $aggregateId);
         $stmt->execute();
         $snapshot = $stmt->fetch();
-        return unserialize($snapshot['snapshot']);
+        return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type'], 'json') : null;
     }
 }
