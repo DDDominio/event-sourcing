@@ -57,7 +57,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
     {
         $snapshotTranslator = new DummyReflectionSnapshotTranslator();
         $snapshotter = new Snapshotter();
-        $snapshotter->addSnapshotStrategy(
+        $snapshotter->addSnapshotTranslator(
             DummyEventSourcedAggregate::class,
             $snapshotTranslator
         );
