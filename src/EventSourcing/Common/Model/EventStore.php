@@ -38,4 +38,12 @@ interface EventStore
      * @return Snapshot|null
      */
     public function findLastSnapshot($aggregateClass, $aggregateId);
+
+    /**
+     * @param string $aggregateClass
+     * @param string $aggregateId
+     * @param int $version
+     * @return Snapshot|null
+     */
+    public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version);
 }
