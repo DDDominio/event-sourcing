@@ -153,7 +153,7 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function addAKeyNotInRoot()
+    public function itShouldAddAKeyNotInRoot()
     {
         $json = '{"a": 10, "b": {"c": 4, "d": "text"}}';
         $jsonAdapter = $this->buildJsonAdapter();
@@ -161,6 +161,58 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
         $modifiedJson = $jsonAdapter->addKey($json, 'b.new', 'test');
 
         $this->assertEquals('{"a":10,"b":{"c":4,"d":"text","new":"test"}}', $modifiedJson);
+    }
+
+    /**
+     * @test
+     */
+    public function itShouldAddAKeyInAComplexJson()
+    {
+        $json = '{"a": 10, "b": {"c": [1, 2, {"object": [[0,{"key": "value"}], 2]}], "d": "text"}}';
+        $jsonAdapter = $this->buildJsonAdapter();
+
+        $modifiedJson = $jsonAdapter->addKey($json, 'b.c[2].object[0][1].new', 'test');
+
+        $this->assertEquals('{"a":10,"b":{"c":[1,2,{"object":[[0,{"key":"value","new":"test"}],2]}],"d":"text"}}', $modifiedJson);
+    }
+
+    /**
+     * @test
+     */
+    public function itShouldRenameAKey()
+    {
+        $json = '{"a": 10, "b": "text"}';
+        $jsonAdapter = $this->buildJsonAdapter();
+
+        $modifiedJson = $jsonAdapter->renameKey($json, 'a', 'c');
+
+        $this->assertEquals('{"b":"text","c":10}', $modifiedJson);
+    }
+
+    /**
+     * @test
+     */
+    public function itShouldRenameAKeyNotInRoot()
+    {
+        $json = '{"a": 10, "b": {"c": 4, "d": "text"}}';
+        $jsonAdapter = $this->buildJsonAdapter();
+
+        $modifiedJson = $jsonAdapter->renameKey($json, 'b.c', 'new');
+
+        $this->assertEquals('{"a":10,"b":{"d":"text","new":4}}', $modifiedJson);
+    }
+
+    /**
+     * @test
+     */
+    public function renameAKeyInAComplexJson()
+    {
+        $json = '{"a": 10, "b": {"c": [1, 2, {"object": [[0,{"key": "value"}], 2]}], "d": "text"}}';
+        $jsonAdapter = $this->buildJsonAdapter();
+
+        $modifiedJson = $jsonAdapter->renameKey($json, 'b.c[2].object[0][1].key', 'new');
+
+        $this->assertEquals('{"a":10,"b":{"c":[1,2,{"object":[[0,{"new":"value"}],2]}],"d":"text"}}', $modifiedJson);
     }
 
     /**
