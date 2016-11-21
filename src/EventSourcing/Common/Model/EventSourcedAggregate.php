@@ -29,13 +29,64 @@ trait EventSourcedAggregate
      */
     public function apply(DomainEvent $domainEvent, $trackChanges = true)
     {
-        $methodName = 'when' . (new \ReflectionClass($domainEvent))->getShortName();
-
-        if (!method_exists($this, $methodName)) {
-            throw new DomainEventNotUnderstandableException();
+        $eventHandlerName = $this->getEventHandlerName($domainEvent);
+        if (!method_exists($this, $eventHandlerName)) {
+            if (!$this->applyRecursively($eventHandlerName, $domainEvent, $trackChanges)) {
+                throw new DomainEventNotUnderstandableException();
+            }
+        } else {
+            $this->executeDomainEventHandler($this, $eventHandlerName, $domainEvent, $trackChanges);
         }
+    }
 
-        $this->$methodName($domainEvent);
+    /**
+     * @param string $eventHandlerName
+     * @param DomainEvent $domainEvent
+     * @param bool $trackChanges
+     * @return bool
+     */
+    private function applyRecursively($eventHandlerName, DomainEvent $domainEvent, $trackChanges)
+    {
+        $applied = false;
+        $reflectedClass = new \ReflectionClass(get_class($this));
+        foreach ($reflectedClass->getProperties() as $property) {
+            $propertyValue = $this->{$property->getName()};
+            if (is_object($propertyValue)) {
+                if (method_exists($propertyValue, $eventHandlerName)) {
+                    $this->executeDomainEventHandler($propertyValue, $eventHandlerName, $domainEvent, $trackChanges);
+                    $applied = true;
+                }
+            }
+            if (is_array($propertyValue)) {
+                foreach ($propertyValue as $item) {
+                    if (method_exists($item, $eventHandlerName)) {
+                        $this->executeDomainEventHandler($item, $eventHandlerName, $domainEvent, $trackChanges);
+                        $applied = true;
+                    }
+                }
+            }
+        }
+        return $applied;
+    }
+
+    /**
+     * @param DomainEvent $domainEvent
+     * @return string
+     */
+    private function getEventHandlerName($domainEvent)
+    {
+        return 'when' . (new \ReflectionClass($domainEvent))->getShortName();
+    }
+
+    /**
+     * @param object $entity
+     * @param string $eventHandlerName
+     * @param DomainEvent $domainEvent
+     * @param bool $trackChanges
+     */
+    private function executeDomainEventHandler($entity, $eventHandlerName, $domainEvent, $trackChanges)
+    {
+        $entity->{$eventHandlerName}($domainEvent);
         if ($trackChanges) {
             $this->changes[] = $domainEvent;
         }

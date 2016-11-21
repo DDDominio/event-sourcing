@@ -7,6 +7,9 @@ use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\InMemoryEventStore;
 use EventSourcing\Common\Model\Snapshot;
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
+use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
+use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 
 class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
@@ -202,5 +205,59 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readStreamEventsForward('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
+    }
+
+    /**
+     * @test
+     */
+    public function findSnapshotForEventVersion()
+    {
+        $streams = [
+            'streamId' => [
+                new DummyCreated('id', 'name', 'description'),
+                new NameChanged('new name'),
+                new DescriptionChanged('new description'),
+                new NameChanged('another name'),
+                new NameChanged('my name'),
+            ]
+        ];
+        $snapshots = [
+            DummyEventSourcedAggregate::class => ['id' => [
+                new DummySnapshot('id', 'new name', 'description', 2),
+                new DummySnapshot('id', 'another name', 'new description', 4),
+            ]]
+        ];
+        $eventStore = new InMemoryEventStore($streams, $snapshots);
+
+        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
+
+        $this->assertEquals(2, $snapshot->version());
+    }
+
+    /**
+     * @test
+     */
+    public function findSnapshotForAnotherEventVersion()
+    {
+        $streams = [
+            'streamId' => [
+                new DummyCreated('id', 'name', 'description'),
+                new NameChanged('new name'),
+                new DescriptionChanged('new description'),
+                new NameChanged('another name'),
+                new NameChanged('my name'),
+            ]
+        ];
+        $snapshots = [
+            DummyEventSourcedAggregate::class => ['id' => [
+                new DummySnapshot('id', 'new name', 'description', 2),
+                new DummySnapshot('id', 'another name', 'new description', 4),
+            ]]
+        ];
+        $eventStore = new InMemoryEventStore($streams, $snapshots);
+
+        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
+
+        $this->assertEquals(4, $snapshot->version());
     }
 }
