@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Common\JsonAdapter;
+namespace EventSourcing\Versioning\JsonAdapter;
 
 class ArrayAccessToken
 {

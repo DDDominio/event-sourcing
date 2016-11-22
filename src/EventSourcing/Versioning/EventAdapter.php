@@ -2,8 +2,8 @@
 
 namespace EventSourcing\Versioning;
 
-use EventSourcing\Common\JsonAdapter\JsonAdapter;
 use EventSourcing\Common\Model\StoredEvent;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
 
 class EventAdapter
 {

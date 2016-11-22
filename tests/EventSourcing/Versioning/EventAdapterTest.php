@@ -2,10 +2,10 @@
 
 namespace tests\EventSourcing\Versioning;
 
-use EventSourcing\Common\JsonAdapter\JsonAdapter;
-use EventSourcing\Common\JsonAdapter\TokenExtractor;
 use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Versioning\EventAdapter;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
 
 class EventAdapterTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\EventSourcing\Common\JsonAdapter;
+namespace Tests\EventSourcing\Versioning\JsonAdapter;
 
-use EventSourcing\Common\JsonAdapter\JsonAdapter;
-use EventSourcing\Common\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
 
 class JsonAdapterTest extends \PHPUnit_Framework_TestCase
 {
