@@ -80,8 +80,7 @@ class EventAdapter
      */
     public function changeValue($storedEvent, $pathExpression, \Closure $closure)
     {
-        $value = json_decode('{}');
-        $closure->call($this, json_decode($storedEvent->body()), $value);
+        $value = $closure->call($this, json_decode($storedEvent->body()));
         $body = $this->jsonAdapter->addKey(
             $storedEvent->body(),
             $pathExpression,

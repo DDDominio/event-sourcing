@@ -2,6 +2,8 @@
 
 namespace EventSourcing\Common\Model;
 
+use EventSourcing\Versioning\Version;
+
 class StoredEvent
 {
     /**
@@ -30,20 +32,28 @@ class StoredEvent
     private $occurredOn;
 
     /**
+     * @var Version
+     */
+    private $version;
+
+    /**
      * @param int $id
      * @param string $streamId
      * @param string $name
      * @param string $body
      * @param \DateTime $occurredOn
+     * @param Version $version
      */
-    public function __construct($id, $streamId, $name, $body, \DateTime $occurredOn)
+    public function __construct($id, $streamId, $name, $body, \DateTime $occurredOn, $version)
     {
         $this->id = $id;
         $this->streamId = $streamId;
         $this->name = $name;
         $this->body = $body;
         $this->occurredOn = $occurredOn;
+        $this->version = $version;
     }
+
 
     /**
      * @return int
@@ -99,5 +109,21 @@ class StoredEvent
     public function occurredOn()
     {
         return $this->occurredOn;
+    }
+
+    /**
+     * @return Version
+     */
+    public function version()
+    {
+        return $this->version;
+    }
+
+    /**
+     * @param Version $version
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
     }
 }
