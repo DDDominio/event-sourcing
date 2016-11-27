@@ -36,7 +36,7 @@ class AggregateReconstructor
         if ($snapshot instanceof Snapshot) {
             $aggregate = $this->snapshooter->translateSnapshot($snapshot);
         } else {
-            $aggregate = $class::buildEmpty();
+            $aggregate = $this->buildEmptyAggregate($class);
         }
 
         foreach ($eventStream as $event) {
@@ -58,5 +58,14 @@ class AggregateReconstructor
         if (!in_array(EventSourcedAggregate::class, $traitNames)) {
             throw new \InvalidArgumentException();
         }
+    }
+
+    /**
+     * @param string $class
+     * @return EventSourcedAggregate
+     */
+    private function buildEmptyAggregate($class)
+    {
+        return (new \ReflectionClass($class))->newInstanceWithoutConstructor();
     }
 }

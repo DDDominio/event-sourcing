@@ -18,7 +18,8 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->eventSourcedAggregate = DummyEventSourcedAggregate::buildEmpty();
+        $this->eventSourcedAggregate = (new \ReflectionClass(DummyEventSourcedAggregate::class))
+            ->newInstanceWithoutConstructor();;
     }
 
     /**
@@ -193,22 +194,9 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function createAnEmptyEventSourcedAggregateObject()
-    {
-        /** @var DummyEventSourcedAggregate $emptyAggregate */
-        $emptyAggregate = DummyEventSourcedAggregate::buildEmpty();
-
-        $this->assertEquals(null, $emptyAggregate->name());
-        $this->assertEquals(null, $emptyAggregate->description());
-    }
-
-    /**
-     * @test
-     */
     public function applyConstructorDomainEvent()
     {
-        /** @var DummyEventSourcedAggregate $emptyAggregate */
-        $emptyAggregate = DummyEventSourcedAggregate::buildEmpty();
+        $emptyAggregate = $this->eventSourcedAggregate;
         $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
 
         $emptyAggregate->apply($dummyCreatedEvent);
