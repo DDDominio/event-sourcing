@@ -2,10 +2,6 @@
 
 namespace EventSourcing\Common\Model;
 
-interface DomainEvent
+interface DomainEvent extends Event
 {
-    /**
-     * @return \DateTimeImmutable
-     */
-    public function occurredOn();
 }

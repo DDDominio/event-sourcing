@@ -3,8 +3,9 @@
 namespace EventSourcing\Common\Model;
 
 use EventSourcing\Versioning\Version;
+use EventSourcing\Versioning\Versionable;
 
-class StoredEvent
+class StoredEvent implements Event, Versionable
 {
     /**
      * @var int
@@ -44,7 +45,7 @@ class StoredEvent
      * @param \DateTimeImmutable $occurredOn
      * @param Version $version
      */
-    public function __construct($id, $streamId, $name, $body, \DateTimeImmutable $occurredOn, $version)
+    public function __construct($id, $streamId, $name, $body, $occurredOn, $version)
     {
         $this->id = $id;
         $this->streamId = $streamId;

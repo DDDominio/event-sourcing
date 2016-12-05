@@ -4,16 +4,21 @@ namespace Tests\EventSourcing\Common\Model\TestData;
 
 use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\VersionableDomainEvent;
+use JMS\Serializer\Annotation as Serializer;
 
 class NameChanged implements VersionableDomainEvent
 {
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $name;
 
     /**
-     * @var \DateTimeImmutable
+     * @var \DateTimeImmutable<’format’>
+     *
+     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
      */
     private $occurredOn;
 

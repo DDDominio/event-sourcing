@@ -3,26 +3,35 @@
 namespace Tests\EventSourcing\Common\Model\TestData;
 
 use EventSourcing\Common\Model\DomainEvent;
+use JMS\Serializer\Annotation as Serializer;
 
 class DummyCreated implements DomainEvent
 {
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $id;
 
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $name;
 
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $description;
 
     /**
      * @var \DateTimeImmutable
+     *
+     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
      */
     private $occurredOn;
 
