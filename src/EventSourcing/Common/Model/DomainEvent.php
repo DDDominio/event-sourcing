@@ -2,6 +2,6 @@
 
 namespace EventSourcing\Common\Model;
 
-interface DomainEvent
+interface DomainEvent extends Event
 {
 }

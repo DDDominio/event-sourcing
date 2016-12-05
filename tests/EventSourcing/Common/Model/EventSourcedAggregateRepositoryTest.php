@@ -2,12 +2,22 @@
 
 namespace Tests\EventSourcing\Common\Model;
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\Model\AggregateReconstructor;
 use EventSourcing\Common\Model\EventSourcedAggregate;
 use EventSourcing\Common\Model\DomainEvent;
 use EventSourcing\Common\Model\EventStore;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\InMemoryEventStore;
+use EventSourcing\Common\Model\StoredEvent;
+use EventSourcing\Common\Model\StoredEventStream;
+use EventSourcing\Versioning\EventAdapter;
+use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\Version;
+use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregateRepository;
@@ -17,11 +27,34 @@ use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @var Serializer
+     */
+    private $serializer;
+
+    /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
+
+    protected function setUp()
+    {
+        AnnotationRegistry::registerAutoloadNamespace(
+            'JMS\Serializer\Annotation', __DIR__ . '/../../../../vendor/jms/serializer/src'
+        );
+        $this->serializer = SerializerBuilder::create()
+            ->build();
+        $tokenExtractor = new TokenExtractor();
+        $jsonAdapter = new JsonAdapter($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonAdapter);
+        $this->eventUpgrader = new EventUpgrader($eventAdapter);
+    }
+
+    /**
      * @test
      */
     public function addAnAggregate()
     {
-        $eventStore = new InMemoryEventStore();
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
@@ -40,7 +73,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function addAnotherAggregate()
     {
-        $eventStore = new InMemoryEventStore();
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
@@ -59,9 +92,12 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function saveAnAggregate()
     {
-        $eventStore = new InMemoryEventStore([
-            'DummyEventSourcedAggregate-id' => new EventStream($this->buildDummyDomainEvents(2))
-        ]);
+        $stream = $this->buildDummyStoredEventStream('DummyEventSourcedAggregate-id', 2);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            [$stream->id() => $stream]
+        );
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
@@ -81,9 +117,12 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function saveAnotherAggregate()
     {
-        $eventStore = new InMemoryEventStore([
-            'DummyEventSourcedAggregate-anotherId' => new EventStream($this->buildDummyDomainEvents(2))
-        ]);
+        $stream = $this->buildDummyStoredEventStream('DummyEventSourcedAggregate-anotherId', 2);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            [$stream->id() => $stream]
+        );
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
@@ -138,12 +177,17 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function findAnAggregateCooperatesWithAggregateReconstructor()
     {
-        $eventStore = new InMemoryEventStore([
-            'DummyEventSourcedAggregate-id' => new EventStream([
-                new DummyCreated('id', 'name', 'description'),
-                new NameChanged('new name')
-            ])
-        ]);
+        $domainEvents = [
+            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+            new NameChanged('new name', new \DateTimeImmutable())
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            [$stream->id() => $stream]
+        );
         $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
             ->disableOriginalConstructor()
             ->setMethods(['reconstitute'])
@@ -176,8 +220,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             10
         );
         $stream = new EventStream([
-            new NameChanged('new name'),
-            new NameChanged('another name'),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
         ]);
         $eventStore = $this->createMock(EventStore::class);
         $eventStore
@@ -242,17 +286,47 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $id
+     * @param int $eventCount
+     * @return StoredEventStream
+     */
+    private function buildDummyStoredEventStream($id, $eventCount)
+    {
+        $domainEvents = $this->buildDummyDomainEvents($eventCount);
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        return new StoredEventStream($id, $storedEvents);
+    }
+
+    /**
      * @param int $eventCount
      * @return DomainEvent[]
      */
     private function buildDummyDomainEvents($eventCount)
     {
-        $event = $this->createMock(DomainEvent::class);
+        $event = new NameChanged('name', new \DateTimeImmutable());
         $events = [];
         while ($eventCount > 0) {
             $events[] = $event;
             $eventCount--;
         }
         return $events;
+    }
+
+    /**
+     * @param DomainEvent[] $domainEvents
+     * @return StoredEvent[]
+     */
+    private function storedEventsFromDomainEvents($domainEvents)
+    {
+        return array_map(function(DomainEvent $domainEvent) {
+            return new StoredEvent(
+                'id',
+                'streamId',
+                get_class($domainEvent),
+                $this->serializer->serialize($domainEvent, 'json'),
+                $domainEvent->occurredOn(),
+                Version::fromString('1.0')
+            );
+        }, $domainEvents);
     }
 }

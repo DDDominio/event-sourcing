@@ -13,11 +13,18 @@ class DummyDeleted implements DomainEvent, AggregateDeleter
     private $id;
 
     /**
-     * @param string $id
+     * @var \DateTimeImmutable
      */
-    public function __construct($id)
+    private $occurredOn;
+
+    /**
+     * @param string $id
+     * @param \DateTimeImmutable $occurredOn
+     */
+    public function __construct($id, \DateTimeImmutable $occurredOn)
     {
         $this->id = $id;
+        $this->occurredOn = $occurredOn;
     }
 
     /**
@@ -26,5 +33,13 @@ class DummyDeleted implements DomainEvent, AggregateDeleter
     public function id()
     {
         return $this->id;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function occurredOn()
+    {
+        return $this->occurredOn;
     }
 }

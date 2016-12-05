@@ -52,7 +52,7 @@ class DummyEntity
      */
     public function changeName($name)
     {
-        $this->aggregateRoot->apply(new DummyEntityNameChanged($name));
+        $this->aggregateRoot->apply(new DummyEntityNameChanged($name, new \DateTimeImmutable()));
     }
 
     /**
