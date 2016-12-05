@@ -7,12 +7,12 @@ use Traversable;
 class EventStream implements \IteratorAggregate
 {
     /**
-     * @var DomainEvent[]
+     * @var Event[]
      */
     private $events;
 
     /**
-     * @param DomainEvent[] $events
+     * @param Event[] $events
      */
     public function __construct(array $events)
     {
@@ -28,7 +28,7 @@ class EventStream implements \IteratorAggregate
     }
 
     /**
-     * @param DomainEvent[] $events
+     * @param Event[] $events
      * @return EventStream
      */
     public function append($events)
@@ -37,7 +37,7 @@ class EventStream implements \IteratorAggregate
     }
 
     /**
-     * @return DomainEvent[]
+     * @return Event[]
      */
     public function events()
     {

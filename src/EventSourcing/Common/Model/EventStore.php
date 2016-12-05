@@ -6,12 +6,12 @@ interface EventStore
 {
     /**
      * @param string $streamId
-     * @param DomainEvent[] $domainEvents
+     * @param DomainEvent[] $events
      * @param int $expectedVersion
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $domainEvents, $expectedVersion = 0);
+    public function appendToStream($streamId, $events, $expectedVersion = 0);
 
     /**
      * @param string $streamId

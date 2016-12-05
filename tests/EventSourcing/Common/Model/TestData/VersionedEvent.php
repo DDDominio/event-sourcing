@@ -6,38 +6,36 @@ use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\VersionableDomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
-class NameChanged implements VersionableDomainEvent
+class VersionedEvent implements VersionableDomainEvent
 {
     /**
      * @var string
      *
      * @Serializer\Type("string")
      */
-    private $name;
+    private $username;
 
     /**
-     * @var \DateTimeImmutable<’format’>
-     *
-     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
+     * @var \DateTimeImmutable
      */
     private $occurredOn;
 
     /**
-     * @param string $name
+     * @param string $username
      * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($name, \DateTimeImmutable $occurredOn)
+    public function __construct($username, \DateTimeImmutable $occurredOn)
     {
-        $this->name = $name;
+        $this->username = $username;
         $this->occurredOn = $occurredOn;
     }
 
     /**
      * @return string
      */
-    public function name()
+    public function username()
     {
-        return $this->name;
+        return $this->username;
     }
 
     /**
@@ -53,6 +51,6 @@ class NameChanged implements VersionableDomainEvent
      */
     public function version()
     {
-        return Version::fromString('3.0');
+        return Version::fromString('2.0');
     }
 }

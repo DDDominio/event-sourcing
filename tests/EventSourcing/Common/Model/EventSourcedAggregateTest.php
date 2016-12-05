@@ -27,7 +27,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function applyADomainEventWithoutTrackingChanges()
     {
-        $nameChangedEvent = new NameChanged('new name');
+        $nameChangedEvent = new NameChanged('new name', new \DateTimeImmutable());
 
         $this->eventSourcedAggregate->apply($nameChangedEvent, false);
 
@@ -41,7 +41,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function applyADomainEventTrackingChanges()
     {
-        $nameChangedEvent = new NameChanged('new name');
+        $nameChangedEvent = new NameChanged('new name', new \DateTimeImmutable());
 
         $this->eventSourcedAggregate->apply($nameChangedEvent);
 
@@ -64,7 +64,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function buildAndInvalidAggregateWithOldEventIsOk()
     {
-        $oldEvent = new DummyCreated('id', 'a', 'description');
+        $oldEvent = new DummyCreated('id', 'a', 'description', new \DateTimeImmutable());
 
         $this->eventSourcedAggregate->apply($oldEvent, false);
 
@@ -87,8 +87,8 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     public function applyTwoDomainEvents()
     {
         $events = [];
-        $events[] = new NameChanged('new name');
-        $events[] = new NameChanged('new new name');
+        $events[] = new NameChanged('new name', new \DateTimeImmutable());
+        $events[] = new NameChanged('new new name', new \DateTimeImmutable());
 
         foreach ($events as $event) {
             $this->eventSourcedAggregate->apply($event, false);
@@ -104,7 +104,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function applyDifferentDomainEvent()
     {
-        $descriptionChangedEvent = new DescriptionChanged('new description');
+        $descriptionChangedEvent = new DescriptionChanged('new description', new \DateTimeImmutable());
 
         $this->eventSourcedAggregate->apply($descriptionChangedEvent, false);
 
@@ -119,7 +119,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function aggregateDoesNotUnderstandADomainEvent()
     {
-        $notUnderstandableDomainEvent = new NotUnderstandableDomainEvent();
+        $notUnderstandableDomainEvent = new NotUnderstandableDomainEvent(new \DateTimeImmutable());
 
         $this->eventSourcedAggregate->apply($notUnderstandableDomainEvent);
     }
@@ -174,7 +174,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     {
         $initialVersion = $this->eventSourcedAggregate->version();
 
-        $this->eventSourcedAggregate->apply(new NameChanged('new name'));
+        $this->eventSourcedAggregate->apply(new NameChanged('new name', new \DateTimeImmutable()));
 
         $this->assertEquals($initialVersion + 1, $this->eventSourcedAggregate->version());
     }
@@ -197,7 +197,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     public function applyConstructorDomainEvent()
     {
         $emptyAggregate = $this->eventSourcedAggregate;
-        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
+        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description', new \DateTimeImmutable());
 
         $emptyAggregate->apply($dummyCreatedEvent);
 
@@ -219,7 +219,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function applyAnOldDomainEventThatBreaksCurrentValidationIsOk()
     {
-        $oldDomainEvent = new NameChanged('a');
+        $oldDomainEvent = new NameChanged('a', new \DateTimeImmutable());
 
         $this->eventSourcedAggregate->apply($oldDomainEvent, false);
 

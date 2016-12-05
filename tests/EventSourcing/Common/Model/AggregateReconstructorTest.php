@@ -22,7 +22,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
     {
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
-        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
+        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description', new \DateTimeImmutable());
         $eventStream = new EventStream([$dummyCreatedEvent]);
 
         $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
@@ -39,8 +39,8 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
     {
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
-        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description');
-        $dummyNameChanged = new NameChanged('new name');
+        $dummyCreatedEvent = new DummyCreated('id', 'name', 'description', new \DateTimeImmutable());
+        $dummyNameChanged = new NameChanged('new name', new \DateTimeImmutable());
         $eventStream = new EventStream([$dummyCreatedEvent, $dummyNameChanged]);
 
         $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
@@ -63,7 +63,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
         );
         $reconstructor = new AggregateReconstructor($snapshotter);
         $snapshot = new DummySnapshot('id', 'name', 'description', 2);
-        $eventStream = new EventStream([new NameChanged('new name')]);
+        $eventStream = new EventStream([new NameChanged('new name', new \DateTimeImmutable())]);
 
         $aggregate = $reconstructor->reconstitute(
             DummyEventSourcedAggregate::class,
@@ -122,8 +122,8 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
         $snapshotter = $this->createMock(Snapshotter::class);
         $reconstructor = new AggregateReconstructor($snapshotter);
         $eventStream = new EventStream([
-            new DummyCreated('id', 'name', 'description'),
-            new DummyDeleted('id')
+            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+            new DummyDeleted('id', new \DateTimeImmutable())
         ]);
 
         $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
