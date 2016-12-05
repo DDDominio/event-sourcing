@@ -63,7 +63,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->connection,
             $this->serializer
         );
-        $domainEvent = new NameChanged('name');
+        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
 
@@ -81,7 +81,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->connection,
             $this->serializer
         );
-        $domainEvent = new NameChanged('name');
+        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $eventStore->appendToStream('streamId', [$domainEvent], 1);
@@ -96,7 +96,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
-        $domainEvent = new NameChanged('name');
+        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
         $eventStore = new DoctrineEventStore(
             $this->connection,
             $this->serializer
@@ -116,7 +116,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->connection,
             $this->serializer
         );
-        $domainEvent = new NameChanged('name');
+        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
         $eventStore->appendToStream('newStreamId', [$domainEvent], 10);
     }
@@ -126,7 +126,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEventStream()
     {
-        $event = new NameChanged('name');
+        $event = new NameChanged('name', new \DateTimeImmutable());
         $eventStore = new DoctrineEventStore(
             $this->connection,
             $this->serializer
@@ -226,10 +226,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer
         );
         $eventStore->appendToStream('streamId', [
-            new NameChanged('new name'),
-            new DescriptionChanged('new description'),
-            new NameChanged('another name'),
-            new NameChanged('my name'),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new DescriptionChanged('new description', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
+            new NameChanged('my name', new \DateTimeImmutable()),
         ]);
 
         $stream = $eventStore->readStreamEventsForward('streamId', 2);
@@ -251,10 +251,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer
         );
         $eventStore->appendToStream('streamId', [
-            new NameChanged('new name'),
-            new DescriptionChanged('new description'),
-            new NameChanged('another name'),
-            new NameChanged('my name'),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new DescriptionChanged('new description', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
+            new NameChanged('my name', new \DateTimeImmutable()),
         ]);
 
         $stream = $eventStore->readStreamEventsForward('streamId', 2, 2);
@@ -275,10 +275,10 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer
         );
         $eventStore->appendToStream('streamId', [
-            new NameChanged('new name'),
-            new DescriptionChanged('new description'),
-            new NameChanged('another name'),
-            new NameChanged('my name'),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new DescriptionChanged('new description', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
+            new NameChanged('my name', new \DateTimeImmutable()),
         ]);
 
         $stream = $eventStore->readStreamEventsForward('streamId', 5);
@@ -292,11 +292,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findSnapshotForEventVersion()
     {
         $domainEvents = [
-            new DummyCreated('id', 'name', 'description'),
-            new NameChanged('new name'),
-            new DescriptionChanged('new description'),
-            new NameChanged('another name'),
-            new NameChanged('my name'),
+            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new DescriptionChanged('new description', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
+            new NameChanged('my name', new \DateTimeImmutable()),
         ];
         $eventStore = new DoctrineEventStore(
             $this->connection,
@@ -321,11 +321,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findSnapshotForAnotherEventVersion()
     {
         $domainEvents = [
-            new DummyCreated('id', 'name', 'description'),
-            new NameChanged('new name'),
-            new DescriptionChanged('new description'),
-            new NameChanged('another name'),
-            new NameChanged('my name'),
+            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new DescriptionChanged('new description', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
+            new NameChanged('my name', new \DateTimeImmutable()),
         ];
         $eventStore = new DoctrineEventStore(
             $this->connection,
