@@ -6,7 +6,7 @@ interface EventStore
 {
     /**
      * @param string $streamId
-     * @param DomainEvent[] $events
+     * @param Event[] $events
      * @param int $expectedVersion
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
