@@ -9,6 +9,10 @@ use EventSourcing\Common\Model\InMemoryEventStore;
 use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Common\Model\StoredEventStream;
+use EventSourcing\Versioning\EventAdapter;
+use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
@@ -17,6 +21,8 @@ use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
+use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
+use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
 
 class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,6 +31,11 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     private $serializer;
 
+    /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
+
     protected function setUp()
     {
         AnnotationRegistry::registerAutoloadNamespace(
@@ -32,6 +43,13 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $this->serializer = SerializerBuilder::create()
             ->build();
+        $tokenExtractor = new TokenExtractor();
+        $jsonAdapter = new JsonAdapter($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonAdapter);
+        $this->eventUpgrader = new EventUpgrader($eventAdapter);
+        $this->eventUpgrader->registerUpgrade(
+            new VersionedEventUpgrade10_20($eventAdapter)
+        );
     }
 
     /**
@@ -39,7 +57,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
@@ -54,7 +72,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToAnExistentStream()
     {
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
@@ -76,6 +94,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         // expected version form streamId: 1
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             [$streamId => $storedEventStream]
         );
         $domainEvent = $this->createMock(DomainEvent::class);
@@ -89,7 +108,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $domainEvent = $this->createMock(DomainEvent::class);
 
         $eventStore->appendToStream('newStreamId', [$domainEvent], 10);
@@ -112,6 +131,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $storedEventStream = new StoredEventStream('streamId', [$storedEvent]);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             ['streamId' => $storedEventStream]
         );
 
@@ -126,7 +146,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEmptyStream()
     {
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
 
         $stream = $eventStore->readFullStream('NonExistentStreamId');
 
@@ -149,10 +169,9 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             ->willReturn('aggregateId');
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             [],
-            [
-                'aggregateClass' => ['aggregateId' => [$snapshot, $lastSnapshot]]
-            ]
+            ['aggregateClass' => ['aggregateId' => [$snapshot, $lastSnapshot]]]
         );
 
         $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
@@ -174,7 +193,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $snapshot
             ->method('aggregateId')
             ->willReturn('aggregateId');
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
 
         $eventStore->addSnapshot($snapshot);
 
@@ -197,6 +216,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             ['streamId' => $storedEventStream]
         );
 
@@ -225,6 +245,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             ['streamId' => $storedEventStream]
         );
 
@@ -252,6 +273,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             ['streamId' => $storedEventStream]
         );
 
@@ -283,8 +305,8 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         ];
         $eventStore = new InMemoryEventStore(
             $this->serializer,
-            $streams,
-            $snapshots
+            $this->eventUpgrader,
+            $streams, $snapshots
         );
 
         $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
@@ -315,6 +337,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         ];
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             $streams,
             $snapshots
         );
@@ -322,6 +345,33 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
+    }
+
+    /**
+     * @test
+     */
+    public function whenReadingAStreamItShouldUpgradeOldStoredEvents()
+    {
+        $oldStoredEvent = new StoredEvent(
+            'id',
+            'streamId',
+            VersionedEvent::class,
+            '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}',
+            new \DateTimeImmutable('2016-12-04 17:35:35'),
+            Version::fromString('1.0')
+        );
+        $storedEventStream = new StoredEventStream('streamId', [$oldStoredEvent]);
+        $streams = [$storedEventStream->id() => $storedEventStream];
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            $streams
+        );
+
+        $stream = $eventStore->readFullStream('streamId');
+
+        $domainEvent = $stream->events()[0];
+        $this->assertEquals('Name', $domainEvent->username());
     }
 
     /**

@@ -11,6 +11,10 @@ use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\InMemoryEventStore;
 use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Common\Model\StoredEventStream;
+use EventSourcing\Versioning\EventAdapter;
+use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
@@ -27,6 +31,11 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     private $serializer;
 
+    /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
+
     protected function setUp()
     {
         AnnotationRegistry::registerAutoloadNamespace(
@@ -34,6 +43,10 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         );
         $this->serializer = SerializerBuilder::create()
             ->build();
+        $tokenExtractor = new TokenExtractor();
+        $jsonAdapter = new JsonAdapter($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonAdapter);
+        $this->eventUpgrader = new EventUpgrader($eventAdapter);
     }
 
     /**
@@ -41,7 +54,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function addAnAggregate()
     {
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
@@ -60,7 +73,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function addAnotherAggregate()
     {
-        $eventStore = new InMemoryEventStore($this->serializer);
+        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $this->createMock(AggregateReconstructor::class)
@@ -82,6 +95,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $stream = $this->buildDummyStoredEventStream('DummyEventSourcedAggregate-id', 2);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             [$stream->id() => $stream]
         );
         $repository = new DummyEventSourcedAggregateRepository(
@@ -106,6 +120,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $stream = $this->buildDummyStoredEventStream('DummyEventSourcedAggregate-anotherId', 2);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             [$stream->id() => $stream]
         );
         $repository = new DummyEventSourcedAggregateRepository(
@@ -170,6 +185,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
+            $this->eventUpgrader,
             [$stream->id() => $stream]
         );
         $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)

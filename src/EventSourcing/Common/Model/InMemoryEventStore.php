@@ -2,6 +2,7 @@
 
 namespace EventSourcing\Common\Model;
 
+use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\Versionable;
 use JMS\Serializer\Serializer;
@@ -25,18 +26,26 @@ class InMemoryEventStore implements EventStore
     private $serializer;
 
     /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
+
+    /**
      * @param Serializer $serializer
+     * @param EventUpgrader $eventUpgrader
      * @param StoredEventStream[] $streams
      * @param array $snapshots
      */
     public function __construct(
         $serializer,
+        $eventUpgrader,
         array $streams = [],
         array $snapshots = []
     ) {
         $this->serializer = $serializer;
         $this->streams = $streams;
         $this->snapshots = $snapshots;
+        $this->eventUpgrader = $eventUpgrader;
     }
 
     /**
@@ -82,14 +91,9 @@ class InMemoryEventStore implements EventStore
     public function readFullStream($streamId)
     {
         if (isset($this->streams[$streamId])) {
-            $domainEvents = array_map(function(StoredEvent $storedEvent) {
-                return $this->serializer->deserialize(
-                    $storedEvent->body(),
-                    $storedEvent->name(),
-                    'json'
-                );
-            }, $this->streams[$streamId]->events());
-            return new EventStream($domainEvents);
+            return $this->domainEventStreamFromStoredEvents(
+                $this->streams[$streamId]->events()
+            );
         } else {
             return EventStream::buildEmpty();
         }
@@ -107,25 +111,14 @@ class InMemoryEventStore implements EventStore
             return EventStream::buildEmpty();
         }
 
-        $events = $this->streams[$streamId]->events();
+        $storedEvents = $this->streams[$streamId]->events();
 
         if (isset($count)) {
-            $filteredEvents = array_splice($events, $start - 1, $count);
+            $filteredStoredEvents = array_splice($storedEvents, $start - 1, $count);
         } else {
-            $filteredEvents = array_splice($events, $start - 1);
+            $filteredStoredEvents = array_splice($storedEvents, $start - 1);
         }
-
-        $domainEvents = array_map(function(StoredEvent $storedEvent) {
-            return $this->serializer->deserialize(
-                $storedEvent->body(),
-                $storedEvent->name(),
-                'json'
-            );
-        }, $filteredEvents);
-
-        $stream = new EventStream($domainEvents);
-
-        return $stream;
+        return $this->domainEventStreamFromStoredEvents($filteredStoredEvents);
     }
 
     /**
@@ -207,5 +200,22 @@ class InMemoryEventStore implements EventStore
     private function nextStoredEventId()
     {
         return Uuid::uuid4()->toString();
+    }
+
+    /**
+     * @param StoredEvent[] $storedEvents
+     * @return EventStream
+     */
+    private function domainEventStreamFromStoredEvents($storedEvents)
+    {
+        $domainEvents = array_map(function (StoredEvent $storedEvent) {
+            $this->eventUpgrader->migrate($storedEvent);
+            return $this->serializer->deserialize(
+                $storedEvent->body(),
+                $storedEvent->name(),
+                'json'
+            );
+        }, $storedEvents);
+        return new EventStream($domainEvents);
     }
 }
