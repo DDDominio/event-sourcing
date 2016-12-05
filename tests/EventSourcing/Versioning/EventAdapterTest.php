@@ -23,7 +23,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
-            new \DateTime(),
+            new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
@@ -45,7 +45,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
-            new \DateTime(),
+            new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
@@ -67,7 +67,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
-            new \DateTime(),
+            new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
@@ -91,7 +91,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name","description":"Description"}',
-            new \DateTime(),
+            new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
@@ -113,7 +113,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
-            new \DateTime(),
+            new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 

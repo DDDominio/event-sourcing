@@ -27,7 +27,7 @@ class StoredEvent
     private $body;
 
     /**
-     * @var \DateTime
+     * @var \DateTimeImmutable
      */
     private $occurredOn;
 
@@ -41,10 +41,10 @@ class StoredEvent
      * @param string $streamId
      * @param string $name
      * @param string $body
-     * @param \DateTime $occurredOn
+     * @param \DateTimeImmutable $occurredOn
      * @param Version $version
      */
-    public function __construct($id, $streamId, $name, $body, \DateTime $occurredOn, $version)
+    public function __construct($id, $streamId, $name, $body, \DateTimeImmutable $occurredOn, $version)
     {
         $this->id = $id;
         $this->streamId = $streamId;
@@ -53,7 +53,6 @@ class StoredEvent
         $this->occurredOn = $occurredOn;
         $this->version = $version;
     }
-
 
     /**
      * @return int
@@ -104,7 +103,7 @@ class StoredEvent
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTimeImmutable
      */
     public function occurredOn()
     {

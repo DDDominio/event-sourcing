@@ -140,8 +140,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new InMemoryEventStore([
             'DummyEventSourcedAggregate-id' => new EventStream([
-                new DummyCreated('id', 'name', 'description'),
-                new NameChanged('new name')
+                new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+                new NameChanged('new name', new \DateTimeImmutable())
             ])
         ]);
         $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
@@ -176,8 +176,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             10
         );
         $stream = new EventStream([
-            new NameChanged('new name'),
-            new NameChanged('another name'),
+            new NameChanged('new name', new \DateTimeImmutable()),
+            new NameChanged('another name', new \DateTimeImmutable()),
         ]);
         $eventStore = $this->createMock(EventStore::class);
         $eventStore

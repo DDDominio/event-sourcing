@@ -12,11 +12,18 @@ class DescriptionChanged implements DomainEvent
     private $description;
 
     /**
-     * @param string $description
+     * @var \DateTimeImmutable
      */
-    public function __construct($description)
+    private $occurredOn;
+
+    /**
+     * @param string $description
+     * @param \DateTimeImmutable $occurredOn
+     */
+    public function __construct($description, \DateTimeImmutable $occurredOn)
     {
         $this->description = $description;
+        $this->occurredOn = $occurredOn;
     }
 
     /**
@@ -25,5 +32,13 @@ class DescriptionChanged implements DomainEvent
     public function description()
     {
         return $this->description;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function occurredOn()
+    {
+        return $this->occurredOn;
     }
 }

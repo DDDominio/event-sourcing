@@ -2,9 +2,10 @@
 
 namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventSourcing\Common\Model\DomainEvent;
+use EventSourcing\Versioning\Version;
+use EventSourcing\Versioning\VersionableDomainEvent;
 
-class NameChanged implements DomainEvent
+class NameChanged implements VersionableDomainEvent
 {
     /**
      * @var string
@@ -12,11 +13,18 @@ class NameChanged implements DomainEvent
     private $name;
 
     /**
-     * @param string $name
+     * @var \DateTimeImmutable
      */
-    public function __construct($name)
+    private $occurredOn;
+
+    /**
+     * @param string $name
+     * @param \DateTimeImmutable $occurredOn
+     */
+    public function __construct($name, \DateTimeImmutable $occurredOn)
     {
         $this->name = $name;
+        $this->occurredOn = $occurredOn;
     }
 
     /**
@@ -25,5 +33,21 @@ class NameChanged implements DomainEvent
     public function name()
     {
         return $this->name;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function occurredOn()
+    {
+        return $this->occurredOn;
+    }
+
+    /**
+     * @return Version
+     */
+    public function version()
+    {
+        return Version::fromString('3.0');
     }
 }

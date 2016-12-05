@@ -17,13 +17,20 @@ class DummyEntityAdded implements DomainEvent
     private $name;
 
     /**
+     * @var \DateTimeImmutable
+     */
+    private $occurredOn;
+
+    /**
      * @param string $id
      * @param string $name
+     * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($id, $name)
+    public function __construct($id, $name, \DateTimeImmutable $occurredOn)
     {
         $this->id = $id;
         $this->name = $name;
+        $this->occurredOn = $occurredOn;
     }
 
     /**
@@ -40,5 +47,13 @@ class DummyEntityAdded implements DomainEvent
     public function name()
     {
         return $this->name;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function occurredOn()
+    {
+        return $this->occurredOn;
     }
 }

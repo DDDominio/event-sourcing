@@ -41,7 +41,7 @@ class DummyEventSourcedAggregate
     public function __construct($id, $name, $description)
     {
         $this->assertValidName($name);
-        $this->apply(new DummyCreated($id, $name, $description));
+        $this->apply(new DummyCreated($id, $name, $description, new \DateTimeImmutable()));
     }
 
     /**
@@ -77,7 +77,7 @@ class DummyEventSourcedAggregate
     public function changeName($name)
     {
         $this->assertValidName($name);
-        $this->apply(new NameChanged($name));
+        $this->apply(new NameChanged($name, new \DateTimeImmutable()));
     }
 
     /**
@@ -111,7 +111,7 @@ class DummyEventSourcedAggregate
      */
     public function changeDescription($description)
     {
-        $this->apply(new DescriptionChanged($description));
+        $this->apply(new DescriptionChanged($description, new \DateTimeImmutable()));
     }
 
     /**
@@ -137,7 +137,7 @@ class DummyEventSourcedAggregate
      */
     public function addDummyEntity($id, $name)
     {
-        $this->apply(new DummyEntityAdded($id, $name));
+        $this->apply(new DummyEntityAdded($id, $name, new \DateTimeImmutable()));
     }
 
     /**

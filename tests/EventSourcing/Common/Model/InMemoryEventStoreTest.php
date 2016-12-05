@@ -150,10 +150,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new InMemoryEventStore([
             'streamId' => [
-                new NameChanged('new name'),
-                new DescriptionChanged('new description'),
-                new NameChanged('another name'),
-                new NameChanged('my name'),
+                new NameChanged('new name', new \DateTimeImmutable()),
+                new DescriptionChanged('new description', new \DateTimeImmutable()),
+                new NameChanged('another name', new \DateTimeImmutable()),
+                new NameChanged('my name', new \DateTimeImmutable()),
             ]
         ]);
 
@@ -173,10 +173,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new InMemoryEventStore([
             'streamId' => [
-                new NameChanged('new name'),
-                new DescriptionChanged('new description'),
-                new NameChanged('another name'),
-                new NameChanged('my name'),
+                new NameChanged('new name', new \DateTimeImmutable()),
+                new DescriptionChanged('new description', new \DateTimeImmutable()),
+                new NameChanged('another name', new \DateTimeImmutable()),
+                new NameChanged('my name', new \DateTimeImmutable()),
             ]
         ]);
 
@@ -195,10 +195,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new InMemoryEventStore([
             'streamId' => [
-                new NameChanged('new name'),
-                new DescriptionChanged('new description'),
-                new NameChanged('another name'),
-                new NameChanged('my name'),
+                new NameChanged('new name', new \DateTimeImmutable()),
+                new DescriptionChanged('new description', new \DateTimeImmutable()),
+                new NameChanged('another name', new \DateTimeImmutable()),
+                new NameChanged('my name', new \DateTimeImmutable()),
             ]
         ]);
 
@@ -214,11 +214,11 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $streams = [
             'streamId' => [
-                new DummyCreated('id', 'name', 'description'),
-                new NameChanged('new name'),
-                new DescriptionChanged('new description'),
-                new NameChanged('another name'),
-                new NameChanged('my name'),
+                new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+                new NameChanged('new name', new \DateTimeImmutable()),
+                new DescriptionChanged('new description', new \DateTimeImmutable()),
+                new NameChanged('another name', new \DateTimeImmutable()),
+                new NameChanged('my name', new \DateTimeImmutable()),
             ]
         ];
         $snapshots = [
@@ -241,11 +241,11 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $streams = [
             'streamId' => [
-                new DummyCreated('id', 'name', 'description'),
-                new NameChanged('new name'),
-                new DescriptionChanged('new description'),
-                new NameChanged('another name'),
-                new NameChanged('my name'),
+                new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
+                new NameChanged('new name', new \DateTimeImmutable()),
+                new DescriptionChanged('new description', new \DateTimeImmutable()),
+                new NameChanged('another name', new \DateTimeImmutable()),
+                new NameChanged('my name', new \DateTimeImmutable()),
             ]
         ];
         $snapshots = [
