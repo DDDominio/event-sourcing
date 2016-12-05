@@ -9,6 +9,11 @@ use Doctrine\DBAL\DriverManager;
 use EventSourcing\Common\Model\DoctrineEventStore;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Versioning\EventAdapter;
+use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
@@ -16,6 +21,8 @@ use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
+use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
+use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -28,6 +35,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      * @var Serializer
      */
     private $serializer;
+
+    /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
 
     public function setUp()
     {
@@ -52,6 +64,14 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->serializer = SerializerBuilder::create()
             ->build();
+
+        $tokenExtractor = new TokenExtractor();
+        $jsonAdapter = new JsonAdapter($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonAdapter);
+        $this->eventUpgrader = new EventUpgrader($eventAdapter);
+        $this->eventUpgrader->registerUpgrade(
+            new VersionedEventUpgrade10_20($eventAdapter)
+        );
     }
 
     /**
@@ -61,7 +81,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
@@ -79,7 +100,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
@@ -99,7 +121,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [$domainEvent]);
 
@@ -114,7 +137,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
@@ -129,7 +153,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $event = new NameChanged('name', new \DateTimeImmutable());
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [$event]);
 
@@ -145,7 +170,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
 
         $stream = $eventStore->readFullStream('NonExistentStreamId');
@@ -173,7 +199,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->addSnapshot($snapshot);
         $eventStore->addSnapshot($lastSnapshot);
@@ -200,7 +227,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
 
         $eventStore->addSnapshot($snapshot);
@@ -223,7 +251,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name', new \DateTimeImmutable()),
@@ -248,7 +277,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name', new \DateTimeImmutable()),
@@ -272,7 +302,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name', new \DateTimeImmutable()),
@@ -300,7 +331,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         ];
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', $domainEvents);
         $eventStore->addSnapshot(
@@ -329,7 +361,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         ];
         $eventStore = new DoctrineEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', $domainEvents);
         $eventStore->addSnapshot(
@@ -342,5 +375,37 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
+    }
+
+    /**
+     * @test
+     */
+    public function whenReadingAStreamItShouldUpgradeOldStoredEvents()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, occurredOn, version)
+                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', Version::fromString('1.0'));
+        $stmt->execute();
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $stream = $eventStore->readFullStream('streamId');
+
+        $domainEvent = $stream->events()[0];
+        $this->assertEquals('Name', $domainEvent->username());
     }
 }

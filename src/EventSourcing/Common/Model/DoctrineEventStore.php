@@ -3,6 +3,9 @@
 namespace EventSourcing\Common\Model;
 
 use Doctrine\DBAL\Connection;
+use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\Version;
+use EventSourcing\Versioning\Versionable;
 use JMS\Serializer\Serializer;
 
 class DoctrineEventStore implements EventStore
@@ -20,23 +23,30 @@ class DoctrineEventStore implements EventStore
     private $serializer;
 
     /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
+
+    /**
      * @param Connection $connection
      * @param Serializer $serializer
+     * @param EventUpgrader $eventUpgrader
      */
-    public function __construct($connection, $serializer)
+    public function __construct($connection, $serializer, $eventUpgrader)
     {
         $this->connection = $connection;
         $this->serializer = $serializer;
+        $this->eventUpgrader = $eventUpgrader;
     }
 
     /**
      * @param string $streamId
-     * @param DomainEvent[] $domainEvents
+     * @param Event[] $events
      * @param int $expectedVersion
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $domainEvents, $expectedVersion = 0)
+    public function appendToStream($streamId, $events, $expectedVersion = 0)
     {
         $stmt = $this->connection
             ->prepare('SELECT COUNT(*) FROM streams WHERE id = :streamId');
@@ -65,12 +75,21 @@ class DoctrineEventStore implements EventStore
             throw new ConcurrencyException();
         }
 
-        foreach ($domainEvents as $domainEvent) {
-            $stmt = $this->connection
-                ->prepare('INSERT INTO events (stream_id, type, event) VALUES (:streamId, :type, :event)');
+        foreach ($events as $event) {
+            if ($event instanceof Versionable) {
+                $version = $event->version();
+            } else {
+                $version = Version::fromString('1.0');
+            }
+            $stmt = $this->connection->prepare(
+                'INSERT INTO events (stream_id, type, event, occurredOn, version)
+                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+            );
             $stmt->bindValue(':streamId', $streamId);
-            $stmt->bindValue(':type', get_class($domainEvent));
-            $stmt->bindValue(':event', $this->serializer->serialize($domainEvent, 'json'));
+            $stmt->bindValue(':type', get_class($event));
+            $stmt->bindValue(':event', $this->serializer->serialize($event, 'json'));
+            $stmt->bindValue(':occurredOn', $event->occurredOn()->format('Y-m-d H:i:s'));
+            $stmt->bindValue(':version', $version);
             $stmt->execute();
         }
     }
@@ -86,19 +105,31 @@ class DoctrineEventStore implements EventStore
         if (!isset($count)) {
             $count = self::MAX_UNSIGNED_BIG_INT;
         }
-        $stmt = $this->connection
-            ->prepare('SELECT type, event FROM events WHERE stream_id = :streamId LIMIT :limit OFFSET :offset');
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events
+             WHERE stream_id = :streamId
+             LIMIT :limit
+             OFFSET :offset'
+        );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':offset', (int) $start - 1, \PDO::PARAM_INT);
         $stmt->bindValue(':limit', $count, \PDO::PARAM_INT);
         $stmt->execute();
-        $serializedEvents = $stmt->fetchAll();
+        $results = $stmt->fetchAll();
 
-        $unserializedEvents = array_map(function($event) {
-            return $this->serializer->deserialize($event['event'], $event['type'], 'json');
-        }, $serializedEvents);
+        $storedEvents = array_map(function($result) {
+            return new StoredEvent(
+                $result['id'],
+                $result['stream_id'],
+                $result['type'],
+                $result['event'],
+                new \DateTimeImmutable($result['occurredOn']),
+                Version::fromString($result['version'])
+            );
+        }, $results);
 
-        return new EventStream($unserializedEvents);
+        return $this->domainEventStreamFromStoredEvents($storedEvents);
     }
 
     /**
@@ -107,17 +138,27 @@ class DoctrineEventStore implements EventStore
      */
     public function readFullStream($streamId)
     {
-        $stmt = $this->connection
-            ->prepare('SELECT type, event FROM events WHERE stream_id = :streamId');
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events
+             WHERE stream_id = :streamId'
+        );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
-        $serializedEvents = $stmt->fetchAll();
+        $results = $stmt->fetchAll();
 
-        $unserializedEvents = array_map(function($event) {
-            return $this->serializer->deserialize($event['event'], $event['type'], 'json');
-        }, $serializedEvents);
+        $storedEvents = array_map(function($result) {
+            return new StoredEvent(
+                $result['id'],
+                $result['stream_id'],
+                $result['type'],
+                $result['event'],
+                new \DateTimeImmutable($result['occurredOn']),
+                Version::fromString($result['version'])
+            );
+        }, $results);
 
-        return new EventStream($unserializedEvents);
+        return $this->domainEventStreamFromStoredEvents($storedEvents);
     }
 
     /**
@@ -167,5 +208,22 @@ class DoctrineEventStore implements EventStore
         $stmt->execute();
         $snapshot = $stmt->fetch();
         return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type'], 'json') : null;
+    }
+
+    /**
+     * @param StoredEvent[] $storedEvents
+     * @return EventStream
+     */
+    private function domainEventStreamFromStoredEvents($storedEvents)
+    {
+        $domainEvents = array_map(function (StoredEvent $storedEvent) {
+            $this->eventUpgrader->migrate($storedEvent);
+            return $this->serializer->deserialize(
+                $storedEvent->body(),
+                $storedEvent->name(),
+                'json'
+            );
+        }, $storedEvents);
+        return new EventStream($domainEvents);
     }
 }
