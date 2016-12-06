@@ -4,11 +4,12 @@ namespace EventSourcing\Common\Model;
 
 use Doctrine\DBAL\Connection;
 use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\Versionable;
 use JMS\Serializer\Serializer;
 
-class DoctrineEventStore implements EventStore
+class DoctrineEventStore implements EventStore, UpgradableEventStore
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
 
@@ -225,5 +226,70 @@ class DoctrineEventStore implements EventStore
             );
         }, $storedEvents);
         return new EventStream($domainEvents);
+    }
+
+    /**
+     * @param string $type
+     * @param Version $from
+     * @param Version $to
+     */
+    public function migrate($type, $from, $to)
+    {
+        $stream = $this->readStoredEventsOfTypeAndVersion($type, $from);
+
+        /** @var StoredEvent $storedEvent */
+        foreach ($stream as $storedEvent) {
+            $this->eventUpgrader->migrate($storedEvent, $to);
+            $this->saveStoredEvent($storedEvent);
+        }
+    }
+
+    /**
+     * @param string $type
+     * @param Version $version
+     * @return EventStream
+     */
+    private function readStoredEventsOfTypeAndVersion($type, $version)
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events
+             WHERE type = :type
+             AND version = :version'
+        );
+        $stmt->bindValue(':type', $type);
+        $stmt->bindValue(':version', $version);
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        $storedEvents = array_map(function($result) {
+            return new StoredEvent(
+                $result['id'],
+                $result['stream_id'],
+                $result['type'],
+                $result['event'],
+                new \DateTimeImmutable($result['occurredOn']),
+                Version::fromString($result['version'])
+            );
+        }, $results);
+
+        return new EventStream($storedEvents);
+    }
+
+    /**
+     * @param StoredEvent $storedEvent
+     */
+    private function saveStoredEvent(StoredEvent $storedEvent)
+    {
+        $stmt = $this->connection->prepare(
+            'UPDATE events
+             SET type = :type, event = :event, version = :version
+             WHERE id = :id'
+        );
+        $stmt->bindValue(':type', $storedEvent->name());
+        $stmt->bindValue(':event', $storedEvent->body());
+        $stmt->bindValue(':version', $storedEvent->version());
+        $stmt->bindValue(':id', $storedEvent->id());
+        $stmt->execute();
     }
 }

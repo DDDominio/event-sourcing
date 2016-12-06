@@ -393,7 +393,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':type', VersionedEvent::class);
-        $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':event', '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}');
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
@@ -425,7 +425,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':type', VersionedEvent::class);
-        $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':event', '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}');
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
@@ -439,5 +439,45 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->username());
+    }
+
+    /**
+     * @test
+     */
+    public function itShouldUpgradeEventsInEventStore()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, occurredOn, version)
+                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', Version::fromString('1.0'));
+        $stmt->execute();
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $eventStore->migrate(
+            VersionedEvent::class,
+            Version::fromString('1.0'),
+            Version::fromString('2.0')
+        );
+
+        $stream = $eventStore->readFullStream('streamId');
+        $this->assertCount(1, $stream);
+        $event = $stream->events()[0];
+        $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
+        $this->assertEquals('Name', $event->username());
+        $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
     }
 }
