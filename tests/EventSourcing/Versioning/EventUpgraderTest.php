@@ -5,8 +5,8 @@ namespace Tests\EventSourcing\Versioning;
 use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
-use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 use Tests\EventSourcing\Common\Model\TestData\NameChangedUpgrade10_20;
@@ -185,8 +185,8 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
     private function buildEventUpgrader()
     {
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $upgrader = new EventUpgrader($eventAdapter);
         $upgrader->registerUpgrade(new NameChangedUpgrade10_20($eventAdapter));
         $upgrader->registerUpgrade(new NameChangedUpgrade20_30($eventAdapter));

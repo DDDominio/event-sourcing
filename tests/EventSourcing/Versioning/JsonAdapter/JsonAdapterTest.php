@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\EventSourcing\Versioning\JsonAdapter;
+namespace Tests\EventSourcing\Versioning\JsonTransformer;
 
-use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
-use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 
-class JsonAdapterTest extends \PHPUnit_Framework_TestCase
+class JsonTransformerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
@@ -13,9 +13,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRemoveAKey()
     {
         $json = '{"a": 10, "b": "text"}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, 'a');
+        $modifiedJson = $jsonTransformer->removeKey($json, 'a');
 
         $this->assertEquals('{"b":"text"}', $modifiedJson);
     }
@@ -26,9 +26,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRemoveAnotherKey()
     {
         $json = '{"a": 10, "b": "text"}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, 'b');
+        $modifiedJson = $jsonTransformer->removeKey($json, 'b');
 
         $this->assertEquals('{"a":10}', $modifiedJson);
     }
@@ -39,9 +39,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function whenRemovingAKeyIfItDoesNotExistReturnCurrentJson()
     {
         $json = '{"a": 10, "b": "text"}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, 'c');
+        $modifiedJson = $jsonTransformer->removeKey($json, 'c');
 
         $this->assertEquals('{"a":10,"b":"text"}', $modifiedJson);
     }
@@ -52,9 +52,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function removeAKeyNotInRoot()
     {
         $json = '{"a": 10, "b": {"c": 4, "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, 'b.c');
+        $modifiedJson = $jsonTransformer->removeKey($json, 'b.c');
 
         $this->assertEquals('{"a":10,"b":{"d":"text"}}', $modifiedJson);
     }
@@ -65,9 +65,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function removeAnArrayKey()
     {
         $json = '[{"a": 10}, 5, "text"]';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, '[0]');
+        $modifiedJson = $jsonTransformer->removeKey($json, '[0]');
 
         $this->assertEquals('[5,"text"]', $modifiedJson);
     }
@@ -78,9 +78,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function removeAnotherArrayKey()
     {
         $json = '[{"a": 10}, 5, "text"]';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, '[1]');
+        $modifiedJson = $jsonTransformer->removeKey($json, '[1]');
 
         $this->assertEquals('[{"a":10},"text"]', $modifiedJson);
     }
@@ -91,9 +91,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function whenRemovingAnArrayKeyThatDoesNotExistReturnCurrentJson()
     {
         $json = '[{"a": 10}, 5, "text"]';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, '[5]');
+        $modifiedJson = $jsonTransformer->removeKey($json, '[5]');
 
         $this->assertEquals('[{"a":10},5,"text"]', $modifiedJson);
     }
@@ -104,9 +104,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function removeAnArrayKeyNotInRoot()
     {
         $json = '{"a": 10, "b": {"c": [1, 2, 3], "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, 'b.c[2]');
+        $modifiedJson = $jsonTransformer->removeKey($json, 'b.c[2]');
 
         $this->assertEquals('{"a":10,"b":{"c":[1,2],"d":"text"}}', $modifiedJson);
     }
@@ -117,9 +117,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function removeAnArrayKeyInAComplexJson()
     {
         $json = '{"a": 10, "b": {"c": [1, 2, {"object": [[0,{"key": "value"}], 2]}], "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->removeKey($json, 'b.c[2].object[0][1].key');
+        $modifiedJson = $jsonTransformer->removeKey($json, 'b.c[2].object[0][1].key');
 
         $this->assertEquals('{"a":10,"b":{"c":[1,2,{"object":[[0,{}],2]}],"d":"text"}}', $modifiedJson);
     }
@@ -130,9 +130,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldAddAKey()
     {
         $json = '{"a": 10, "b": "text"}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->addKey($json, 'c', 'test');
+        $modifiedJson = $jsonTransformer->addKey($json, 'c', 'test');
 
         $this->assertEquals('{"a":10,"b":"text","c":"test"}', $modifiedJson);
     }
@@ -143,9 +143,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldAddAnotherKey()
     {
         $json = '{"a": 10, "b": "text"}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->addKey($json, 'another', 'test');
+        $modifiedJson = $jsonTransformer->addKey($json, 'another', 'test');
 
         $this->assertEquals('{"a":10,"b":"text","another":"test"}', $modifiedJson);
     }
@@ -156,9 +156,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldAddAKeyNotInRoot()
     {
         $json = '{"a": 10, "b": {"c": 4, "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->addKey($json, 'b.new', 'test');
+        $modifiedJson = $jsonTransformer->addKey($json, 'b.new', 'test');
 
         $this->assertEquals('{"a":10,"b":{"c":4,"d":"text","new":"test"}}', $modifiedJson);
     }
@@ -169,9 +169,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldAddAKeyInAComplexJson()
     {
         $json = '{"a": 10, "b": {"c": [1, 2, {"object": [[0,{"key": "value"}], 2]}], "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->addKey($json, 'b.c[2].object[0][1].new', 'test');
+        $modifiedJson = $jsonTransformer->addKey($json, 'b.c[2].object[0][1].new', 'test');
 
         $this->assertEquals('{"a":10,"b":{"c":[1,2,{"object":[[0,{"key":"value","new":"test"}],2]}],"d":"text"}}', $modifiedJson);
     }
@@ -182,9 +182,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRenameAKey()
     {
         $json = '{"a": 10, "b": "text"}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->renameKey($json, 'a', 'c');
+        $modifiedJson = $jsonTransformer->renameKey($json, 'a', 'c');
 
         $this->assertEquals('{"b":"text","c":10}', $modifiedJson);
     }
@@ -195,9 +195,9 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRenameAKeyNotInRoot()
     {
         $json = '{"a": 10, "b": {"c": 4, "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->renameKey($json, 'b.c', 'new');
+        $modifiedJson = $jsonTransformer->renameKey($json, 'b.c', 'new');
 
         $this->assertEquals('{"a":10,"b":{"d":"text","new":4}}', $modifiedJson);
     }
@@ -208,18 +208,18 @@ class JsonAdapterTest extends \PHPUnit_Framework_TestCase
     public function renameAKeyInAComplexJson()
     {
         $json = '{"a": 10, "b": {"c": [1, 2, {"object": [[0,{"key": "value"}], 2]}], "d": "text"}}';
-        $jsonAdapter = $this->buildJsonAdapter();
+        $jsonTransformer = $this->buildJsonTransformer();
 
-        $modifiedJson = $jsonAdapter->renameKey($json, 'b.c[2].object[0][1].key', 'new');
+        $modifiedJson = $jsonTransformer->renameKey($json, 'b.c[2].object[0][1].key', 'new');
 
         $this->assertEquals('{"a":10,"b":{"c":[1,2,{"object":[[0,{"new":"value"}],2]}],"d":"text"}}', $modifiedJson);
     }
 
     /**
-     * @return JsonAdapter
+     * @return JsonTransformer
      */
-    private function buildJsonAdapter()
+    private function buildJsonTransformer()
     {
-        return new JsonAdapter(new TokenExtractor());
+        return new JsonTransformer(new TokenExtractor());
     }
 }

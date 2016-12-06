@@ -11,8 +11,8 @@ use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Common\Model\StoredEventStream;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
-use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
@@ -44,8 +44,8 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->serializer = SerializerBuilder::create()
             ->build();
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $this->eventUpgrader = new EventUpgrader($eventAdapter);
         $this->eventUpgrader->registerUpgrade(
             new VersionedEventUpgrade10_20($eventAdapter)
