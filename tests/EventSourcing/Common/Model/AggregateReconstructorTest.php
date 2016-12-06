@@ -130,4 +130,18 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNull($aggregate);
     }
+
+    /**
+     * @test
+     */
+    public function whenEvenStreamIsEmptyItShouldReturnNull()
+    {
+        $snapshotter = $this->createMock(Snapshotter::class);
+        $reconstructor = new AggregateReconstructor($snapshotter);
+        $eventStream = new EventStream([]);
+
+        $aggregate = $reconstructor->reconstitute(DummyEventSourcedAggregate::class, $eventStream);
+
+        $this->assertNull($aggregate);
+    }
 }
