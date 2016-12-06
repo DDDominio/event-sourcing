@@ -27,6 +27,10 @@ class AggregateReconstructor
     {
         $this->assertValidClass($class);
 
+        if (is_null($snapshot) && $eventStream->isEmpty()) {
+            return null;
+        }
+
         $events = $eventStream->events();
         $lastEvent = end($events);
         if ($lastEvent instanceof AggregateDeleter) {
