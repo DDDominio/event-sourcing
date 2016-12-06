@@ -408,4 +408,36 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->username());
     }
+
+    /**
+     * @test
+     */
+    public function whenReadingStreamEventsForwardItShouldUpgradeOldStoredEvents()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, occurredOn, version)
+                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', Version::fromString('1.0'));
+        $stmt->execute();
+        $eventStore = new DoctrineEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $stream = $eventStore->readStreamEventsForward('streamId');
+
+        $domainEvent = $stream->events()[0];
+        $this->assertEquals('Name', $domainEvent->username());
+    }
 }
