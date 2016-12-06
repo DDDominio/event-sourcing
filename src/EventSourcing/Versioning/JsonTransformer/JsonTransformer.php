@@ -1,8 +1,8 @@
 <?php
 
-namespace EventSourcing\Versioning\JsonAdapter;
+namespace EventSourcing\Versioning\JsonTransformer;
 
-class JsonAdapter
+class JsonTransformer
 {
     /**
      * @var TokenExtractor

@@ -4,8 +4,8 @@ namespace tests\EventSourcing\Versioning;
 
 use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Versioning\EventAdapter;
-use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
-use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
 
 class EventAdapterTest extends \PHPUnit_Framework_TestCase
@@ -16,8 +16,8 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRenameAnStoredEvent()
     {
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $storedEvent = new StoredEvent(
             'id',
             'streamId',
@@ -38,8 +38,8 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRenameAField()
     {
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $storedEvent = new StoredEvent(
             'id',
             'streamId',
@@ -60,8 +60,8 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldEnrichAnEvent()
     {
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $storedEvent = new StoredEvent(
             'id',
             'streamId',
@@ -84,8 +84,8 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldRemoveAField()
     {
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $storedEvent = new StoredEvent(
             'id',
             'streamId',
@@ -106,8 +106,8 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
     public function itShouldChangeAFieldValue()
     {
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $storedEvent = new StoredEvent(
             'id',
             'streamId',

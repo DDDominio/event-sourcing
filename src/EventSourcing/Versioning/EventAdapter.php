@@ -3,21 +3,21 @@
 namespace EventSourcing\Versioning;
 
 use EventSourcing\Common\Model\StoredEvent;
-use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 
 class EventAdapter
 {
     /**
-     * @var JsonAdapter
+     * @var JsonTransformer
      */
-    private $jsonAdapter;
+    private $jsonTransformer;
 
     /**
-     * @param JsonAdapter $jsonAdapter
+     * @param JsonTransformer $jsonTransformer
      */
-    public function __construct(JsonAdapter $jsonAdapter)
+    public function __construct(JsonTransformer $jsonTransformer)
     {
-        $this->jsonAdapter = $jsonAdapter;
+        $this->jsonTransformer = $jsonTransformer;
     }
 
     /**
@@ -27,7 +27,7 @@ class EventAdapter
      */
     public function renameField($storedEvent, $pathExpression, $newName)
     {
-        $body = $this->jsonAdapter->renameKey(
+        $body = $this->jsonTransformer->renameKey(
             $storedEvent->body(),
             $pathExpression,
             $newName
@@ -52,7 +52,7 @@ class EventAdapter
     public function enrich($storedEvent, $pathExpression, \Closure $closure)
     {
         $value = $closure->call($this, json_decode($storedEvent->body()));
-        $body = $this->jsonAdapter->addKey(
+        $body = $this->jsonTransformer->addKey(
             $storedEvent->body(),
             $pathExpression,
             $value
@@ -66,7 +66,7 @@ class EventAdapter
      */
     public function removeField($storedEvent, $pathExpression)
     {
-        $body = $this->jsonAdapter->removeKey(
+        $body = $this->jsonTransformer->removeKey(
             $storedEvent->body(),
             $pathExpression
         );
@@ -81,7 +81,7 @@ class EventAdapter
     public function changeValue($storedEvent, $pathExpression, \Closure $closure)
     {
         $value = $closure->call($this, json_decode($storedEvent->body()));
-        $body = $this->jsonAdapter->addKey(
+        $body = $this->jsonTransformer->addKey(
             $storedEvent->body(),
             $pathExpression,
             $value
