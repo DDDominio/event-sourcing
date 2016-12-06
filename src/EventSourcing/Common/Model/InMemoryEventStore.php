@@ -3,12 +3,13 @@
 namespace EventSourcing\Common\Model;
 
 use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\Versionable;
 use JMS\Serializer\Serializer;
 use Ramsey\Uuid\Uuid;
 
-class InMemoryEventStore implements EventStore
+class InMemoryEventStore implements EventStore, UpgradableEventStore
 {
     /**
      * @var StoredEventStream[]
@@ -217,5 +218,38 @@ class InMemoryEventStore implements EventStore
             );
         }, $storedEvents);
         return new EventStream($domainEvents);
+    }
+
+    /**
+     * @param string $type
+     * @param Version $from
+     * @param Version $to
+     */
+    public function migrate($type, $from, $to)
+    {
+        $stream = $this->readStoredEventsOfTypeAndVersion($type, $from);
+
+        foreach ($stream as $event) {
+            $this->eventUpgrader->migrate($event, $to);
+        }
+    }
+
+    /**
+     * @param string $type
+     * @param Version $version
+     * @return EventStream
+     */
+    private function readStoredEventsOfTypeAndVersion($type, $version)
+    {
+        $storedEvents = [];
+        foreach ($this->streams as $stream) {
+            /** @var StoredEvent $event */
+            foreach ($stream as $event) {
+                if ($event->name() === $type && $event->version()->equalTo($version)) {
+                    $storedEvents[] = $event;
+                }
+            }
+        }
+        return new EventStream($storedEvents);
     }
 }

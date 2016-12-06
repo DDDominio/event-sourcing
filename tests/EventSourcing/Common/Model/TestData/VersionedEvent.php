@@ -17,6 +17,8 @@ class VersionedEvent implements VersionableDomainEvent
 
     /**
      * @var \DateTimeImmutable
+     *
+     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
      */
     private $occurredOn;
 

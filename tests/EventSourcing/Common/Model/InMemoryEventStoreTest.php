@@ -402,6 +402,41 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @test
+     */
+    public function itShouldUpgradeEventsInEventStore()
+    {
+        $oldStoredEvent = new StoredEvent(
+            'id',
+            'streamId',
+            VersionedEvent::class,
+            '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}',
+            new \DateTimeImmutable('2016-12-04 17:35:35'),
+            Version::fromString('1.0')
+        );
+        $storedEventStream = new StoredEventStream('streamId', [$oldStoredEvent]);
+        $streams = [$storedEventStream->id() => $storedEventStream];
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            $streams
+        );
+
+        $eventStore->migrate(
+            VersionedEvent::class,
+            Version::fromString('1.0'),
+            Version::fromString('2.0')
+        );
+
+        $stream = $eventStore->readFullStream('streamId');
+        $this->assertCount(1, $stream);
+        $event = $stream->events()[0];
+        $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
+        $this->assertEquals('Name', $event->username());
+        $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
+    }
+
+    /**
      * @param DomainEvent[] $domainEvents
      * @return StoredEvent[]
      */
