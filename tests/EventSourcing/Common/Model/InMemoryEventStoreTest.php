@@ -43,6 +43,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $this->serializer = SerializerBuilder::create()
             ->build();
+
         $tokenExtractor = new TokenExtractor();
         $jsonAdapter = new JsonAdapter($tokenExtractor);
         $eventAdapter = new EventAdapter($jsonAdapter);

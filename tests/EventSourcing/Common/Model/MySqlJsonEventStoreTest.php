@@ -6,6 +6,10 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\MysqlJsonEventStore;
 use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Versioning\EventAdapter;
+use EventSourcing\Versioning\EventUpgrader;
+use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
+use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
@@ -13,6 +17,8 @@ use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
+use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
+use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
 
 class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,6 +36,11 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      * @var Serializer
      */
     private $serializer;
+
+    /**
+     * @var EventUpgrader
+     */
+    private $eventUpgrader;
 
     public function setUp()
     {
@@ -49,6 +60,14 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->serializer = SerializerBuilder::create()
             ->build();
+
+        $tokenExtractor = new TokenExtractor();
+        $jsonAdapter = new JsonAdapter($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonAdapter);
+        $this->eventUpgrader = new EventUpgrader($eventAdapter);
+        $this->eventUpgrader->registerUpgrade(
+            new VersionedEventUpgrade10_20($eventAdapter)
+        );
     }
 
     /**
@@ -58,7 +77,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
@@ -76,7 +96,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
@@ -96,7 +117,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [$domainEvent]);
 
@@ -111,7 +133,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
 
@@ -125,7 +148,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
         $eventStore->appendToStream('streamId', [$domainEvent]);
@@ -142,7 +166,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
 
         $stream = $eventStore->readFullStream('NonExistentStreamId');
@@ -170,7 +195,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->addSnapshot($snapshot);
         $eventStore->addSnapshot($lastSnapshot);
@@ -197,7 +223,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
 
         $eventStore->addSnapshot($snapshot);
@@ -216,7 +243,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name', new \DateTimeImmutable()),
@@ -241,7 +269,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name', new \DateTimeImmutable()),
@@ -265,7 +294,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
             new NameChanged('new name', new \DateTimeImmutable()),
@@ -294,7 +324,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         ];
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', $domainEvents);
         $eventStore->addSnapshot(
@@ -323,7 +354,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         ];
         $eventStore = new MysqlJsonEventStore(
             $this->connection,
-            $this->serializer
+            $this->serializer,
+            $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', $domainEvents);
         $eventStore->addSnapshot(
@@ -336,5 +368,69 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
+    }
+
+    /**
+     * @test
+     */
+    public function whenReadingFullStreamItShouldUpgradeOldStoredEvents()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', '1.0');
+        $stmt->execute();
+        $eventStore = new MysqlJsonEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $stream = $eventStore->readFullStream('streamId');
+
+        $domainEvent = $stream->events()[0];
+        $this->assertEquals('Name', $domainEvent->username());
+    }
+
+    /**
+     * @test
+     */
+    public function whenReadingStreamEventsForwardItShouldUpgradeOldStoredEvents()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', '1.0');
+        $stmt->execute();
+        $eventStore = new MysqlJsonEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $stream = $eventStore->readStreamEventsForward('streamId');
+
+        $domainEvent = $stream->events()[0];
+        $this->assertEquals('Name', $domainEvent->username());
     }
 }
