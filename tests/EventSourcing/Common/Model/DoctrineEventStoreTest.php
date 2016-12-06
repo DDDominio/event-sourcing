@@ -11,8 +11,8 @@ use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\JsonAdapter\JsonAdapter;
-use EventSourcing\Versioning\JsonAdapter\TokenExtractor;
+use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
@@ -66,8 +66,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
             ->build();
 
         $tokenExtractor = new TokenExtractor();
-        $jsonAdapter = new JsonAdapter($tokenExtractor);
-        $eventAdapter = new EventAdapter($jsonAdapter);
+        $jsonTransformer = new JsonTransformer($tokenExtractor);
+        $eventAdapter = new EventAdapter($jsonTransformer);
         $this->eventUpgrader = new EventUpgrader($eventAdapter);
         $this->eventUpgrader->registerUpgrade(
             new VersionedEventUpgrade10_20($eventAdapter)
