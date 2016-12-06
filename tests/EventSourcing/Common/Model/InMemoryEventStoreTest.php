@@ -350,7 +350,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function whenReadingAStreamItShouldUpgradeOldStoredEvents()
+    public function whenReadingFullStreamItShouldUpgradeOldStoredEvents()
     {
         $oldStoredEvent = new StoredEvent(
             'id',
@@ -369,6 +369,33 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         );
 
         $stream = $eventStore->readFullStream('streamId');
+
+        $domainEvent = $stream->events()[0];
+        $this->assertEquals('Name', $domainEvent->username());
+    }
+
+    /**
+     * @test
+     */
+    public function whenReadingStreamEventsForwardItShouldUpgradeOldStoredEvents()
+    {
+        $oldStoredEvent = new StoredEvent(
+            'id',
+            'streamId',
+            VersionedEvent::class,
+            '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}',
+            new \DateTimeImmutable('2016-12-04 17:35:35'),
+            Version::fromString('1.0')
+        );
+        $storedEventStream = new StoredEventStream('streamId', [$oldStoredEvent]);
+        $streams = [$storedEventStream->id() => $storedEventStream];
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            $streams
+        );
+
+        $stream = $eventStore->readStreamEventsForward('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->username());
