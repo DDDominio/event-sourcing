@@ -2,19 +2,19 @@
 
 namespace EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\EventSourcedAggregate;
+use EventSourcing\Common\Model\EventSourcedAggregateRoot;
 
 interface SnapshotTranslator
 {
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      * @return Snapshot
      */
     public function buildSnapshotFromAggregate($aggregate);
 
     /**
      * @param Snapshot $snapshot
-     * @return EventSourcedAggregate
+     * @return EventSourcedAggregateRoot
      */
     public function buildAggregateFromSnapshot($snapshot);
 }

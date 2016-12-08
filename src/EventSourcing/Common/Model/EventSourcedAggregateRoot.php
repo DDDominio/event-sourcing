@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Common\Model;
 
-trait EventSourcedAggregate
+trait EventSourcedAggregateRoot
 {
     /**
      * @var DomainEvent[]

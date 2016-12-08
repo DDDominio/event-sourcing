@@ -4,7 +4,7 @@ namespace Tests\EventSourcing\Common\Model;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\Model\AggregateReconstructor;
-use EventSourcing\Common\Model\EventSourcedAggregate;
+use EventSourcing\Common\Model\EventSourcedAggregateRoot;
 use EventSourcing\Common\Model\DomainEvent;
 use EventSourcing\Common\Model\EventStore;
 use EventSourcing\Common\Model\EventStream;
@@ -282,7 +282,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         if (isset($originalVersion)) {
             $methods[] = 'originalVersion';
         }
-        $aggregate = $this->getMockBuilder(EventSourcedAggregate::class)
+        $aggregate = $this->getMockBuilder(EventSourcedAggregateRoot::class)
             ->setMethods($methods)
             ->getMockForTrait();
         $aggregate
