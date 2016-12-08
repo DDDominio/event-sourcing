@@ -2,11 +2,11 @@
 
 namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventSourcing\Common\Model\EventSourcedAggregate;
+use EventSourcing\Common\Model\EventSourcedAggregateRoot;
 
 class DummyEventSourcedAggregate
 {
-    use EventSourcedAggregate;
+    use EventSourcedAggregateRoot;
 
     /**
      * @var string

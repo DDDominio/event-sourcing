@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\EventSourcedAggregate;
+use EventSourcing\Common\Model\EventSourcedAggregateRoot;
 
 abstract class ReflectionSnapshotTranslator implements SnapshotTranslator
 {
@@ -22,7 +22,7 @@ abstract class ReflectionSnapshotTranslator implements SnapshotTranslator
     protected abstract function aggregateToSnapshotPropertyDictionary();
 
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      * @return object
      */
     public function buildSnapshotFromAggregate($aggregate)

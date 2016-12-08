@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\EventSourcedAggregate;
+use EventSourcing\Common\Model\EventSourcedAggregateRoot;
 
 class Snapshotter
 {
@@ -18,7 +18,7 @@ class Snapshotter
     }
 
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      * @return Snapshot
      */
     public function takeSnapshot($aggregate)
@@ -28,7 +28,7 @@ class Snapshotter
 
     /**
      * @param Snapshot $snapshot
-     * @return EventSourcedAggregate
+     * @return EventSourcedAggregateRoot
      */
     public function translateSnapshot($snapshot)
     {

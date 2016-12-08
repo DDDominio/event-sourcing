@@ -37,7 +37,7 @@ abstract class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      */
     public function add($aggregate)
     {
@@ -49,7 +49,7 @@ abstract class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      */
     public function save($aggregate)
     {
@@ -63,7 +63,7 @@ abstract class EventSourcedAggregateRepository
 
     /**
      * @param string $id
-     * @return EventSourcedAggregate
+     * @return EventSourcedAggregateRoot
      */
     public function findById($id)
     {
@@ -88,7 +88,7 @@ abstract class EventSourcedAggregateRepository
     /**
      * @param string $id
      * @param int $version
-     * @return EventSourcedAggregate
+     * @return EventSourcedAggregateRoot
      */
     public function findByIdAndVersion($id, $version)
     {
@@ -119,7 +119,7 @@ abstract class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      * @return string
      */
     protected function streamIdFromAggregate($aggregate)
@@ -142,7 +142,7 @@ abstract class EventSourcedAggregateRepository
     protected abstract function aggregateClass();
 
     /**
-     * @param EventSourcedAggregate $aggregate
+     * @param EventSourcedAggregateRoot $aggregate
      * @return string
      */
     protected abstract function aggregateId($aggregate);
