@@ -6,7 +6,6 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\Model\DomainEvent;
 use EventSourcing\Common\Model\EventStream;
 use EventSourcing\Common\Model\InMemoryEventStore;
-use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Common\Model\StoredEvent;
 use EventSourcing\Common\Model\StoredEventStream;
 use EventSourcing\Versioning\EventAdapter;
@@ -17,9 +16,6 @@ use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
 use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
@@ -157,53 +153,6 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findLastSnapshotOfAStream()
-    {
-        $snapshot = $this->createMock(Snapshot::class);
-        $lastSnapshot = $this->createMock(Snapshot::class);
-        $lastSnapshot
-            ->method('aggregateClass')
-            ->willReturn('aggregateClass');
-        $lastSnapshot
-            ->method('aggregateId')
-            ->willReturn('aggregateId');
-        $eventStore = new InMemoryEventStore(
-            $this->serializer,
-            $this->eventUpgrader,
-            [],
-            ['aggregateClass' => ['aggregateId' => [$snapshot, $lastSnapshot]]]
-        );
-
-        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
-
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-        $this->assertEquals('aggregateClass', $retrievedSnapshot->aggregateClass());
-        $this->assertEquals('aggregateId', $retrievedSnapshot->aggregateId());
-    }
-
-    /**
-     * @test
-     */
-    public function addAnSnapshot()
-    {
-        $snapshot = $this->createMock(Snapshot::class);
-        $snapshot
-            ->method('aggregateClass')
-            ->willReturn('aggregateClass');
-        $snapshot
-            ->method('aggregateId')
-            ->willReturn('aggregateId');
-        $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
-
-        $eventStore->addSnapshot($snapshot);
-
-        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-    }
-
-    /**
-     * @test
-     */
     public function findStreamEventsForward()
     {
         $domainEvents = [
@@ -280,71 +229,6 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readStreamEventsForward('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
-    }
-
-    /**
-     * @test
-     */
-    public function findSnapshotForEventVersion()
-    {
-        $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
-        ];
-        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
-        $streams = ['streamId' => $storedEventStream];
-        $snapshots = [
-            DummyEventSourcedAggregate::class => ['id' => [
-                new DummySnapshot('id', 'new name', 'description', 2),
-                new DummySnapshot('id', 'another name', 'new description', 4),
-            ]]
-        ];
-        $eventStore = new InMemoryEventStore(
-            $this->serializer,
-            $this->eventUpgrader,
-            $streams, $snapshots
-        );
-
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
-
-        $this->assertEquals(2, $snapshot->version());
-    }
-
-    /**
-     * @test
-     */
-    public function findSnapshotForAnotherEventVersion()
-    {
-        $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
-        ];
-        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
-        $streams = ['streamId' => $storedEventStream];
-        $snapshots = [
-            DummyEventSourcedAggregate::class => ['id' => [
-                new DummySnapshot('id', 'new name', 'description', 2),
-                new DummySnapshot('id', 'another name', 'new description', 4),
-            ]]
-        ];
-        $eventStore = new InMemoryEventStore(
-            $this->serializer,
-            $this->eventUpgrader,
-            $streams,
-            $snapshots
-        );
-
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
-
-        $this->assertEquals(4, $snapshot->version());
     }
 
     /**

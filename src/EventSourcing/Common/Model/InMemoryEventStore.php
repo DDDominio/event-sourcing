@@ -17,11 +17,6 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
     private $streams;
 
     /**
-     * @var Snapshot[]
-     */
-    private $snapshots;
-
-    /**
      * @var Serializer
      */
     private $serializer;
@@ -35,17 +30,14 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
      * @param Serializer $serializer
      * @param EventUpgrader $eventUpgrader
      * @param StoredEventStream[] $streams
-     * @param array $snapshots
      */
     public function __construct(
         $serializer,
         $eventUpgrader,
-        array $streams = [],
-        array $snapshots = []
+        array $streams = []
     ) {
         $this->serializer = $serializer;
         $this->streams = $streams;
-        $this->snapshots = $snapshots;
         $this->eventUpgrader = $eventUpgrader;
     }
 
@@ -120,56 +112,6 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
             $filteredStoredEvents = array_splice($storedEvents, $start - 1);
         }
         return $this->domainEventStreamFromStoredEvents($filteredStoredEvents);
-    }
-
-    /**
-     * @param Snapshot $snapshot
-     */
-    public function addSnapshot($snapshot)
-    {
-        $this->snapshots[$snapshot->aggregateClass()][$snapshot->aggregateId()][] = $snapshot;
-    }
-
-    /**
-     * @param string $aggregateClass
-     * @param string $aggregateId
-     * @return Snapshot|null
-     */
-    public function findLastSnapshot($aggregateClass, $aggregateId)
-    {
-        if (!isset($this->snapshots[$aggregateClass][$aggregateId])) {
-            return null;
-        }
-
-        $snapshots = $this->snapshots[$aggregateClass][$aggregateId];
-
-        return end($snapshots);
-    }
-
-    /**
-     * @param string $aggregateClass
-     * @param string $aggregateId
-     * @param int $version
-     * @return Snapshot|null
-     */
-    public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version)
-    {
-        if (!isset($this->snapshots[$aggregateClass][$aggregateId])) {
-            return null;
-        }
-
-        /** @var Snapshot[] $snapshots */
-        $snapshots = $this->snapshots[$aggregateClass][$aggregateId];
-
-        $previousSnapshot = null;
-        foreach ($snapshots as $snapshot) {
-            if ($snapshot->version() < $version) {
-                $previousSnapshot = $snapshot;
-            } else {
-                break;
-            }
-        }
-        return $previousSnapshot;
     }
 
     /**
