@@ -36,7 +36,7 @@ class AggregateReconstructor
 
         $events = $eventStream->events();
         $lastEvent = end($events);
-        if ($lastEvent instanceof AggregateDeleter) {
+        if ($lastEvent instanceof AggregateDeleterDomainEvent) {
             return null;
         }
 

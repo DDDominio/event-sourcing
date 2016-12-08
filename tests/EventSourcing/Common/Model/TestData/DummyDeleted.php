@@ -2,10 +2,9 @@
 
 namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventSourcing\Common\Model\AggregateDeleter;
-use EventSourcing\Common\Model\DomainEvent;
+use EventSourcing\Common\Model\AggregateDeleterDomainEvent;
 
-class DummyDeleted implements DomainEvent, AggregateDeleter
+class DummyDeleted implements AggregateDeleterDomainEvent
 {
     /**
      * @var string
