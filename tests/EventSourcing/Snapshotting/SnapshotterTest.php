@@ -1,10 +1,10 @@
 <?php
 
-namespace tests\EventSourcing\Common\Model;
+namespace tests\EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\Snapshot;
-use EventSourcing\Common\Model\ReflectionSnapshotTranslator;
-use EventSourcing\Common\Model\Snapshotter;
+use EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
+use EventSourcing\Snapshotting\Snapshot;
+use EventSourcing\Snapshotting\Snapshotter;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 
 class SnapshotterTest extends \PHPUnit_Framework_TestCase

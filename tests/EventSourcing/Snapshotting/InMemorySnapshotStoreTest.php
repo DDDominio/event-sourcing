@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\EventSourcing\Common\Model;
+namespace tests\EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\InMemorySnapshotStore;
-use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Snapshotting\InMemorySnapshotStore;
+use EventSourcing\Snapshotting\Snapshot;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 
@@ -22,11 +22,11 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
         $lastSnapshot
             ->method('aggregateId')
             ->willReturn('aggregateId');
-        $eventStore = new InMemorySnapshotStore(
+        $snapshotStore = new InMemorySnapshotStore(
             ['aggregateClass' => ['aggregateId' => [$snapshot, $lastSnapshot]]]
         );
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
+        $retrievedSnapshot = $snapshotStore->findLastSnapshot('aggregateClass', 'aggregateId');
 
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
         $this->assertEquals('aggregateClass', $retrievedSnapshot->aggregateClass());
@@ -45,11 +45,11 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
         $snapshot
             ->method('aggregateId')
             ->willReturn('aggregateId');
-        $eventStore = new InMemorySnapshotStore();
+        $snapshotStore = new InMemorySnapshotStore();
 
-        $eventStore->addSnapshot($snapshot);
+        $snapshotStore->addSnapshot($snapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot('aggregateClass', 'aggregateId');
+        $retrievedSnapshot = $snapshotStore->findLastSnapshot('aggregateClass', 'aggregateId');
         $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
     }
 
@@ -64,9 +64,9 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
                 new DummySnapshot('id', 'another name', 'new description', 4),
             ]]
         ];
-        $eventStore = new InMemorySnapshotStore($snapshots);
+        $snapshotStore = new InMemorySnapshotStore($snapshots);
 
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
+        $snapshot = $snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
 
         $this->assertEquals(2, $snapshot->version());
     }
@@ -82,9 +82,9 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
                 new DummySnapshot('id', 'another name', 'new description', 4),
             ]]
         ];
-        $eventStore = new InMemorySnapshotStore($snapshots);
+        $snapshotStore = new InMemorySnapshotStore($snapshots);
 
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
+        $snapshot = $snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
     }

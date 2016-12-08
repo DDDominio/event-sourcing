@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\EventSourcing\Common\Model;
+namespace Tests\EventSourcing\Snapshotting;
 
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummyReflectionSnapshotTranslator;

@@ -2,6 +2,9 @@
 
 namespace EventSourcing\Common\Model;
 
+use EventSourcing\Snapshotting\Snapshot;
+use EventSourcing\Snapshotting\Snapshotter;
+
 class AggregateReconstructor
 {
     /**

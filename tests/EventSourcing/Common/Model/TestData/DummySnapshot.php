@@ -2,7 +2,7 @@
 
 namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\Annotation as Serializer;
 
 class DummySnapshot implements Snapshot

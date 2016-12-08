@@ -1,6 +1,8 @@
 <?php
 
-namespace EventSourcing\Common\Model;
+namespace EventSourcing\Snapshotting;
+
+use EventSourcing\Common\Model\EventSourcedAggregate;
 
 class Snapshotter
 {
