@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Common\Model;
+namespace EventSourcing\Snapshotting;
 
 use Doctrine\DBAL\Driver\Connection;
 use JMS\Serializer\Serializer;

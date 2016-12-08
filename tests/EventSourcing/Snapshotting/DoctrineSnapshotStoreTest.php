@@ -1,13 +1,13 @@
 <?php
 
-namespace tests\EventSourcing\Common\Model;
+namespace Tests\EventSourcing\Snapshotting;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DriverManager;
-use EventSourcing\Common\Model\DoctrineSnapshotStore;
-use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Snapshotting\DoctrineSnapshotStore;
+use EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
@@ -28,7 +28,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $connectionParams = array(
-            'path' => __DIR__ . '/../../../test.db',
+            'path' => __DIR__ . '/../../test.db',
             'host' => 'localhost',
             'driver' => 'pdo_sqlite',
         );
