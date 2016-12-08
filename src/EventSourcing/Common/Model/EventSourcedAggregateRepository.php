@@ -10,17 +10,27 @@ abstract class EventSourcedAggregateRepository
     private $eventStore;
 
     /**
+     * @var SnapshotStore
+     */
+    private $snapshotStore;
+
+    /**
      * @var AggregateReconstructor
      */
     private $aggregateReconstructor;
 
     /**
      * @param EventStore $eventStore
+     * @param $snapshotStore
      * @param AggregateReconstructor $aggregateReconstructor
      */
-    public function __construct($eventStore, $aggregateReconstructor)
-    {
+    public function __construct(
+        EventStore $eventStore,
+        SnapshotStore $snapshotStore,
+        $aggregateReconstructor
+    ) {
         $this->eventStore = $eventStore;
+        $this->snapshotStore = $snapshotStore;
         $this->aggregateReconstructor = $aggregateReconstructor;
     }
 
@@ -55,7 +65,7 @@ abstract class EventSourcedAggregateRepository
      */
     public function findById($id)
     {
-        $snapshot = $this->eventStore
+        $snapshot = $this->snapshotStore
             ->findLastSnapshot($this->aggregateClass(), $id);
 
         $streamId = $this->streamIdFromAggregateId($id);
@@ -80,7 +90,7 @@ abstract class EventSourcedAggregateRepository
      */
     public function findByIdAndVersion($id, $version)
     {
-        $snapshot = $this->eventStore
+        $snapshot = $this->snapshotStore
             ->findNearestSnapshotToVersion($this->aggregateClass(), $id, $version);
 
         $streamId = $this->streamIdFromAggregateId($id);
