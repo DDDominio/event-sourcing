@@ -4,8 +4,8 @@ namespace tests\EventSourcing\Snapshotting;
 
 use EventSourcing\Snapshotting\InMemorySnapshotStore;
 use EventSourcing\Snapshotting\Snapshot;
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
+use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\TestData\DummySnapshot;
 
 class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {

@@ -5,7 +5,7 @@ namespace tests\EventSourcing\Snapshotting;
 use EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
 use EventSourcing\Snapshotting\Snapshot;
 use EventSourcing\Snapshotting\Snapshotter;
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
 
 class SnapshotterTest extends \PHPUnit_Framework_TestCase
 {
