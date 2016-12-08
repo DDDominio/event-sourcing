@@ -4,8 +4,8 @@ namespace Tests\EventSourcing\Common\Model;
 
 use EventSourcing\Common\Model\AggregateReconstructor;
 use EventSourcing\Common\Model\EventStream;
-use EventSourcing\Common\Model\Snapshot;
-use EventSourcing\Common\Model\Snapshotter;
+use EventSourcing\Snapshotting\Snapshot;
+use EventSourcing\Snapshotting\Snapshotter;
 use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
 use Tests\EventSourcing\Common\Model\TestData\DummyDeleted;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;

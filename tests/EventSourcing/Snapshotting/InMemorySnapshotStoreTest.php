@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\EventSourcing\Common\Model;
+namespace tests\EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\InMemorySnapshotStore;
-use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Snapshotting\InMemorySnapshotStore;
+use EventSourcing\Snapshotting\Snapshot;
 use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 

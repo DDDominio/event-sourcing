@@ -2,7 +2,7 @@
 
 namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Snapshotting\Snapshot;
 
 class DummySnapshot implements Snapshot
 {

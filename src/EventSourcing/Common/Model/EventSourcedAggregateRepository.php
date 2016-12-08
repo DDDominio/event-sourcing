@@ -2,6 +2,8 @@
 
 namespace EventSourcing\Common\Model;
 
+use EventSourcing\Snapshotting\SnapshotStore;
+
 abstract class EventSourcedAggregateRepository
 {
     /**

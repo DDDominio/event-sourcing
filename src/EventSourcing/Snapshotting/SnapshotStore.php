@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Common\Model;
+namespace EventSourcing\Snapshotting;
 
 interface SnapshotStore
 {

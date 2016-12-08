@@ -2,7 +2,7 @@
 
 namespace Tests\EventSourcing\Common\Model\TestData;
 
-use EventSourcing\Common\Model\ReflectionSnapshotTranslator;
+use EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
 
 class DummyReflectionSnapshotTranslator extends ReflectionSnapshotTranslator
 {
