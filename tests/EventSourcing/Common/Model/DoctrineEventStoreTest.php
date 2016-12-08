@@ -8,7 +8,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use EventSourcing\Common\Model\DoctrineEventStore;
 use EventSourcing\Common\Model\EventStream;
-use EventSourcing\Common\Model\Snapshot;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -17,9 +16,6 @@ use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\Model\TestData\NameChanged;
 use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
 use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
@@ -54,7 +50,6 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->connection = DriverManager::getConnection($connectionParams, $config);
 
         $this->connection->query('TRUNCATE events')->execute();
-        $this->connection->query('TRUNCATE snapshots')->execute();
         $this->connection->query('DELETE FROM streams')->execute();
 
         AnnotationRegistry::registerAutoloadNamespace(
@@ -183,70 +178,6 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findLastSnapshotOfAStream()
-    {
-        $snapshot = new DummySnapshot(
-            'id',
-            'name',
-            'description',
-            3
-        );
-        $lastSnapshot = new DummySnapshot(
-            'id',
-            'name',
-            'description',
-            10
-        );
-        $eventStore = new DoctrineEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->addSnapshot($snapshot);
-        $eventStore->addSnapshot($lastSnapshot);
-
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
-            DummyEventSourcedAggregate::class,
-            'id'
-        );
-
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-        $this->assertEquals(10, $retrievedSnapshot->version());
-    }
-
-    /**
-     * @test
-     */
-    public function addAnSnapshot()
-    {
-        $snapshot = new DummySnapshot(
-            'id',
-            'name',
-            'description',
-            3
-        );
-        $eventStore = new DoctrineEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-
-        $eventStore->addSnapshot($snapshot);
-
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
-            DummyEventSourcedAggregate::class,
-            'id'
-        );
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-        $this->assertEquals('id', $retrievedSnapshot->id());
-        $this->assertEquals('name', $retrievedSnapshot->name());
-        $this->assertEquals('description', $retrievedSnapshot->description());
-        $this->assertEquals(3, $retrievedSnapshot->version());
-    }
-
-    /**
-     * @test
-     */
     public function findStreamEventsForward()
     {
         $eventStore = new DoctrineEventStore(
@@ -315,66 +246,6 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readStreamEventsForward('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
-    }
-
-    /**
-     * @test
-     */
-    public function findSnapshotForEventVersion()
-    {
-        $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
-        ];
-        $eventStore = new DoctrineEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', $domainEvents);
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'new name', 'description', 2)
-        );
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'another name', 'new description', 4)
-        );
-
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
-
-        $this->assertEquals(2, $snapshot->version());
-    }
-
-    /**
-     * @test
-     */
-    public function findSnapshotForAnotherEventVersion()
-    {
-        $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
-        ];
-        $eventStore = new DoctrineEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', $domainEvents);
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'new name', 'description', 2)
-        );
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'another name', 'new description', 4)
-        );
-
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
-
-        $this->assertEquals(4, $snapshot->version());
     }
 
     /**
