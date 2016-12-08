@@ -40,16 +40,14 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $connectionParams = array(
-            'dbname' => 'event_sourcing',
-            'user' => 'event_sourcing',
-            'password' => 'event_sourcing123',
+            'path' => __DIR__ . '/../../../test.db',
             'host' => 'localhost',
-            'driver' => 'pdo_mysql',
+            'driver' => 'pdo_sqlite',
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
 
-        $this->connection->query('TRUNCATE events')->execute();
+        $this->connection->query('DELETE FROM events')->execute();
         $this->connection->query('DELETE FROM streams')->execute();
 
         AnnotationRegistry::registerAutoloadNamespace(
@@ -259,7 +257,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurredOn, version)
+            'INSERT INTO events (stream_id, type, event, occurred_on, version)
                  VALUES (:streamId, :type, :event, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);
@@ -291,7 +289,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurredOn, version)
+            'INSERT INTO events (stream_id, type, event, occurred_on, version)
                  VALUES (:streamId, :type, :event, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);
@@ -323,7 +321,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurredOn, version)
+            'INSERT INTO events (stream_id, type, event, occurred_on, version)
                  VALUES (:streamId, :type, :event, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);

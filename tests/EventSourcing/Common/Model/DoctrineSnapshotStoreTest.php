@@ -28,16 +28,14 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $connectionParams = array(
-            'dbname' => 'event_sourcing',
-            'user' => 'event_sourcing',
-            'password' => 'event_sourcing123',
+            'path' => __DIR__ . '/../../../test.db',
             'host' => 'localhost',
-            'driver' => 'pdo_mysql',
+            'driver' => 'pdo_sqlite',
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
 
-        $this->connection->query('TRUNCATE snapshots')->execute();
+        $this->connection->query('DELETE FROM snapshots')->execute();
 
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation',

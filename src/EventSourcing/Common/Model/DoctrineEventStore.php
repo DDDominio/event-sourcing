@@ -83,7 +83,7 @@ class DoctrineEventStore implements EventStore, UpgradableEventStore
                 $version = Version::fromString('1.0');
             }
             $stmt = $this->connection->prepare(
-                'INSERT INTO events (stream_id, type, event, occurredOn, version)
+                'INSERT INTO events (stream_id, type, event, occurred_on, version)
                  VALUES (:streamId, :type, :event, :occurredOn, :version)'
             );
             $stmt->bindValue(':streamId', $streamId);
@@ -125,7 +125,7 @@ class DoctrineEventStore implements EventStore, UpgradableEventStore
                 $result['stream_id'],
                 $result['type'],
                 $result['event'],
-                new \DateTimeImmutable($result['occurredOn']),
+                new \DateTimeImmutable($result['occurred_on']),
                 Version::fromString($result['version'])
             );
         }, $results);
@@ -154,7 +154,7 @@ class DoctrineEventStore implements EventStore, UpgradableEventStore
                 $result['stream_id'],
                 $result['type'],
                 $result['event'],
-                new \DateTimeImmutable($result['occurredOn']),
+                new \DateTimeImmutable($result['occurred_on']),
                 Version::fromString($result['version'])
             );
         }, $results);
@@ -219,7 +219,7 @@ class DoctrineEventStore implements EventStore, UpgradableEventStore
                 $result['stream_id'],
                 $result['type'],
                 $result['event'],
-                new \DateTimeImmutable($result['occurredOn']),
+                new \DateTimeImmutable($result['occurred_on']),
                 Version::fromString($result['version'])
             );
         }, $results);
