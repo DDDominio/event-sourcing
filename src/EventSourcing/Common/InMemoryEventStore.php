@@ -2,6 +2,7 @@
 
 namespace EventSourcing\Common;
 
+use Common\Event;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;

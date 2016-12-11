@@ -2,6 +2,7 @@
 
 namespace EventSourcing\Common;
 
+use Common\Event;
 use Traversable;
 
 class EventStream implements \IteratorAggregate

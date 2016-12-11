@@ -2,6 +2,7 @@
 
 namespace EventSourcing\Common;
 
+use Common\Event;
 use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\Versionable;
 
