@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\EventSourcing\Common\Model;
+namespace Tests\EventSourcing\Common;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
-use EventSourcing\Common\Model\DoctrineEventStore;
-use EventSourcing\Common\Model\EventStream;
+use EventSourcing\Common\DoctrineEventStore;
+use EventSourcing\Common\EventStream;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -15,10 +15,10 @@ use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\Model\TestData\NameChanged;
-use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
-use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
+use Tests\EventSourcing\Common\TestData\DescriptionChanged;
+use Tests\EventSourcing\Common\TestData\NameChanged;
+use Tests\EventSourcing\Common\TestData\VersionedEvent;
+use Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -40,7 +40,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $connectionParams = array(
-            'path' => __DIR__ . '/../../../test.db',
+            'path' => __DIR__ . '/../../test.db',
             'host' => 'localhost',
             'driver' => 'pdo_sqlite',
         );
@@ -52,7 +52,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation',
-            __DIR__ . '/../../../../vendor/jms/serializer/src'
+            __DIR__ . '/../../../vendor/jms/serializer/src'
         );
 
         $this->serializer = SerializerBuilder::create()
@@ -107,7 +107,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \EventSourcing\Common\Model\ConcurrencyException
+     * @expectedException \EventSourcing\Common\ConcurrencyException
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
@@ -124,7 +124,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \EventSourcing\Common\Model\EventStreamDoesNotExistException
+     * @expectedException \EventSourcing\Common\EventStreamDoesNotExistException
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {

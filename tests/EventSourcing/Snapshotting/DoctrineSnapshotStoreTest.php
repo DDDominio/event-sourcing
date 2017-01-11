@@ -10,8 +10,8 @@ use EventSourcing\Snapshotting\DoctrineSnapshotStore;
 use EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
+use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\TestData\DummySnapshot;
 
 class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {

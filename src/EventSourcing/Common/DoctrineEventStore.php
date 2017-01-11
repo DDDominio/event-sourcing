@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Common\Model;
+namespace EventSourcing\Common;
 
 use Doctrine\DBAL\Connection;
 use EventSourcing\Versioning\EventUpgrader;
