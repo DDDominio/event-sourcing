@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Versioning;
 
-use EventSourcing\Common\Model\StoredEvent;
+use EventSourcing\Common\StoredEvent;
 
 class EventUpgrader
 {

@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\EventSourcedAggregateRoot;
+use EventSourcing\Common\EventSourcedAggregateRoot;
 
 interface SnapshotTranslator
 {

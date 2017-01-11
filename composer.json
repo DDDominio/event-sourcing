@@ -10,8 +10,15 @@
       "email": "santaka87@gmail.com"
     }
   ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/DDDominio/common"
+    }
+  ],
   "require": {
     "php": "^5.6 || ^7.0",
+    "dddominio/common": "dev-master",
     "doctrine/annotations": "^1.3",
     "doctrine/dbal": "^2.5",
     "jms/serializer": "dev-master",

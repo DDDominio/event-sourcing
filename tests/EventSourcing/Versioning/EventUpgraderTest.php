@@ -2,15 +2,15 @@
 
 namespace Tests\EventSourcing\Versioning;
 
-use EventSourcing\Common\Model\StoredEvent;
+use EventSourcing\Common\StoredEvent;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
-use Tests\EventSourcing\Common\Model\TestData\NameChanged;
-use Tests\EventSourcing\Common\Model\TestData\NameChangedUpgrade10_20;
-use Tests\EventSourcing\Common\Model\TestData\NameChangedUpgrade20_30;
+use Tests\EventSourcing\Common\TestData\NameChanged;
+use Tests\EventSourcing\Common\TestData\NameChangedUpgrade10_20;
+use Tests\EventSourcing\Common\TestData\NameChangedUpgrade20_30;
 
 class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 {

@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Versioning;
 
-use EventSourcing\Common\Model\DomainEvent;
+use EventSourcing\Common\DomainEvent;
 
 interface VersionableDomainEvent extends DomainEvent, Versionable
 {

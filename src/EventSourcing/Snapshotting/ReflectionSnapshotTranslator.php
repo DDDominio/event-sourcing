@@ -2,7 +2,7 @@
 
 namespace EventSourcing\Snapshotting;
 
-use EventSourcing\Common\Model\EventSourcedAggregateRoot;
+use EventSourcing\Common\EventSourcedAggregateRoot;
 
 abstract class ReflectionSnapshotTranslator implements SnapshotTranslator
 {
