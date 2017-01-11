@@ -2,7 +2,7 @@
 
 namespace tests\EventSourcing\Versioning;
 
-use EventSourcing\Common\Model\StoredEvent;
+use EventSourcing\Common\StoredEvent;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
