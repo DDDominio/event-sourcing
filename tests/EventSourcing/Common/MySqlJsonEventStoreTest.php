@@ -1,24 +1,24 @@
 <?php
 
-namespace tests\EventSourcing\Common\Model;
+namespace tests\EventSourcing\Common;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use EventSourcing\Common\Model\EventStream;
-use EventSourcing\Common\Model\MysqlJsonEventStore;
-use EventSourcing\Common\Model\Snapshot;
+use EventSourcing\Common\EventStream;
+use EventSourcing\Common\MysqlJsonEventStore;
+use EventSourcing\Snapshotting\Snapshot;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\Model\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\Model\TestData\DummyCreated;
-use Tests\EventSourcing\Common\Model\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\Model\TestData\DummySnapshot;
-use Tests\EventSourcing\Common\Model\TestData\NameChanged;
-use Tests\EventSourcing\Common\Model\TestData\VersionedEvent;
-use Tests\EventSourcing\Common\Model\TestData\VersionedEventUpgrade10_20;
+use Tests\EventSourcing\Common\TestData\DescriptionChanged;
+use Tests\EventSourcing\Common\TestData\DummyCreated;
+use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use Tests\EventSourcing\Common\TestData\DummySnapshot;
+use Tests\EventSourcing\Common\TestData\NameChanged;
+use Tests\EventSourcing\Common\TestData\VersionedEvent;
+use Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
 
 class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -110,7 +110,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \EventSourcing\Common\Model\ConcurrencyException
+     * @expectedException \EventSourcing\Common\ConcurrencyException
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
@@ -127,7 +127,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \EventSourcing\Common\Model\EventStreamDoesNotExistException
+     * @expectedException \EventSourcing\Common\EventStreamDoesNotExistException
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Common\Model;
+namespace EventSourcing\Common;
 
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\Version;
