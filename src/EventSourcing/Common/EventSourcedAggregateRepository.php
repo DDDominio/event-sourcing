@@ -122,9 +122,9 @@ abstract class EventSourcedAggregateRepository
      * @param EventSourcedAggregateRoot $aggregate
      * @return string
      */
-    protected function streamIdFromAggregate($aggregate)
+    private function streamIdFromAggregate($aggregate)
     {
-        return $this->aggregateClass() . '-' . $this->aggregateId($aggregate);
+        return $this->streamIdFromAggregateId($this->aggregateId($aggregate));
     }
 
     /**
