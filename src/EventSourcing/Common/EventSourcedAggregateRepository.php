@@ -45,7 +45,7 @@ abstract class EventSourcedAggregateRepository
             $this->streamIdFromAggregate($aggregate),
             $aggregate->changes()
         );
-        $aggregate->commitChanges();
+        $aggregate->clearChanges();
     }
 
     /**
@@ -58,7 +58,7 @@ abstract class EventSourcedAggregateRepository
             $aggregate->changes(),
             $aggregate->originalVersion()
         );
-        $aggregate->commitChanges();
+        $aggregate->clearChanges();
     }
 
     /**

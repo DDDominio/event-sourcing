@@ -245,7 +245,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $aggregate->changeName('name');
 
-        $aggregate->commitChanges();
+        $aggregate->clearChanges();
 
         $this->assertCount(0, $aggregate->changes());
     }
