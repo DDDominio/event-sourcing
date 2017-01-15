@@ -22,6 +22,8 @@ use Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
+    const TEST_DB_PATH = __DIR__ . '/../test.db';
+
     /**
      * @var Connection
      */
@@ -37,18 +39,22 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     private $eventUpgrader;
 
+    /**
+     * {@inheritdoc}
+     */
     public function setUp()
     {
+        touch(self::TEST_DB_PATH);
         $connectionParams = array(
-            'path' => __DIR__ . '/../../test.db',
+            'path' => self::TEST_DB_PATH,
             'host' => 'localhost',
             'driver' => 'pdo_sqlite',
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
-
-        $this->connection->query('DELETE FROM events')->execute();
-        $this->connection->query('DELETE FROM streams')->execute();
+        $this->connection->exec(
+            file_get_contents(__DIR__ . '/../dbal_event_store_schema.sql')
+        );
 
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation',
@@ -65,6 +71,16 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->eventUpgrader->registerUpgrade(
             new VersionedEventUpgrade10_20($eventAdapter)
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function tearDown()
+    {
+        if (file_exists(self::TEST_DB_PATH)) {
+            unlink(self::TEST_DB_PATH);
+        }
     }
 
     /**
