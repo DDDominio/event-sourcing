@@ -6,9 +6,10 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DriverManager;
+use EventSourcing\Serialization\JsonSerializer;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Snapshotting\DoctrineSnapshotStore;
 use EventSourcing\Snapshotting\Snapshot;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\TestData\DummySnapshot;
@@ -48,8 +49,9 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'JMS\Serializer\Annotation',
             __DIR__ . '/../../../../vendor/jms/serializer/src'
         );
-        $this->serializer = SerializerBuilder::create()
-            ->build();
+        $this->serializer = new JsonSerializer(
+            SerializerBuilder::create()->build()
+        );
     }
 
     /**

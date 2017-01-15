@@ -2,9 +2,9 @@
 
 namespace EventSourcing\Common;
 
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\Version;
-use JMS\Serializer\Serializer;
 
 class InMemoryEventStore extends AbstractEventStore
 {

@@ -3,7 +3,7 @@
 namespace EventSourcing\Snapshotting;
 
 use Doctrine\DBAL\Driver\Connection;
-use JMS\Serializer\Serializer;
+use EventSourcing\Serialization\Serializer;
 
 class DoctrineSnapshotStore implements SnapshotStore
 {

@@ -3,11 +3,11 @@
 namespace EventSourcing\Common;
 
 use Common\Event;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;
 use EventSourcing\Versioning\Versionable;
-use JMS\Serializer\Serializer;
 use Ramsey\Uuid\Uuid;
 
 abstract class AbstractEventStore implements EventStore, UpgradableEventStore
@@ -65,8 +65,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
             $this->eventUpgrader->migrate($storedEvent);
             return $this->serializer->deserialize(
                 $storedEvent->body(),
-                $storedEvent->name(),
-                'json'
+                $storedEvent->name()
             );
         }, $storedEvents);
         return new EventStream($domainEvents);
@@ -113,7 +112,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                 $this->nextStoredEventId(),
                 $streamId,
                 get_class($event),
-                $this->serializer->serialize($event, 'json'),
+                $this->serializer->serialize($event),
                 $event->occurredOn(),
                 $version
             );

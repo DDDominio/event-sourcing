@@ -3,9 +3,9 @@
 namespace EventSourcing\Common;
 
 use Doctrine\DBAL\Connection;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\Version;
-use JMS\Serializer\Serializer;
 
 class DoctrineEventStore extends AbstractEventStore
 {

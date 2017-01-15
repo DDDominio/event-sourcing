@@ -8,12 +8,13 @@ use EventSourcing\Common\EventStream;
 use EventSourcing\Common\InMemoryEventStore;
 use EventSourcing\Common\StoredEvent;
 use EventSourcing\Common\StoredEventStream;
+use EventSourcing\Serialization\JsonSerializer;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\TestData\DescriptionChanged;
 use Tests\EventSourcing\Common\TestData\NameChanged;
@@ -37,8 +38,9 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation', __DIR__ . '/../../../vendor/jms/serializer/src'
         );
-        $this->serializer = SerializerBuilder::create()
-            ->build();
+        $this->serializer = new JsonSerializer(
+            SerializerBuilder::create()->build()
+        );
         $tokenExtractor = new TokenExtractor();
         $jsonTransformer = new JsonTransformer($tokenExtractor);
         $eventAdapter = new EventAdapter($jsonTransformer);
