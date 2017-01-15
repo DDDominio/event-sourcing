@@ -240,14 +240,13 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function pullingAggregateChangesWillClearChanges()
+    public function commitAggregateChangesWillClearChanges()
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $aggregate->changeName('name');
 
-        $changes = $aggregate->pullChanges();
+        $aggregate->clearChanges();
 
-        $this->assertCount(2, $changes);
         $this->assertCount(0, $aggregate->changes());
     }
 

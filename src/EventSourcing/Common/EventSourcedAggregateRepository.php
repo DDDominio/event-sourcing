@@ -43,8 +43,9 @@ abstract class EventSourcedAggregateRepository
     {
         $this->eventStore->appendToStream(
             $this->streamIdFromAggregate($aggregate),
-            $aggregate->pullChanges()
+            $aggregate->changes()
         );
+        $aggregate->clearChanges();
     }
 
     /**
@@ -54,9 +55,10 @@ abstract class EventSourcedAggregateRepository
     {
         $this->eventStore->appendToStream(
             $this->streamIdFromAggregate($aggregate),
-            $aggregate->pullChanges(),
+            $aggregate->changes(),
             $aggregate->originalVersion()
         );
+        $aggregate->clearChanges();
     }
 
     /**
