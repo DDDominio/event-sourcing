@@ -277,7 +277,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     ) {
         $methods = ['id'];
         if (isset($changes)) {
-            $methods[] = 'changes';
+            $methods[] = 'pullChanges';
         }
         if (isset($originalVersion)) {
             $methods[] = 'originalVersion';
@@ -291,7 +291,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         if (isset($changes)) {
             $aggregate
                 ->expects($this->once())
-                ->method('changes')
+                ->method('pullChanges')
                 ->willReturn($changes);
         }
         if (isset($originalVersion)) {

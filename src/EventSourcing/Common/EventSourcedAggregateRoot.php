@@ -114,8 +114,13 @@ trait EventSourcedAggregateRoot
         return $this->version - count($this->changes());
     }
 
-    public function clearChanges()
+    /**
+     * @return array
+     */
+    public function pullChanges()
     {
+        $changes = $this->changes;
         $this->changes = [];
+        return $changes;
     }
 }
