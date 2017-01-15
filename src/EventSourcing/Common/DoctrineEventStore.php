@@ -129,9 +129,9 @@ class DoctrineEventStore extends AbstractEventStore
     /**
      * @param string $streamId
      * @param StoredEvent[] $storedEvents
-     * @param int|null $expectedVersion
+     * @param int $expectedVersion
      */
-    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion = null)
+    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion)
     {
         $this->connection->transactional(function() use ($streamId, $storedEvents, $expectedVersion) {
             if (!$this->streamExists($streamId)) {

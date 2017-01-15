@@ -41,7 +41,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $events, $expectedVersion = null)
+    public function appendToStream($streamId, $events, $expectedVersion = 0)
     {
         if ($this->streamExists($streamId)) {
             $this->assertOptimisticConcurrency($streamId, $expectedVersion);
@@ -84,12 +84,12 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     }
 
     /**
-     * @param $expectedVersion
+     * @param int $expectedVersion
      * @throws EventStreamDoesNotExistException
      */
     private function assertEventStreamExistence($expectedVersion)
     {
-        if (isset($expectedVersion)) {
+        if ($expectedVersion > 0) {
             throw new EventStreamDoesNotExistException();
         }
     }
@@ -145,9 +145,9 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     /**
      * @param string $streamId
      * @param StoredEvent[] $storedEvents
-     * @param int|null $expectedVersion
+     * @param int $expectedVersion
      */
-    protected abstract function appendStoredEvents($streamId, $storedEvents, $expectedVersion = null);
+    protected abstract function appendStoredEvents($streamId, $storedEvents, $expectedVersion);
 
     /**
      * @param string $streamId

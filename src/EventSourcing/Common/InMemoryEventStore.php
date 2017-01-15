@@ -30,9 +30,9 @@ class InMemoryEventStore extends AbstractEventStore
     /**
      * @param string $streamId
      * @param StoredEvent[] $storedEvents
-     * @param int|null $expectedVersion
+     * @param int $expectedVersion
      */
-    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion = null)
+    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion)
     {
         if ($this->streamExists($streamId)) {
             $this->streams[$streamId] = $this->streams[$streamId]->append($storedEvents);
