@@ -134,25 +134,30 @@ class DoctrineEventStore extends AbstractEventStore implements EventStore, Upgra
      */
     protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion = null)
     {
-        if (!$this->streamExists($streamId)) {
-            $stmt = $this->connection
-                ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
-            $stmt->bindValue(':streamId', $streamId);
-            $stmt->execute();
-        }
-
-        foreach ($storedEvents as $storedEvent) {
-            $stmt = $this->connection->prepare(
-                'INSERT INTO events (stream_id, type, event, occurred_on, version)
+        $this->connection->transactional(function() use ($streamId, $storedEvents, $expectedVersion) {
+            if (!$this->streamExists($streamId)) {
+                $stmt = $this->connection
+                    ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+                $stmt->bindValue(':streamId', $streamId);
+                $stmt->execute();
+            }
+            foreach ($storedEvents as $storedEvent) {
+                $stmt = $this->connection->prepare(
+                    'INSERT INTO events (stream_id, type, event, occurred_on, version)
                  VALUES (:streamId, :type, :event, :occurredOn, :version)'
-            );
-            $stmt->bindValue(':streamId', $streamId);
-            $stmt->bindValue(':type', $storedEvent->name());
-            $stmt->bindValue(':event', $storedEvent->body());
-            $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
-            $stmt->bindValue(':version', $storedEvent->version());
-            $stmt->execute();
-        }
+                );
+                $stmt->bindValue(':streamId', $streamId);
+                $stmt->bindValue(':type', $storedEvent->name());
+                $stmt->bindValue(':event', $storedEvent->body());
+                $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
+                $stmt->bindValue(':version', $storedEvent->version());
+                $stmt->execute();
+            }
+            $streamFinalVersion = $this->streamVersion($streamId);
+            if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
+                throw new ConcurrencyException();
+            }
+        });
     }
 
     /**
