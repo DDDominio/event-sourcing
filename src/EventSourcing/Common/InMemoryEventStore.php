@@ -3,11 +3,10 @@
 namespace EventSourcing\Common;
 
 use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 
-class InMemoryEventStore extends AbstractEventStore implements EventStore, UpgradableEventStore
+class InMemoryEventStore extends AbstractEventStore
 {
     /**
      * @var StoredEventStream[]

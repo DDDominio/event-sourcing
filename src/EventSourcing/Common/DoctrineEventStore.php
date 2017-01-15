@@ -4,11 +4,10 @@ namespace EventSourcing\Common;
 
 use Doctrine\DBAL\Connection;
 use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;
 use JMS\Serializer\Serializer;
 
-class DoctrineEventStore extends AbstractEventStore implements EventStore, UpgradableEventStore
+class DoctrineEventStore extends AbstractEventStore
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
 
