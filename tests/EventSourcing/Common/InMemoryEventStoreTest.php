@@ -4,6 +4,7 @@ namespace tests\EventSourcing\Common;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\DomainEvent;
+use EventSourcing\Common\EventStore;
 use EventSourcing\Common\EventStream;
 use EventSourcing\Common\InMemoryEventStore;
 use EventSourcing\Common\StoredEvent;
@@ -320,6 +321,56 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
         $this->assertEquals('Name', $event->username());
         $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @test
+     */
+    public function addAfterEventsAppendedEventListener()
+    {
+        $appendedEvents = [];
+        $eventListener = function($events) use (&$appendedEvents) {
+            $appendedEvents = $events;
+        };
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader
+        );
+        $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $eventListener);
+        $events = [new NameChanged('name', new \DateTimeImmutable())];
+
+        $eventStore->appendToStream('streamId', $events);
+
+        $this->assertCount(1, $appendedEvents);
+        $this->assertInstanceOf(NameChanged::class, $appendedEvents[0]);
+        $this->assertEquals('name', $appendedEvents[0]->name());
+    }
+
+    /**
+     * @test
+     */
+    public function addMultipleAfterEventsAppendedEventListener()
+    {
+        $anEventListenerCalled = false;
+        $anEventListener = function() use (&$anEventListenerCalled) {
+            $anEventListenerCalled = true;
+        };
+        $anotherEventListenerCalled = false;
+        $anotherEventListener = function() use (&$anotherEventListenerCalled ) {
+            $anotherEventListenerCalled  = true;
+        };
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader
+        );
+        $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $anEventListener);
+        $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $anotherEventListener);
+        $events = [new NameChanged('name', new \DateTimeImmutable())];
+
+        $eventStore->appendToStream('streamId', $events);
+
+        $this->assertTrue($anEventListenerCalled);
+        $this->assertTrue($anotherEventListenerCalled);
     }
 
     /**

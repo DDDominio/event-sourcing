@@ -23,6 +23,11 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     private $eventUpgrader;
 
     /**
+     * @var callable[]
+     */
+    private $eventListeners;
+
+    /**
      * @param Serializer $serializer
      * @param EventUpgrader $eventUpgrader
      */
@@ -53,6 +58,11 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
             $this->storedEventsFromEvents($streamId, $events),
             $expectedVersion
         );
+        if (isset($this->eventListeners[EventStore::AFTER_EVENTS_APPENDED])) {
+            foreach ($this->eventListeners[EventStore::AFTER_EVENTS_APPENDED] as $eventListener) {
+                $eventListener($events);
+            }
+        }
     }
 
     /**
@@ -140,6 +150,15 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
         foreach ($stream as $event) {
             $this->eventUpgrader->migrate($event, $to);
         }
+    }
+
+    /**
+     * @param $eventStoreEvent
+     * @param callable $callable
+     */
+    public function addEventListener($eventStoreEvent, callable $callable)
+    {
+        $this->eventListeners[$eventStoreEvent][] = $callable;
     }
 
     /**
