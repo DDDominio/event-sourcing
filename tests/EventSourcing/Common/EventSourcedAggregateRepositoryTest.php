@@ -343,7 +343,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
                 'id',
                 'streamId',
                 get_class($domainEvent),
-                $this->serializer->serialize($domainEvent, 'json'),
+                $this->serializer->serialize($domainEvent),
                 $domainEvent->occurredOn(),
                 Version::fromString('1.0')
             );
