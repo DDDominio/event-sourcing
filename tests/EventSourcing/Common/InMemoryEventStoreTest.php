@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\EventSourcing\Common;
+namespace Tests\EventSourcing\Common;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\DomainEvent;

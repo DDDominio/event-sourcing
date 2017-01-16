@@ -4,7 +4,7 @@ namespace Tests\EventSourcing\Common;
 
 use Tests\EventSourcing\Common\TestData\DescriptionChanged;
 use Tests\EventSourcing\Common\TestData\DummyCreated;
-use tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
+use Tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
 use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\TestData\NameChanged;
 use Tests\EventSourcing\Common\TestData\NotUnderstandableDomainEvent;
