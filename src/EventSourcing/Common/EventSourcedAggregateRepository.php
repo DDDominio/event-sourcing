@@ -45,7 +45,7 @@ abstract class EventSourcedAggregateRepository
             $this->streamIdFromAggregate($aggregate),
             $aggregate->changes()
         );
-        $aggregate->commitChanges();
+        $aggregate->clearChanges();
     }
 
     /**
@@ -58,7 +58,7 @@ abstract class EventSourcedAggregateRepository
             $aggregate->changes(),
             $aggregate->originalVersion()
         );
-        $aggregate->commitChanges();
+        $aggregate->clearChanges();
     }
 
     /**
@@ -122,9 +122,9 @@ abstract class EventSourcedAggregateRepository
      * @param EventSourcedAggregateRoot $aggregate
      * @return string
      */
-    protected function streamIdFromAggregate($aggregate)
+    private function streamIdFromAggregate($aggregate)
     {
-        return $this->aggregateClass() . '-' . $this->aggregateId($aggregate);
+        return $this->streamIdFromAggregateId($this->aggregateId($aggregate));
     }
 
     /**

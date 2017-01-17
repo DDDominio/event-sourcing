@@ -6,15 +6,18 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DriverManager;
+use EventSourcing\Serialization\JsonSerializer;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Snapshotting\DoctrineSnapshotStore;
 use EventSourcing\Snapshotting\Snapshot;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\TestData\DummySnapshot;
 
 class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {
+    const TEST_DB_PATH = __DIR__ . '/../test.db';
+
     /**
      * @var Connection
      */
@@ -25,24 +28,40 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     private $serializer;
 
+    /**
+     * {@inheritdoc}
+     */
     public function setUp()
     {
+        touch(self::TEST_DB_PATH);
         $connectionParams = array(
-            'path' => __DIR__ . '/../../test.db',
+            'path' => self::TEST_DB_PATH,
             'host' => 'localhost',
             'driver' => 'pdo_sqlite',
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
-
-        $this->connection->query('DELETE FROM snapshots')->execute();
+        $this->connection->exec(
+            file_get_contents(__DIR__ . '/../dbal_event_store_schema.sql')
+        );
 
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation',
             __DIR__ . '/../../../../vendor/jms/serializer/src'
         );
-        $this->serializer = SerializerBuilder::create()
-            ->build();
+        $this->serializer = new JsonSerializer(
+            SerializerBuilder::create()->build()
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function tearDown()
+    {
+        if (file_exists(self::TEST_DB_PATH)) {
+            unlink(self::TEST_DB_PATH);
+        }
     }
 
     /**

@@ -4,7 +4,7 @@ namespace Tests\EventSourcing\Common;
 
 use Tests\EventSourcing\Common\TestData\DescriptionChanged;
 use Tests\EventSourcing\Common\TestData\DummyCreated;
-use tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
+use Tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
 use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
 use Tests\EventSourcing\Common\TestData\NameChanged;
 use Tests\EventSourcing\Common\TestData\NotUnderstandableDomainEvent;
@@ -245,7 +245,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $aggregate->changeName('name');
 
-        $aggregate->commitChanges();
+        $aggregate->clearChanges();
 
         $this->assertCount(0, $aggregate->changes());
     }

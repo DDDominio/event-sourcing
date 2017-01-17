@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\EventSourcing\Snapshotting;
+namespace Tests\EventSourcing\Snapshotting;
 
 use EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
 use EventSourcing\Snapshotting\Snapshot;

@@ -2,30 +2,16 @@
 
 namespace EventSourcing\Common;
 
-use Common\Event;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\UpgradableEventStore;
 use EventSourcing\Versioning\Version;
-use EventSourcing\Versioning\Versionable;
-use JMS\Serializer\Serializer;
-use Ramsey\Uuid\Uuid;
 
-class InMemoryEventStore implements EventStore, UpgradableEventStore
+class InMemoryEventStore extends AbstractEventStore
 {
     /**
      * @var StoredEventStream[]
      */
     private $streams;
-
-    /**
-     * @var Serializer
-     */
-    private $serializer;
-
-    /**
-     * @var EventUpgrader
-     */
-    private $eventUpgrader;
 
     /**
      * @param Serializer $serializer
@@ -37,43 +23,20 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
         $eventUpgrader,
         array $streams = []
     ) {
-        $this->serializer = $serializer;
+        parent::__construct($serializer, $eventUpgrader);
         $this->streams = $streams;
-        $this->eventUpgrader = $eventUpgrader;
     }
 
     /**
      * @param string $streamId
-     * @param Event[] $events
+     * @param StoredEvent[] $storedEvents
      * @param int $expectedVersion
-     * @throws ConcurrencyException
-     * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $events, $expectedVersion = null)
+    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion)
     {
-        $storedEvents = array_map(function(Event $event) use ($streamId) {
-            if ($event instanceof Versionable) {
-                $version = $event->version();
-            } else {
-                $version = Version::fromString('1.0');
-            }
-
-            return new StoredEvent(
-                $this->nextStoredEventId(),
-                $streamId,
-                get_class($event),
-                $this->serializer->serialize($event, 'json'),
-                $event->occurredOn(),
-                $version
-            );
-        }, $events);
-
-
-        if (isset($this->streams[$streamId])) {
-            $this->assertOptimisticConcurrency($streamId, $expectedVersion);
+        if ($this->streamExists($streamId)) {
             $this->streams[$streamId] = $this->streams[$streamId]->append($storedEvents);
         } else {
-            $this->assertEventStreamExistence($expectedVersion);
             $this->streams[$streamId] = new StoredEventStream($streamId, $storedEvents);
         }
     }
@@ -84,7 +47,7 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
      */
     public function readFullStream($streamId)
     {
-        if (isset($this->streams[$streamId])) {
+        if ($this->streamExists($streamId)) {
             return $this->domainEventStreamFromStoredEvents(
                 $this->streams[$streamId]->events()
             );
@@ -101,7 +64,7 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
      */
     public function readStreamEventsForward($streamId, $start = 1, $count = null)
     {
-        if (!isset($this->streams[$streamId])) {
+        if (!$this->streamExists($streamId)) {
             return EventStream::buildEmpty();
         }
 
@@ -116,65 +79,13 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
     }
 
     /**
-     * @param $expectedVersion
-     * @throws EventStreamDoesNotExistException
+     * @param string $streamId
+     * @return int
      */
-    private function assertEventStreamExistence($expectedVersion)
+    protected function streamVersion($streamId)
     {
-        if (isset($expectedVersion)) {
-            throw new EventStreamDoesNotExistException();
-        }
-    }
-
-    /**
-     * @param $streamId
-     * @param $expectedVersion
-     * @throws ConcurrencyException
-     */
-    private function assertOptimisticConcurrency($streamId, $expectedVersion)
-    {
-        if (count($this->streams[$streamId]->events()) !== $expectedVersion) {
-            throw new ConcurrencyException();
-        }
-    }
-
-    /**
-     * @return string
-     */
-    private function nextStoredEventId()
-    {
-        return Uuid::uuid4()->toString();
-    }
-
-    /**
-     * @param StoredEvent[] $storedEvents
-     * @return EventStream
-     */
-    private function domainEventStreamFromStoredEvents($storedEvents)
-    {
-        $domainEvents = array_map(function (StoredEvent $storedEvent) {
-            $this->eventUpgrader->migrate($storedEvent);
-            return $this->serializer->deserialize(
-                $storedEvent->body(),
-                $storedEvent->name(),
-                'json'
-            );
-        }, $storedEvents);
-        return new EventStream($domainEvents);
-    }
-
-    /**
-     * @param string $type
-     * @param Version $from
-     * @param Version $to
-     */
-    public function migrate($type, $from, $to)
-    {
-        $stream = $this->readStoredEventsOfTypeAndVersion($type, $from);
-
-        foreach ($stream as $event) {
-            $this->eventUpgrader->migrate($event, $to);
-        }
+        return $this->streamExists($streamId) ?
+            count($this->streams[$streamId]->events()) : 0;
     }
 
     /**
@@ -182,7 +93,7 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
      * @param Version $version
      * @return EventStream
      */
-    private function readStoredEventsOfTypeAndVersion($type, $version)
+    protected function readStoredEventsOfTypeAndVersion($type, $version)
     {
         $storedEvents = [];
         foreach ($this->streams as $stream) {
@@ -194,5 +105,14 @@ class InMemoryEventStore implements EventStore, UpgradableEventStore
             }
         }
         return new EventStream($storedEvents);
+    }
+
+    /**
+     * @param string $streamId
+     * @return bool
+     */
+    protected function streamExists($streamId)
+    {
+        return isset($this->streams[$streamId]);
     }
 }

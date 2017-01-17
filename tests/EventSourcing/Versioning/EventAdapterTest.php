@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\EventSourcing\Versioning;
+namespace Tests\EventSourcing\Versioning;
 
 use EventSourcing\Common\StoredEvent;
 use EventSourcing\Versioning\EventAdapter;

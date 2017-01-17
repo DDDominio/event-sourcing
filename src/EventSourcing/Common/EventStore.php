@@ -6,6 +6,8 @@ use Common\Event;
 
 interface EventStore
 {
+    const AFTER_EVENTS_APPENDED = 'after_events_appended';
+
     /**
      * @param string $streamId
      * @param Event[] $events
@@ -28,4 +30,10 @@ interface EventStore
      * @return EventStream
      */
     public function readFullStream($streamId);
+
+    /**
+     * @param $eventStoreEvent
+     * @param callable $callable
+     */
+    public function addEventListener($eventStoreEvent, callable $callable);
 }

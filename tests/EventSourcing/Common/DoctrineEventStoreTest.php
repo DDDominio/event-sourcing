@@ -8,12 +8,13 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use EventSourcing\Common\DoctrineEventStore;
 use EventSourcing\Common\EventStream;
+use EventSourcing\Serialization\JsonSerializer;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use EventSourcing\Versioning\Version;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\TestData\DescriptionChanged;
 use Tests\EventSourcing\Common\TestData\NameChanged;
@@ -22,6 +23,8 @@ use Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
+    const TEST_DB_PATH = __DIR__ . '/../test.db';
+
     /**
      * @var Connection
      */
@@ -37,26 +40,31 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     private $eventUpgrader;
 
+    /**
+     * {@inheritdoc}
+     */
     public function setUp()
     {
+        touch(self::TEST_DB_PATH);
         $connectionParams = array(
-            'path' => __DIR__ . '/../../test.db',
+            'path' => self::TEST_DB_PATH,
             'host' => 'localhost',
             'driver' => 'pdo_sqlite',
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
-
-        $this->connection->query('DELETE FROM events')->execute();
-        $this->connection->query('DELETE FROM streams')->execute();
+        $this->connection->exec(
+            file_get_contents(__DIR__ . '/../dbal_event_store_schema.sql')
+        );
 
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation',
             __DIR__ . '/../../../vendor/jms/serializer/src'
         );
 
-        $this->serializer = SerializerBuilder::create()
-            ->build();
+        $this->serializer = new JsonSerializer(
+            SerializerBuilder::create()->build()
+        );
 
         $tokenExtractor = new TokenExtractor();
         $jsonTransformer = new JsonTransformer($tokenExtractor);
@@ -65,6 +73,16 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->eventUpgrader->registerUpgrade(
             new VersionedEventUpgrade10_20($eventAdapter)
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function tearDown()
+    {
+        if (file_exists(self::TEST_DB_PATH)) {
+            unlink(self::TEST_DB_PATH);
+        }
     }
 
     /**

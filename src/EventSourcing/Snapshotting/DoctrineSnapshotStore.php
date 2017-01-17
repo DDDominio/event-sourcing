@@ -3,7 +3,7 @@
 namespace EventSourcing\Snapshotting;
 
 use Doctrine\DBAL\Driver\Connection;
-use JMS\Serializer\Serializer;
+use EventSourcing\Serialization\Serializer;
 
 class DoctrineSnapshotStore implements SnapshotStore
 {
@@ -38,7 +38,7 @@ class DoctrineSnapshotStore implements SnapshotStore
         $stmt->bindValue(':aggregateId', $snapshot->aggregateId());
         $stmt->bindValue(':type', get_class($snapshot));
         $stmt->bindValue(':version', $snapshot->version());
-        $stmt->bindValue(':snapshot', $this->serializer->serialize($snapshot, 'json'));
+        $stmt->bindValue(':snapshot', $this->serializer->serialize($snapshot));
         $stmt->execute();
     }
 
@@ -55,7 +55,7 @@ class DoctrineSnapshotStore implements SnapshotStore
         $stmt->bindValue(':aggregateId', $aggregateId);
         $stmt->execute();
         $snapshot = $stmt->fetch();
-        return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type'], 'json') : null;
+        return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type']) : null;
     }
 
     /**
@@ -73,6 +73,6 @@ class DoctrineSnapshotStore implements SnapshotStore
         $stmt->bindValue(':version', $version);
         $stmt->execute();
         $snapshot = $stmt->fetch();
-        return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type'], 'json') : null;
+        return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type']) : null;
     }
 }
