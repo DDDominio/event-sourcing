@@ -4,18 +4,15 @@ namespace tests\EventSourcing\Common;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use EventSourcing\Common\EventStream;
-use EventSourcing\Common\MysqlJsonEventStore;
-use EventSourcing\Snapshotting\Snapshot;
+use EventSourcing\Common\MySqlJsonEventStore;
+use EventSourcing\Serialization\JsonSerializer;
+use EventSourcing\Serialization\Serializer;
 use EventSourcing\Versioning\EventAdapter;
 use EventSourcing\Versioning\EventUpgrader;
 use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\TestData\DummyCreated;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\DummySnapshot;
 use Tests\EventSourcing\Common\TestData\NameChanged;
 use Tests\EventSourcing\Common\TestData\VersionedEvent;
 use Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
@@ -49,17 +46,17 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             self::DB_USER,
             self::DB_PASS
         );
-        $this->connection->query('TRUNCATE snapshots')->execute();
         $this->connection->query('TRUNCATE events')->execute();
         $this->connection->query('DELETE FROM streams')->execute();
 
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation',
-            __DIR__ . '/../../../../vendor/jms/serializer/src'
+            __DIR__ . '/../../../vendor/jms/serializer/src'
         );
 
-        $this->serializer = SerializerBuilder::create()
-            ->build();
+        $this->serializer = new JsonSerializer(
+            SerializerBuilder::create()->build()
+        );
 
         $tokenExtractor = new TokenExtractor();
         $jsonTransformer = new JsonTransformer($tokenExtractor);
@@ -75,7 +72,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -94,7 +91,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToAnExistentStream()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -115,7 +112,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
         $domainEvent = new NameChanged('name', new \DateTimeImmutable());
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -131,7 +128,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -146,7 +143,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEventStream()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -164,7 +161,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEmptyStream()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -179,69 +176,9 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findLastSnapshotOfAStream()
-    {
-        $snapshot = new DummySnapshot(
-            'id',
-            'name',
-            'description',
-            3
-        );
-        $lastSnapshot = new DummySnapshot(
-            'id',
-            'name',
-            'description',
-            10
-        );
-        $eventStore = new MysqlJsonEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->addSnapshot($snapshot);
-        $eventStore->addSnapshot($lastSnapshot);
-
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
-            DummyEventSourcedAggregate::class,
-            'id'
-        );
-
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-        $this->assertEquals(10, $retrievedSnapshot->version());
-    }
-
-    /**
-     * @test
-     */
-    public function addAnSnapshot()
-    {
-        $snapshot = new DummySnapshot(
-            'id',
-            'name',
-            'description',
-            3
-        );
-        $eventStore = new MysqlJsonEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-
-        $eventStore->addSnapshot($snapshot);
-
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
-            DummyEventSourcedAggregate::class,
-            'id'
-        );
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
-    }
-
-    /**
-     * @test
-     */
     public function findStreamEventsForward()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -267,7 +204,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardWithEventCount()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -292,7 +229,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -307,67 +244,6 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readStreamEventsForward('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
-    }
-
-
-    /**
-     * @test
-     */
-    public function findSnapshotForEventVersion()
-    {
-        $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
-        ];
-        $eventStore = new MysqlJsonEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', $domainEvents);
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'new name', 'description', 2)
-        );
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'another name', 'new description', 4)
-        );
-
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
-
-        $this->assertEquals(2, $snapshot->version());
-    }
-
-    /**
-     * @test
-     */
-    public function findSnapshotForAnotherEventVersion()
-    {
-        $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
-        ];
-        $eventStore = new MysqlJsonEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', $domainEvents);
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'new name', 'description', 2)
-        );
-        $eventStore->addSnapshot(
-            new DummySnapshot('id', 'another name', 'new description', 4)
-        );
-
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
-
-        $this->assertEquals(4, $snapshot->version());
     }
 
     /**
@@ -390,7 +266,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -422,7 +298,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();
-        $eventStore = new MysqlJsonEventStore(
+        $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
