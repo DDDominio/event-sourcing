@@ -28,11 +28,11 @@
     "phpunit/phpunit": "^5.6"
   },
   "autoload": {
-    "psr-4": {"": "src/"}
+    "psr-4": {"DDDominio\\": "src/"}
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/"
+      "DDDominio\\Tests\\": "tests/"
     }
   },
   "extra": {

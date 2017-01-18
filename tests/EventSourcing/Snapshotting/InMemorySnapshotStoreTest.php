@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
-use EventSourcing\Snapshotting\InMemorySnapshotStore;
-use EventSourcing\Snapshotting\Snapshot;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\EventSourcing\Snapshotting\InMemorySnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
 
 class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {

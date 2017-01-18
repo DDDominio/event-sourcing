@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\EventSourcing\Versioning\JsonTransformer;
+namespace DDDominio\Tests\EventSourcing\Versioning\JsonTransformer;
 
-use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
-use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 
 class JsonTransformerTest extends \PHPUnit_Framework_TestCase
 {

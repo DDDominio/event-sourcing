@@ -1,8 +1,8 @@
 <?php
 
-namespace EventSourcing\Snapshotting;
+namespace DDDominio\EventSourcing\Snapshotting;
 
-use EventSourcing\Common\EventSourcedAggregateRoot;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 
 interface SnapshotTranslator
 {

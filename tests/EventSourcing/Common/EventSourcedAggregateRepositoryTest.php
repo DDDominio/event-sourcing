@@ -1,31 +1,31 @@
 <?php
 
-namespace Tests\EventSourcing\Common;
+namespace DDDominio\Tests\EventSourcing\Common;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use EventSourcing\Common\AggregateReconstructor;
-use EventSourcing\Common\EventSourcedAggregateRoot;
-use EventSourcing\Common\DomainEvent;
-use EventSourcing\Common\EventStore;
-use EventSourcing\Common\EventStream;
-use EventSourcing\Common\InMemoryEventStore;
-use EventSourcing\Common\StoredEvent;
-use EventSourcing\Common\StoredEventStream;
-use EventSourcing\Serialization\JsonSerializer;
-use EventSourcing\Serialization\Serializer;
-use EventSourcing\Snapshotting\InMemorySnapshotStore;
-use EventSourcing\Snapshotting\SnapshotStore;
-use EventSourcing\Versioning\EventAdapter;
-use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
-use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
-use EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Common\AggregateReconstructor;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
+use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\Common\EventStore;
+use DDDominio\EventSourcing\Common\EventStream;
+use DDDominio\EventSourcing\Common\InMemoryEventStore;
+use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Common\StoredEventStream;
+use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Snapshotting\InMemorySnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStore;
+use DDDominio\EventSourcing\Versioning\EventAdapter;
+use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
+use DDDominio\EventSourcing\Versioning\Version;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\TestData\DummyCreated;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregateRepository;
-use Tests\EventSourcing\Common\TestData\DummySnapshot;
-use Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyCreated;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregateRepository;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
 
 class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 {

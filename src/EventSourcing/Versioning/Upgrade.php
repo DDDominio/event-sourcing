@@ -1,8 +1,8 @@
 <?php
 
-namespace EventSourcing\Versioning;
+namespace DDDominio\EventSourcing\Versioning;
 
-use EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Common\StoredEvent;
 
 abstract class Upgrade
 {

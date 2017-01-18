@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\Annotation as Serializer;
 
 class DummySnapshot implements Snapshot

@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Versioning\JsonTransformer;
+namespace DDDominio\EventSourcing\Versioning\JsonTransformer;
 
 class ArrayAccessToken
 {

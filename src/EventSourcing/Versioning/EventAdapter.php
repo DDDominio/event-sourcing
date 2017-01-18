@@ -1,9 +1,9 @@
 <?php
 
-namespace EventSourcing\Versioning;
+namespace DDDominio\EventSourcing\Versioning;
 
-use EventSourcing\Common\StoredEvent;
-use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 
 class EventAdapter
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
-use EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
-use EventSourcing\Snapshotting\Snapshot;
-use EventSourcing\Snapshotting\Snapshotter;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\Snapshotter;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
 
 class SnapshotterTest extends \PHPUnit_Framework_TestCase
 {

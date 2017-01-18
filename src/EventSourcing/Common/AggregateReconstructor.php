@@ -1,9 +1,9 @@
 <?php
 
-namespace EventSourcing\Common;
+namespace DDDominio\EventSourcing\Common;
 
-use EventSourcing\Snapshotting\Snapshot;
-use EventSourcing\Snapshotting\Snapshotter;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\Snapshotter;
 
 class AggregateReconstructor
 {

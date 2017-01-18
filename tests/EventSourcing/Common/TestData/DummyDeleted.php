@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Common\AggregateDeleterDomainEvent;
+use DDDominio\EventSourcing\Common\AggregateDeleterDomainEvent;
 
 class DummyDeleted implements AggregateDeleterDomainEvent
 {

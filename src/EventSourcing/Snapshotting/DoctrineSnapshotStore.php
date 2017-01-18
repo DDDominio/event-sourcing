@@ -1,9 +1,9 @@
 <?php
 
-namespace EventSourcing\Snapshotting;
+namespace DDDominio\EventSourcing\Snapshotting;
 
 use Doctrine\DBAL\Driver\Connection;
-use EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\Serializer;
 
 class DoctrineSnapshotStore implements SnapshotStore
 {

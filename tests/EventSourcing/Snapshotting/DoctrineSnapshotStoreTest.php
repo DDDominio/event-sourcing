@@ -1,18 +1,18 @@
 <?php
 
-namespace Tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DriverManager;
-use EventSourcing\Serialization\JsonSerializer;
-use EventSourcing\Serialization\Serializer;
-use EventSourcing\Snapshotting\DoctrineSnapshotStore;
-use EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Snapshotting\DoctrineSnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
 
 class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Versioning\Version;
-use EventSourcing\Versioning\VersionableDomainEvent;
+use DDDominio\EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Versioning\VersionableDomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
 class NameChanged implements VersionableDomainEvent

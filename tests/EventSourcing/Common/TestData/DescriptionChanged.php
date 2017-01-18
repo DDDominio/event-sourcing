@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\Common\DomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
 class DescriptionChanged implements DomainEvent

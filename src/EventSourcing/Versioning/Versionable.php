@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Versioning;
+namespace DDDominio\EventSourcing\Versioning;
 
 interface Versionable
 {

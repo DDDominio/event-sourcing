@@ -1,8 +1,8 @@
 <?php
 
-namespace EventSourcing\Snapshotting;
+namespace DDDominio\EventSourcing\Snapshotting;
 
-use EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\Serializer;
 
 class MySqlJsonSnapshotStore implements SnapshotStore
 {

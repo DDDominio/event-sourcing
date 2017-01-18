@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Serialization;
+namespace DDDominio\EventSourcing\Serialization;
 
 interface Serializer
 {

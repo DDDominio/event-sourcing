@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Serialization;
+namespace DDDominio\EventSourcing\Serialization;
 
 use JMS\Serializer\Serializer as JmsSerializer;
 

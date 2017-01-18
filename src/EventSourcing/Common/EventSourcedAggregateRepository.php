@@ -1,8 +1,8 @@
 <?php
 
-namespace EventSourcing\Common;
+namespace DDDominio\EventSourcing\Common;
 
-use EventSourcing\Snapshotting\SnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStore;
 
 abstract class EventSourcedAggregateRepository
 {

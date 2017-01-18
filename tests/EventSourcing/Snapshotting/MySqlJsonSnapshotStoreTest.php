@@ -1,15 +1,15 @@
 <?php
 
-namespace tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use EventSourcing\Serialization\JsonSerializer;
-use EventSourcing\Serialization\Serializer;
-use EventSourcing\Snapshotting\MySqlJsonSnapshotStore;
-use EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Snapshotting\MySqlJsonSnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
 
 class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {

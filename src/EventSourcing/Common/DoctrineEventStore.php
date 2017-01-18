@@ -1,11 +1,11 @@
 <?php
 
-namespace EventSourcing\Common;
+namespace DDDominio\EventSourcing\Common;
 
 use Doctrine\DBAL\Connection;
-use EventSourcing\Serialization\Serializer;
-use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\Version;
 
 class DoctrineEventStore extends AbstractEventStore
 {
