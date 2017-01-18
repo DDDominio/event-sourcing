@@ -1,9 +1,9 @@
 <?php
 
-namespace EventSourcing\Projection;
+namespace DDDominio\EventSourcing\Projection;
 
 use Common\Event;
-use EventSourcing\Common\EventStore;
+use DDDominio\EventSourcing\Common\EventStore;
 
 class ProjectionBuilder
 {

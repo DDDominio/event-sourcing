@@ -1,23 +1,23 @@
 <?php
 
-namespace Tests\EventSourcing\Projections;
+namespace DDDominio\Tests\EventSourcing\Projections;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use EventSourcing\Common\DomainEvent;
-use EventSourcing\Common\InMemoryEventStore;
-use EventSourcing\Common\StoredEvent;
-use EventSourcing\Common\StoredEventStream;
-use EventSourcing\Projection\ProjectionBuilder;
-use EventSourcing\Serialization\JsonSerializer;
-use EventSourcing\Serialization\Serializer;
-use EventSourcing\Versioning\EventAdapter;
-use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
-use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
-use EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\Common\InMemoryEventStore;
+use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Common\StoredEventStream;
+use DDDominio\EventSourcing\Projection\ProjectionBuilder;
+use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Versioning\EventAdapter;
+use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
+use DDDominio\EventSourcing\Versioning\Version;
 use JMS\Serializer\SerializerBuilder;
-use Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\DescriptionChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
 
 class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 {
