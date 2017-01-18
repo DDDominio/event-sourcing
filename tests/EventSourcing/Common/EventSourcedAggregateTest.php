@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\EventSourcing\Common;
+namespace DDDominio\Tests\EventSourcing\Common;
 
-use Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use Tests\EventSourcing\Common\TestData\DummyCreated;
-use tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\NameChanged;
-use Tests\EventSourcing\Common\TestData\NotUnderstandableDomainEvent;
+use DDDominio\Tests\EventSourcing\Common\TestData\DescriptionChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyCreated;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\NotUnderstandableDomainEvent;
 
 class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 {
@@ -115,7 +115,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \EventSourcing\Common\DomainEventNotUnderstandableException
+     * @expectedException \DDDominio\EventSourcing\Common\DomainEventNotUnderstandableException
      */
     public function aggregateDoesNotUnderstandADomainEvent()
     {

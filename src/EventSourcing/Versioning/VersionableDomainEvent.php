@@ -1,8 +1,8 @@
 <?php
 
-namespace EventSourcing\Versioning;
+namespace DDDominio\EventSourcing\Versioning;
 
-use EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\Common\DomainEvent;
 
 interface VersionableDomainEvent extends DomainEvent, Versionable
 {

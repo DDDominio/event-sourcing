@@ -1,16 +1,16 @@
 <?php
 
-namespace Tests\EventSourcing\Versioning;
+namespace DDDominio\Tests\EventSourcing\Versioning;
 
-use EventSourcing\Common\StoredEvent;
-use EventSourcing\Versioning\EventAdapter;
-use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
-use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
-use EventSourcing\Versioning\Version;
-use Tests\EventSourcing\Common\TestData\NameChanged;
-use Tests\EventSourcing\Common\TestData\NameChangedUpgrade10_20;
-use Tests\EventSourcing\Common\TestData\NameChangedUpgrade20_30;
+use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Versioning\EventAdapter;
+use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
+use DDDominio\EventSourcing\Versioning\Version;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChangedUpgrade10_20;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChangedUpgrade20_30;
 
 class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 {

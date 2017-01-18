@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Common\EventSourcedAggregateRoot;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 
 class DummyEventSourcedAggregate
 {

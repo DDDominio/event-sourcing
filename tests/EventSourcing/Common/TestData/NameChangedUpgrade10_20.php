@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Common\StoredEvent;
-use EventSourcing\Versioning\Upgrade;
-use EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Versioning\Upgrade;
+use DDDominio\EventSourcing\Versioning\Version;
 
 class NameChangedUpgrade10_20 extends Upgrade
 {

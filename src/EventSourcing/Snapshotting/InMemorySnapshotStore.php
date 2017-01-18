@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Snapshotting;
+namespace DDDominio\EventSourcing\Snapshotting;
 
 class InMemorySnapshotStore implements SnapshotStore
 {

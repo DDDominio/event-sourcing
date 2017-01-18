@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\Common\TestData;
 
-use EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
+use DDDominio\EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
 
 class DummyReflectionSnapshotTranslator extends ReflectionSnapshotTranslator
 {

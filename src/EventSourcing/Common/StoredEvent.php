@@ -1,10 +1,10 @@
 <?php
 
-namespace EventSourcing\Common;
+namespace DDDominio\EventSourcing\Common;
 
 use Common\Event;
-use EventSourcing\Versioning\Version;
-use EventSourcing\Versioning\Versionable;
+use DDDominio\EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Versioning\Versionable;
 
 class StoredEvent implements Event, Versionable
 {
@@ -83,7 +83,7 @@ class StoredEvent implements Event, Versionable
     /**
      * @param string $name
      */
-    public function setName(string $name)
+    public function setName($name)
     {
         $this->name = $name;
     }
@@ -99,7 +99,7 @@ class StoredEvent implements Event, Versionable
     /**
      * @param string $body
      */
-    public function setBody(string $body)
+    public function setBody($body)
     {
         $this->body = $body;
     }

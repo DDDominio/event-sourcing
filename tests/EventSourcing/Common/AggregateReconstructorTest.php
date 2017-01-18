@@ -1,17 +1,17 @@
 <?php
 
-namespace Tests\EventSourcing\Common;
+namespace DDDominio\Tests\EventSourcing\Common;
 
-use EventSourcing\Common\AggregateReconstructor;
-use EventSourcing\Common\EventStream;
-use EventSourcing\Snapshotting\Snapshot;
-use EventSourcing\Snapshotting\Snapshotter;
-use Tests\EventSourcing\Common\TestData\DummyCreated;
-use Tests\EventSourcing\Common\TestData\DummyDeleted;
-use Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use Tests\EventSourcing\Common\TestData\DummyReflectionSnapshotTranslator;
-use Tests\EventSourcing\Common\TestData\DummySnapshot;
-use Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\EventSourcing\Common\AggregateReconstructor;
+use DDDominio\EventSourcing\Common\EventStream;
+use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\Snapshotter;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyCreated;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyDeleted;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummyReflectionSnapshotTranslator;
+use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
 
 class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 {

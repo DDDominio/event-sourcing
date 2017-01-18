@@ -1,12 +1,12 @@
 <?php
 
-namespace tests\EventSourcing\Versioning;
+namespace DDDominio\Tests\EventSourcing\Versioning;
 
-use EventSourcing\Common\StoredEvent;
-use EventSourcing\Versioning\EventAdapter;
-use EventSourcing\Versioning\JsonTransformer\JsonTransformer;
-use EventSourcing\Versioning\JsonTransformer\TokenExtractor;
-use EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\Versioning\EventAdapter;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
+use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
+use DDDominio\EventSourcing\Versioning\Version;
 
 class EventAdapterTest extends \PHPUnit_Framework_TestCase
 {

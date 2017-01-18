@@ -1,13 +1,13 @@
 <?php
 
-namespace EventSourcing\Common;
+namespace DDDominio\EventSourcing\Common;
 
 use Common\Event;
-use EventSourcing\Serialization\Serializer;
-use EventSourcing\Versioning\EventUpgrader;
-use EventSourcing\Versioning\UpgradableEventStore;
-use EventSourcing\Versioning\Version;
-use EventSourcing\Versioning\Versionable;
+use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
+use DDDominio\EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Versioning\Versionable;
 use Ramsey\Uuid\Uuid;
 
 abstract class AbstractEventStore implements EventStore, UpgradableEventStore

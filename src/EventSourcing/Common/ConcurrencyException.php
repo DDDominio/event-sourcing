@@ -1,6 +1,6 @@
 <?php
 
-namespace EventSourcing\Common;
+namespace DDDominio\EventSourcing\Common;
 
 class ConcurrencyException extends \Exception
 {
