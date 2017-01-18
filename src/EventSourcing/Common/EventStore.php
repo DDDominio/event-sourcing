@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use Common\Event;
+use DDDominio\Common\Event;
 
 interface EventStore
 {

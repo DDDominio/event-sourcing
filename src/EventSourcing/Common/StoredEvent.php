@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use Common\Event;
+use DDDominio\Common\Event;
 use DDDominio\EventSourcing\Versioning\Version;
 use DDDominio\EventSourcing\Versioning\Versionable;
 

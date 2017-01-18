@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use Common\Event;
+use DDDominio\Common\Event;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
