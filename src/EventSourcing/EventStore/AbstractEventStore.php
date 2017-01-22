@@ -1,8 +1,10 @@
 <?php
 
-namespace DDDominio\EventSourcing\Common;
+namespace DDDominio\EventSourcing\EventStore;
 
-use Common\Event;
+use DDDominio\Common\Event;
+use DDDominio\EventSourcing\Common\EventStream;
+use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
@@ -46,7 +48,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $events, $expectedVersion = 0)
+    public function appendToStream($streamId, $events, $expectedVersion = self::EXPECTED_VERSION_EMPTY_STREAM)
     {
         if ($this->streamExists($streamId)) {
             $this->assertOptimisticConcurrency($streamId, $expectedVersion);
@@ -67,7 +69,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
 
     /**
      * @param StoredEvent[] $storedEvents
-     * @return EventStream
+     * @return EventStreamInterface
      */
     protected function domainEventStreamFromStoredEvents($storedEvents)
     {
@@ -75,7 +77,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
             $this->eventUpgrader->migrate($storedEvent);
             return $this->serializer->deserialize(
                 $storedEvent->body(),
-                $storedEvent->name()
+                $storedEvent->type()
             );
         }, $storedEvents);
         return new EventStream($domainEvents);
@@ -183,7 +185,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     /**
      * @param string $type
      * @param Version $version
-     * @return EventStream
+     * @return EventStreamInterface
      */
     protected abstract function readStoredEventsOfTypeAndVersion($type, $version);
 }

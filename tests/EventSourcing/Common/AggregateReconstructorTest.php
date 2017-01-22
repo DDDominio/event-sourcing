@@ -6,12 +6,12 @@ use DDDominio\EventSourcing\Common\AggregateReconstructor;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use DDDominio\EventSourcing\Snapshotting\Snapshotter;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyCreated;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyDeleted;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyReflectionSnapshotTranslator;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
-use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\TestData\DummyCreated;
+use DDDominio\Tests\EventSourcing\TestData\DummyDeleted;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\DummyReflectionSnapshotTranslator;
+use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 
 class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 {

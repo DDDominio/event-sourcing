@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Versioning;
 
-use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 
 class EventAdapter
@@ -41,7 +41,7 @@ class EventAdapter
      */
     public function rename($storedEvent, $newName)
     {
-        $storedEvent->setName($newName);
+        $storedEvent->setType($newName);
     }
 
     /**

@@ -2,9 +2,9 @@
 
 namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyReflectionSnapshotTranslator;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\DummyReflectionSnapshotTranslator;
+use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 
 class ReflectionSnapshotTranslatorTest extends \PHPUnit_Framework_TestCase
 {

@@ -2,10 +2,10 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use Common\Event;
+use DDDominio\Common\Event;
 use Traversable;
 
-class EventStream implements \IteratorAggregate
+class EventStream implements EventStreamInterface
 {
     /**
      * @var Event[]

@@ -1,6 +1,6 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\TestData;
 
 class DummyEntity
 {

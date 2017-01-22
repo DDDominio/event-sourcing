@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Versioning;
 
-use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
 
 class EventUpgrader
 {
@@ -55,8 +55,8 @@ class EventUpgrader
      */
     public function upgrade(StoredEvent $storedEvent, $version = null)
     {
-        if (isset($this->upgrades[$storedEvent->name()])) {
-            foreach ($this->upgrades[$storedEvent->name()] as $upgrade) {
+        if (isset($this->upgrades[$storedEvent->type()])) {
+            foreach ($this->upgrades[$storedEvent->type()] as $upgrade) {
                 if ($storedEvent->version()->equalTo($upgrade->from())) {
                     $upgrade->upgrade($storedEvent);
                     $this->eventAdapter->changeValue($storedEvent, "version", function() use ($upgrade) {
@@ -77,8 +77,8 @@ class EventUpgrader
      */
     public function downgrade(StoredEvent $storedEvent, $version = null)
     {
-        if (isset($this->upgrades[$storedEvent->name()])) {
-            $upgrades = array_reverse($this->upgrades[$storedEvent->name()]);
+        if (isset($this->upgrades[$storedEvent->type()])) {
+            $upgrades = array_reverse($this->upgrades[$storedEvent->type()]);
             foreach ($upgrades as $upgrade) {
                 if ($storedEvent->version()->equalTo($upgrade->to())) {
                     $upgrade->downgrade($storedEvent);

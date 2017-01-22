@@ -1,43 +1,43 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\TestData;
 
 use DDDominio\EventSourcing\Versioning\Version;
 use DDDominio\EventSourcing\Versioning\VersionableDomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
-class VersionedEvent implements VersionableDomainEvent
+class NameChanged implements VersionableDomainEvent
 {
     /**
      * @var string
      *
      * @Serializer\Type("string")
      */
-    private $username;
+    private $name;
 
     /**
-     * @var \DateTimeImmutable
+     * @var \DateTimeImmutable<’format’>
      *
      * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
      */
     private $occurredOn;
 
     /**
-     * @param string $username
+     * @param string $name
      * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($username, \DateTimeImmutable $occurredOn)
+    public function __construct($name, \DateTimeImmutable $occurredOn)
     {
-        $this->username = $username;
+        $this->name = $name;
         $this->occurredOn = $occurredOn;
     }
 
     /**
      * @return string
      */
-    public function username()
+    public function name()
     {
-        return $this->username;
+        return $this->name;
     }
 
     /**
@@ -53,6 +53,6 @@ class VersionedEvent implements VersionableDomainEvent
      */
     public function version()
     {
-        return Version::fromString('2.0');
+        return Version::fromString('3.0');
     }
 }

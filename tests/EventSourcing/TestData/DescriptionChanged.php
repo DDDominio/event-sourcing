@@ -1,6 +1,6 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\TestData;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
 use JMS\Serializer\Annotation as Serializer;

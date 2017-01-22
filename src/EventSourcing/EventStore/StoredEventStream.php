@@ -1,6 +1,8 @@
 <?php
 
-namespace DDDominio\EventSourcing\Common;
+namespace DDDominio\EventSourcing\EventStore;
+
+use DDDominio\EventSourcing\Common\EventStream;
 
 class StoredEventStream extends EventStream
 {

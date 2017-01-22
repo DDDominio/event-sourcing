@@ -1,14 +1,14 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common;
+namespace DDDominio\Tests\EventSourcing\EventStore;
 
+use DDDominio\EventSourcing\EventStore\EventStore;
+use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEventStream;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\Common\EventStore;
 use DDDominio\EventSourcing\Common\EventStream;
-use DDDominio\EventSourcing\Common\InMemoryEventStore;
-use DDDominio\EventSourcing\Common\StoredEvent;
-use DDDominio\EventSourcing\Common\StoredEventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
@@ -17,10 +17,10 @@ use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use DDDominio\EventSourcing\Versioning\Version;
 use JMS\Serializer\SerializerBuilder;
-use DDDominio\Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\VersionedEvent;
-use DDDominio\Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
+use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
+use DDDominio\Tests\EventSourcing\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\TestData\VersionedEvent;
+use DDDominio\Tests\EventSourcing\TestData\VersionedEventUpgrade10_20;
 
 class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -83,7 +83,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \DDDominio\EventSourcing\Common\ConcurrencyException
+     * @expectedException \DDDominio\EventSourcing\EventStore\ConcurrencyException
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
@@ -103,7 +103,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \DDDominio\EventSourcing\Common\EventStreamDoesNotExistException
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {

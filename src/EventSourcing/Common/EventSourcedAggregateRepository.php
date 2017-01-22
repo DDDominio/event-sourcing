@@ -2,6 +2,7 @@
 
 namespace DDDominio\EventSourcing\Common;
 
+use DDDominio\EventSourcing\EventStore\EventStore;
 use DDDominio\EventSourcing\Snapshotting\SnapshotStore;
 
 abstract class EventSourcedAggregateRepository

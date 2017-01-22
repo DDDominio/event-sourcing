@@ -1,8 +1,8 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Versioning\Upgrade;
 use DDDominio\EventSourcing\Versioning\Version;
 
