@@ -2,8 +2,8 @@
 
 namespace DDDominio\EventSourcing\Projection;
 
-use Common\Event;
-use DDDominio\EventSourcing\Common\EventStore;
+use DDDominio\Common\Event;
+use DDDominio\EventSourcing\EventStore\EventStore;
 
 class ProjectionBuilder
 {

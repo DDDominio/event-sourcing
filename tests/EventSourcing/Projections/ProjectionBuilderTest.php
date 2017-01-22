@@ -2,11 +2,13 @@
 
 namespace DDDominio\Tests\EventSourcing\Projections;
 
+use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEventStream;
+use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
+use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\Common\InMemoryEventStore;
-use DDDominio\EventSourcing\Common\StoredEvent;
-use DDDominio\EventSourcing\Common\StoredEventStream;
 use DDDominio\EventSourcing\Projection\ProjectionBuilder;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\Serializer;
@@ -16,8 +18,6 @@ use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use DDDominio\EventSourcing\Versioning\Version;
 use JMS\Serializer\SerializerBuilder;
-use DDDominio\Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
 
 class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 {
