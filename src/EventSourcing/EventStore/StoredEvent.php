@@ -1,6 +1,6 @@
 <?php
 
-namespace DDDominio\EventSourcing\Common;
+namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\Common\Event;
 use DDDominio\EventSourcing\Versioning\Version;

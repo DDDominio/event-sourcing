@@ -5,7 +5,7 @@ namespace DDDominio\Tests\EventSourcing\Snapshotting;
 use DDDominio\EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
 use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use DDDominio\EventSourcing\Snapshotting\Snapshotter;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 
 class SnapshotterTest extends \PHPUnit_Framework_TestCase
 {

@@ -2,12 +2,12 @@
 
 namespace DDDominio\Tests\EventSourcing\Common;
 
-use DDDominio\Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyCreated;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEntityNameChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\NotUnderstandableDomainEvent;
+use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
+use DDDominio\Tests\EventSourcing\TestData\DummyCreated;
+use DDDominio\Tests\EventSourcing\TestData\DummyEntityNameChanged;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\TestData\NotUnderstandableDomainEvent;
 
 class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 {

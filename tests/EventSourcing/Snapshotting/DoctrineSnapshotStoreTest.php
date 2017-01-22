@@ -11,8 +11,8 @@ use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Snapshotting\DoctrineSnapshotStore;
 use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\SerializerBuilder;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 
 class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -42,7 +42,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
         $this->connection->exec(
-            file_get_contents(__DIR__ . '/../dbal_event_store_schema.sql')
+            file_get_contents(__DIR__ . '/../TestData/dbal_event_store_schema.sql')
         );
 
         AnnotationRegistry::registerAutoloadNamespace(

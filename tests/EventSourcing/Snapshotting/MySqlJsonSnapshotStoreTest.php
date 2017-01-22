@@ -8,8 +8,8 @@ use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Snapshotting\MySqlJsonSnapshotStore;
 use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use JMS\Serializer\SerializerBuilder;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 
 class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {

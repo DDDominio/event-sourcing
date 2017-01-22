@@ -1,7 +1,8 @@
 <?php
 
-namespace DDDominio\EventSourcing\Common;
+namespace DDDominio\EventSourcing\EventStore;
 
+use DDDominio\EventSourcing\Common\EventStream;
 use Doctrine\DBAL\Connection;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;

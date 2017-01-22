@@ -2,15 +2,15 @@
 
 namespace DDDominio\Tests\EventSourcing\Common;
 
+use DDDominio\EventSourcing\EventStore\EventStore;
+use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEventStream;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\AggregateReconstructor;
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\Common\EventStore;
 use DDDominio\EventSourcing\Common\EventStream;
-use DDDominio\EventSourcing\Common\InMemoryEventStore;
-use DDDominio\EventSourcing\Common\StoredEvent;
-use DDDominio\EventSourcing\Common\StoredEventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Snapshotting\InMemorySnapshotStore;
@@ -21,11 +21,11 @@ use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use DDDominio\EventSourcing\Versioning\Version;
 use JMS\Serializer\SerializerBuilder;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyCreated;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregate;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummyEventSourcedAggregateRepository;
-use DDDominio\Tests\EventSourcing\Common\TestData\DummySnapshot;
-use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\TestData\DummyCreated;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
+use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregateRepository;
+use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
+use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 
 class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 {

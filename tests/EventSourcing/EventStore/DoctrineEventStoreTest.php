@@ -1,12 +1,12 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common;
+namespace DDDominio\Tests\EventSourcing\EventStore;
 
+use DDDominio\EventSourcing\EventStore\DoctrineEventStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
-use DDDominio\EventSourcing\Common\DoctrineEventStore;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\Serializer;
@@ -16,10 +16,10 @@ use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;
 use DDDominio\EventSourcing\Versioning\Version;
 use JMS\Serializer\SerializerBuilder;
-use DDDominio\Tests\EventSourcing\Common\TestData\DescriptionChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\NameChanged;
-use DDDominio\Tests\EventSourcing\Common\TestData\VersionedEvent;
-use DDDominio\Tests\EventSourcing\Common\TestData\VersionedEventUpgrade10_20;
+use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
+use DDDominio\Tests\EventSourcing\TestData\NameChanged;
+use DDDominio\Tests\EventSourcing\TestData\VersionedEvent;
+use DDDominio\Tests\EventSourcing\TestData\VersionedEventUpgrade10_20;
 
 class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 {
@@ -54,7 +54,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
         $this->connection->exec(
-            file_get_contents(__DIR__ . '/../dbal_event_store_schema.sql')
+            file_get_contents(__DIR__ . '/../TestData/dbal_event_store_schema.sql')
         );
 
         AnnotationRegistry::registerAutoloadNamespace(
@@ -125,7 +125,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \DDDominio\EventSourcing\Common\ConcurrencyException
+     * @expectedException \DDDominio\EventSourcing\EventStore\ConcurrencyException
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
@@ -142,7 +142,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \DDDominio\EventSourcing\Common\EventStreamDoesNotExistException
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {

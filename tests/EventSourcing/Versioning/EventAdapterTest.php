@@ -2,7 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\Versioning;
 
-use DDDominio\EventSourcing\Common\StoredEvent;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\TokenExtractor;

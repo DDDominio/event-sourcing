@@ -1,11 +1,11 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Common\DomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
-class DummySnapshot implements Snapshot
+class DummyCreated implements DomainEvent
 {
     /**
      * @var string
@@ -29,40 +29,24 @@ class DummySnapshot implements Snapshot
     private $description;
 
     /**
-     * @var int
+     * @var \DateTimeImmutable
      *
-     * @Serializer\Type("integer")
+     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
      */
-    private $version;
+    private $occurredOn;
 
     /**
      * @param string $id
      * @param string $name
      * @param string $description
-     * @param int $version
+     * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($id, $name, $description, $version)
+    public function __construct($id, $name, $description, \DateTimeImmutable $occurredOn)
     {
         $this->id = $id;
         $this->name = $name;
         $this->description = $description;
-        $this->version = $version;
-    }
-
-    /**
-     * @return string
-     */
-    public function aggregateClass()
-    {
-        return DummyEventSourcedAggregate::class;
-    }
-
-    /**
-     * @return string
-     */
-    public function aggregateId()
-    {
-        return $this->id();
+        $this->occurredOn = $occurredOn;
     }
 
     /**
@@ -90,10 +74,10 @@ class DummySnapshot implements Snapshot
     }
 
     /**
-     * @return int
+     * @return \DateTimeImmutable
      */
-    public function version()
+    public function occurredOn()
     {
-        return $this->version;
+        return $this->occurredOn;
     }
 }

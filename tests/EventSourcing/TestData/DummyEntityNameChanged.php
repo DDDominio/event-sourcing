@@ -1,15 +1,15 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Common\TestData;
+namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\AggregateDeleterDomainEvent;
+use DDDominio\EventSourcing\Common\DomainEvent;
 
-class DummyDeleted implements AggregateDeleterDomainEvent
+class DummyEntityNameChanged implements DomainEvent
 {
     /**
      * @var string
      */
-    private $id;
+    private $name;
 
     /**
      * @var \DateTimeImmutable
@@ -17,21 +17,21 @@ class DummyDeleted implements AggregateDeleterDomainEvent
     private $occurredOn;
 
     /**
-     * @param string $id
+     * @param string $name
      * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($id, \DateTimeImmutable $occurredOn)
+    public function __construct($name, \DateTimeImmutable $occurredOn)
     {
-        $this->id = $id;
+        $this->name = $name;
         $this->occurredOn = $occurredOn;
     }
 
     /**
      * @return string
      */
-    public function id()
+    public function name()
     {
-        return $this->id;
+        return $this->name;
     }
 
     /**
