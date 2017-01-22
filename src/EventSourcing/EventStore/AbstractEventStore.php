@@ -47,7 +47,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $events, $expectedVersion = 0)
+    public function appendToStream($streamId, $events, $expectedVersion = self::EXPECTED_VERSION_EMPTY_STREAM)
     {
         if ($this->streamExists($streamId)) {
             $this->assertOptimisticConcurrency($streamId, $expectedVersion);

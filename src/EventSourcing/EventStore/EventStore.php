@@ -9,6 +9,8 @@ interface EventStore
 {
     const AFTER_EVENTS_APPENDED = 'after_events_appended';
 
+    const EXPECTED_VERSION_EMPTY_STREAM = 0;
+
     /**
      * @param string $streamId
      * @param Event[] $events
@@ -16,7 +18,7 @@ interface EventStore
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
      */
-    public function appendToStream($streamId, $events, $expectedVersion = 0);
+    public function appendToStream($streamId, $events, $expectedVersion = self::EXPECTED_VERSION_EMPTY_STREAM);
 
     /**
      * @param string $streamId
