@@ -3,6 +3,7 @@
 namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\EventSourcing\Common\EventStream;
+use DDDominio\EventSourcing\Common\EventStreamInterface;
 use Doctrine\DBAL\Connection;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
@@ -32,7 +33,7 @@ class DoctrineEventStore extends AbstractEventStore
      * @param string $streamId
      * @param int $start
      * @param int $count
-     * @return EventStream
+     * @return EventStreamInterface
      */
     public function readStreamEventsForward($streamId, $start = 1, $count = null)
     {
@@ -68,7 +69,7 @@ class DoctrineEventStore extends AbstractEventStore
 
     /**
      * @param string $streamId
-     * @return EventStream
+     * @return EventStreamInterface
      */
     public function readFullStream($streamId)
     {
@@ -98,7 +99,7 @@ class DoctrineEventStore extends AbstractEventStore
     /**
      * @param string $type
      * @param Version $version
-     * @return EventStream
+     * @return EventStreamInterface
      */
     protected function readStoredEventsOfTypeAndVersion($type, $version)
     {

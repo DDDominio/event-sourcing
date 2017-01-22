@@ -4,6 +4,7 @@ namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\Common\Event;
 use DDDominio\EventSourcing\Common\EventStream;
+use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
@@ -68,7 +69,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
 
     /**
      * @param StoredEvent[] $storedEvents
-     * @return EventStream
+     * @return EventStreamInterface
      */
     protected function domainEventStreamFromStoredEvents($storedEvents)
     {
@@ -184,7 +185,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     /**
      * @param string $type
      * @param Version $version
-     * @return EventStream
+     * @return EventStreamInterface
      */
     protected abstract function readStoredEventsOfTypeAndVersion($type, $version);
 }

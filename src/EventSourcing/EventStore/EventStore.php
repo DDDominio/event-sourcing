@@ -3,7 +3,7 @@
 namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\Common\Event;
-use DDDominio\EventSourcing\Common\EventStream;
+use DDDominio\EventSourcing\Common\EventStreamInterface;
 
 interface EventStore
 {
@@ -24,13 +24,13 @@ interface EventStore
      * @param string $streamId
      * @param int $start
      * @param int $count
-     * @return EventStream
+     * @return EventStreamInterface
      */
     public function readStreamEventsForward($streamId, $start = 1, $count = null);
 
     /**
      * @param string $streamId
-     * @return EventStream
+     * @return EventStreamInterface
      */
     public function readFullStream($streamId);
 
