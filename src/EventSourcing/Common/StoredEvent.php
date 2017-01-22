@@ -21,7 +21,7 @@ class StoredEvent implements Event, Versionable
     /**
      * @var string
      */
-    private $name;
+    private $type;
 
     /**
      * @var string
@@ -41,16 +41,16 @@ class StoredEvent implements Event, Versionable
     /**
      * @param int $id
      * @param string $streamId
-     * @param string $name
+     * @param string $type
      * @param string $body
      * @param \DateTimeImmutable $occurredOn
      * @param Version $version
      */
-    public function __construct($id, $streamId, $name, $body, $occurredOn, $version)
+    public function __construct($id, $streamId, $type, $body, $occurredOn, $version)
     {
         $this->id = $id;
         $this->streamId = $streamId;
-        $this->name = $name;
+        $this->type = $type;
         $this->body = $body;
         $this->occurredOn = $occurredOn;
         $this->version = $version;
@@ -75,17 +75,17 @@ class StoredEvent implements Event, Versionable
     /**
      * @return string
      */
-    public function name()
+    public function type()
     {
-        return $this->name;
+        return $this->type;
     }
 
     /**
-     * @param string $name
+     * @param string $type
      */
-    public function setName($name)
+    public function setType($type)
     {
-        $this->name = $name;
+        $this->type = $type;
     }
 
     /**

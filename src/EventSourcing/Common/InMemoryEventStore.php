@@ -99,7 +99,7 @@ class InMemoryEventStore extends AbstractEventStore
         foreach ($this->streams as $stream) {
             /** @var StoredEvent $event */
             foreach ($stream as $event) {
-                if ($event->name() === $type && $event->version()->equalTo($version)) {
+                if ($event->type() === $type && $event->version()->equalTo($version)) {
                     $storedEvents[] = $event;
                 }
             }

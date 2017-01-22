@@ -75,7 +75,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
             $this->eventUpgrader->migrate($storedEvent);
             return $this->serializer->deserialize(
                 $storedEvent->body(),
-                $storedEvent->name()
+                $storedEvent->type()
             );
         }, $storedEvents);
         return new EventStream($domainEvents);

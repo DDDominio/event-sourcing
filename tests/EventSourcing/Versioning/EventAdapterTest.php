@@ -29,7 +29,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
 
         $eventAdapter->rename($storedEvent, 'New\Full\Class\Name');
 
-        $this->assertEquals('New\Full\Class\Name', $storedEvent->name());
+        $this->assertEquals('New\Full\Class\Name', $storedEvent->type());
     }
 
     /**

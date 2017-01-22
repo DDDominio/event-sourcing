@@ -41,7 +41,7 @@ class EventAdapter
      */
     public function rename($storedEvent, $newName)
     {
-        $storedEvent->setName($newName);
+        $storedEvent->setType($newName);
     }
 
     /**

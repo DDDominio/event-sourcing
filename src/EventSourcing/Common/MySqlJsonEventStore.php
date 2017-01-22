@@ -118,7 +118,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
                  VALUES (:streamId, :type, :event, :occurredOn, :version)'
                 );
                 $stmt->bindValue(':streamId', $streamId);
-                $stmt->bindValue(':type', $storedEvent->name());
+                $stmt->bindValue(':type', $storedEvent->type());
                 $stmt->bindValue(':event', $storedEvent->body());
                 $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
                 $stmt->bindValue(':version', $storedEvent->version());
