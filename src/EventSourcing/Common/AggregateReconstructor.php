@@ -22,7 +22,7 @@ class AggregateReconstructor
 
     /**
      * @param string $class
-     * @param EventStream $eventStream
+     * @param EventStreamInterface $eventStream
      * @param Snapshot $snapshot
      * @return EventSourcedAggregateRoot
      */
