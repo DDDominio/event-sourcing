@@ -3,23 +3,13 @@
 namespace DDDominio\Tests\EventSourcing\TestData;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
-use JMS\Serializer\Annotation as Serializer;
 
-class DescriptionChanged implements DomainEvent
+class DescriptionChanged extends DomainEvent
 {
     /**
      * @var string
-     *
-     * @Serializer\Type("string")
      */
     private $description;
-
-    /**
-     * @var \DateTimeImmutable
-     *
-     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
-     */
-    private $occurredOn;
 
     /**
      * @param string $description
@@ -28,7 +18,7 @@ class DescriptionChanged implements DomainEvent
     public function __construct($description, \DateTimeImmutable $occurredOn)
     {
         $this->description = $description;
-        $this->occurredOn = $occurredOn;
+        parent::__construct([], $occurredOn);
     }
 
     /**
@@ -37,13 +27,5 @@ class DescriptionChanged implements DomainEvent
     public function description()
     {
         return $this->description;
-    }
-
-    /**
-     * @return \DateTimeImmutable
-     */
-    public function occurredOn()
-    {
-        return $this->occurredOn;
     }
 }

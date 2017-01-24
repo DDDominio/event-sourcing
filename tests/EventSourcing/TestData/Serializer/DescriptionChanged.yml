@@ -1,0 +1,4 @@
+DDDominio\Tests\EventSourcing\TestData\DescriptionChanged:
+    properties:
+        description:
+            type: string

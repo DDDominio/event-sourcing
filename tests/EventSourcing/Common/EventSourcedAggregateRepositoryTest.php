@@ -45,7 +45,16 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             'JMS\Serializer\Annotation', __DIR__ . '/../../../vendor/jms/serializer/src'
         );
         $this->serializer = new JsonSerializer(
-            SerializerBuilder::create()->build()
+            SerializerBuilder::create()
+                ->addMetadataDir(
+                    __DIR__ . '/../TestData/Serializer',
+                    'DDDominio\Tests\EventSourcing\TestData'
+                )
+                ->addMetadataDir(
+                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    'DDDominio\EventSourcing\Common'
+                )
+                ->build()
         );
         $tokenExtractor = new TokenExtractor();
         $jsonTransformer = new JsonTransformer($tokenExtractor);
@@ -344,6 +353,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
                 'streamId',
                 get_class($domainEvent),
                 $this->serializer->serialize($domainEvent),
+                $this->serializer->serialize($domainEvent->metadata()),
                 $domainEvent->occurredOn(),
                 Version::fromString('1.0')
             );

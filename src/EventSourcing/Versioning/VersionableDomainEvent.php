@@ -2,8 +2,8 @@
 
 namespace DDDominio\EventSourcing\Versioning;
 
-use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\Common\Event;
 
-interface VersionableDomainEvent extends DomainEvent, Versionable
+interface VersionableDomainEvent extends Event, Versionable
 {
 }

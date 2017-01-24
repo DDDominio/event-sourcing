@@ -2,10 +2,12 @@
 
 namespace DDDominio\EventSourcing\Common;
 
+use DDDominio\Common\Event;
+
 trait EventSourcedAggregateRoot
 {
     /**
-     * @var DomainEvent[]
+     * @var Event[]
      */
     private $changes = [];
 
@@ -15,11 +17,11 @@ trait EventSourcedAggregateRoot
     private $version = 0;
 
     /**
-     * @param DomainEvent $domainEvent
+     * @param Event $domainEvent
      * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply(DomainEvent $domainEvent, $trackChanges = true)
+    public function apply(Event $domainEvent, $trackChanges = true)
     {
         $eventHandlerName = $this->getEventHandlerName($domainEvent);
         if (!method_exists($this, $eventHandlerName)) {
@@ -27,17 +29,17 @@ trait EventSourcedAggregateRoot
                 throw new DomainEventNotUnderstandableException();
             }
         } else {
-            $this->executeDomainEventHandler($this, $eventHandlerName, $domainEvent, $trackChanges);
+            $this->executeEventHandler($this, $eventHandlerName, $domainEvent, $trackChanges);
         }
     }
 
     /**
      * @param string $eventHandlerName
-     * @param DomainEvent $domainEvent
+     * @param Event $domainEvent
      * @param bool $trackChanges
      * @return bool
      */
-    private function applyRecursively($eventHandlerName, DomainEvent $domainEvent, $trackChanges)
+    private function applyRecursively($eventHandlerName, Event $domainEvent, $trackChanges)
     {
         $applied = false;
         $reflectedClass = new \ReflectionClass(get_class($this));
@@ -45,14 +47,14 @@ trait EventSourcedAggregateRoot
             $propertyValue = $this->{$property->getName()};
             if (is_object($propertyValue)) {
                 if (method_exists($propertyValue, $eventHandlerName)) {
-                    $this->executeDomainEventHandler($propertyValue, $eventHandlerName, $domainEvent, $trackChanges);
+                    $this->executeEventHandler($propertyValue, $eventHandlerName, $domainEvent, $trackChanges);
                     $applied = true;
                 }
             }
             if (is_array($propertyValue)) {
                 foreach ($propertyValue as $item) {
                     if (method_exists($item, $eventHandlerName)) {
-                        $this->executeDomainEventHandler($item, $eventHandlerName, $domainEvent, $trackChanges);
+                        $this->executeEventHandler($item, $eventHandlerName, $domainEvent, $trackChanges);
                         $applied = true;
                     }
                 }
@@ -62,7 +64,7 @@ trait EventSourcedAggregateRoot
     }
 
     /**
-     * @param DomainEvent $domainEvent
+     * @param Event $domainEvent
      * @return string
      */
     private function getEventHandlerName($domainEvent)
@@ -73,10 +75,10 @@ trait EventSourcedAggregateRoot
     /**
      * @param object $entity
      * @param string $eventHandlerName
-     * @param DomainEvent $domainEvent
+     * @param Event $domainEvent
      * @param bool $trackChanges
      */
-    private function executeDomainEventHandler($entity, $eventHandlerName, $domainEvent, $trackChanges)
+    private function executeEventHandler($entity, $eventHandlerName, $domainEvent, $trackChanges)
     {
         $entity->{$eventHandlerName}($domainEvent);
         if ($trackChanges) {

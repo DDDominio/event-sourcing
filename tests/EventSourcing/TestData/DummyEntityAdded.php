@@ -4,7 +4,7 @@ namespace DDDominio\Tests\EventSourcing\TestData;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
 
-class DummyEntityAdded implements DomainEvent
+class DummyEntityAdded extends DomainEvent
 {
     /**
      * @var string
@@ -17,11 +17,6 @@ class DummyEntityAdded implements DomainEvent
     private $name;
 
     /**
-     * @var \DateTimeImmutable
-     */
-    private $occurredOn;
-
-    /**
      * @param string $id
      * @param string $name
      * @param \DateTimeImmutable $occurredOn
@@ -30,7 +25,7 @@ class DummyEntityAdded implements DomainEvent
     {
         $this->id = $id;
         $this->name = $name;
-        $this->occurredOn = $occurredOn;
+        parent::__construct([], $occurredOn);
     }
 
     /**
@@ -47,13 +42,5 @@ class DummyEntityAdded implements DomainEvent
     public function name()
     {
         return $this->name;
-    }
-
-    /**
-     * @return \DateTimeImmutable
-     */
-    public function occurredOn()
-    {
-        return $this->occurredOn;
     }
 }

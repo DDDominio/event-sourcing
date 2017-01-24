@@ -107,8 +107,8 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     }
 
     /**
-     * @param $streamId
-     * @param $events
+     * @param string $streamId
+     * @param Event[] $events
      * @return array
      */
     private function storedEventsFromEvents($streamId, $events)
@@ -125,6 +125,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                 $streamId,
                 get_class($event),
                 $this->serializer->serialize($event),
+                $this->serializer->serialize($event->metadata()),
                 $event->occurredOn(),
                 $version
             );

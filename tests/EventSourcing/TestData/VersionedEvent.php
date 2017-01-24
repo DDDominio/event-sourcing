@@ -2,25 +2,17 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
+use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Versioning\Version;
 use DDDominio\EventSourcing\Versioning\VersionableDomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
-class VersionedEvent implements VersionableDomainEvent
+class VersionedEvent extends DomainEvent implements VersionableDomainEvent
 {
     /**
      * @var string
-     *
-     * @Serializer\Type("string")
      */
     private $username;
-
-    /**
-     * @var \DateTimeImmutable
-     *
-     * @Serializer\Type("DateTimeImmutable<'Y-m-d H:i:s'>")
-     */
-    private $occurredOn;
 
     /**
      * @param string $username
@@ -29,7 +21,7 @@ class VersionedEvent implements VersionableDomainEvent
     public function __construct($username, \DateTimeImmutable $occurredOn)
     {
         $this->username = $username;
-        $this->occurredOn = $occurredOn;
+        parent::__construct([], $occurredOn);
     }
 
     /**
@@ -38,14 +30,6 @@ class VersionedEvent implements VersionableDomainEvent
     public function username()
     {
         return $this->username;
-    }
-
-    /**
-     * @return \DateTimeImmutable
-     */
-    public function occurredOn()
-    {
-        return $this->occurredOn;
     }
 
     /**

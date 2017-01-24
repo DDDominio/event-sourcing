@@ -40,7 +40,16 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             'JMS\Serializer\Annotation', __DIR__ . '/../../../vendor/jms/serializer/src'
         );
         $this->serializer = new JsonSerializer(
-            SerializerBuilder::create()->build()
+            SerializerBuilder::create()
+                ->addMetadataDir(
+                    __DIR__ . '/../TestData/Serializer',
+                    'DDDominio\Tests\EventSourcing\TestData'
+                )
+                ->addMetadataDir(
+                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    'DDDominio\EventSourcing\Common'
+                )
+                ->build()
         );
         $tokenExtractor = new TokenExtractor();
         $jsonTransformer = new JsonTransformer($tokenExtractor);
@@ -124,6 +133,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             'streamId',
             get_class($domainEvent),
             $this->serializer->serialize($domainEvent),
+            $this->serializer->serialize($domainEvent->metadata()),
             $domainEvent->occurredOn(),
             Version::fromString('1.0')
         );
@@ -244,6 +254,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             'streamId',
             VersionedEvent::class,
             '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}',
+            '{}',
             new \DateTimeImmutable('2016-12-04 17:35:35'),
             Version::fromString('1.0')
         );
@@ -271,6 +282,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             'streamId',
             VersionedEvent::class,
             '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}',
+            '{}',
             new \DateTimeImmutable('2016-12-04 17:35:35'),
             Version::fromString('1.0')
         );
@@ -298,6 +310,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             'streamId',
             VersionedEvent::class,
             '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}',
+            '{}',
             new \DateTimeImmutable('2016-12-04 17:35:35'),
             Version::fromString('1.0')
         );
@@ -385,6 +398,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
                 'streamId',
                 get_class($domainEvent),
                 $this->serializer->serialize($domainEvent),
+                $this->serializer->serialize($domainEvent->metadata()),
                 $domainEvent->occurredOn(),
                 Version::fromString('1.0')
             );

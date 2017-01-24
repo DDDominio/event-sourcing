@@ -25,6 +25,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             NameChanged::class,
             '{"name":"Name","version":"1.0"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
@@ -46,6 +47,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             NameChanged::class,
             '{"username":"Name","version":"2.0"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('2.0')
         );
@@ -67,6 +69,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Event\Type\Without\Upgrade',
             '{"name":"Name","version":"1.0"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
@@ -88,6 +91,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             NameChanged::class,
             '{"name":"Name","version":"1.5"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.5')
         );
@@ -109,6 +113,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Event\Type\Without\Upgrade',
             '{"username":"Name","version":"2.0"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('2.0')
         );
@@ -130,6 +135,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             NameChanged::class,
             '{"username":"Name","version":"1.5"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.5')
         );
@@ -151,6 +157,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             NameChanged::class,
             '{"name":"Name","version":"1.0"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
@@ -172,6 +179,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'streamId',
             NameChanged::class,
             '{"version":"3.0","name":{"first":"Name","last":""}}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('3.0')
         );

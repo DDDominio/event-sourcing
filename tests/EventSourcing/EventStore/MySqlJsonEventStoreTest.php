@@ -55,7 +55,16 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->serializer = new JsonSerializer(
-            SerializerBuilder::create()->build()
+            SerializerBuilder::create()
+                ->addMetadataDir(
+                    __DIR__ . '/../TestData/Serializer',
+                    'DDDominio\Tests\EventSourcing\TestData'
+                )
+                ->addMetadataDir(
+                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    'DDDominio\EventSourcing\Common'
+                )
+                ->build()
         );
 
         $tokenExtractor = new TokenExtractor();
@@ -257,12 +266,13 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurred_on, version)
-                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+            'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':type', VersionedEvent::class);
         $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':metadata', '{}');
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();
@@ -289,12 +299,13 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurred_on, version)
-                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+            'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':type', VersionedEvent::class);
         $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':metadata', '{}');
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();

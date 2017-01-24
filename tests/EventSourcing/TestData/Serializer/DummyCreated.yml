@@ -1,0 +1,8 @@
+DDDominio\Tests\EventSourcing\TestData\DummyCreated:
+    properties:
+        id:
+            type: string
+        name:
+            type: string
+        description:
+            type: string

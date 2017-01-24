@@ -2,6 +2,8 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-interface AggregateDeleterDomainEvent extends DomainEvent
+use DDDominio\Common\Event;
+
+interface AggregateDeleterDomainEvent extends Event
 {
 }

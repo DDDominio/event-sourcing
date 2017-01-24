@@ -1,0 +1,4 @@
+DDDominio\Tests\EventSourcing\TestData\VersionedEvent:
+    properties:
+        username:
+            type: string

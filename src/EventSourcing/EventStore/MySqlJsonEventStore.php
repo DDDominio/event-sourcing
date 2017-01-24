@@ -61,6 +61,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
                 $event['stream_id'],
                 $event['type'],
                 $event['event'],
+                $event['metadata'],
                 new \DateTimeImmutable($event['occurred_on']),
                 Version::fromString($event['version'])
             );
@@ -90,6 +91,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
                 $event['stream_id'],
                 $event['type'],
                 $event['event'],
+                $event['metadata'],
                 new \DateTimeImmutable($event['occurred_on']),
                 Version::fromString($event['version'])
             );
@@ -116,12 +118,13 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
             }
             foreach ($storedEvents as $storedEvent) {
                 $stmt = $this->connection->prepare(
-                    'INSERT INTO events (stream_id, type, event, occurred_on, version)
-                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+                    'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
                 );
                 $stmt->bindValue(':streamId', $streamId);
                 $stmt->bindValue(':type', $storedEvent->type());
                 $stmt->bindValue(':event', $storedEvent->body());
+                $stmt->bindValue(':metadata', $storedEvent->metadata());
                 $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
                 $stmt->bindValue(':version', $storedEvent->version());
                 $stmt->execute();
@@ -187,6 +190,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
                 $result['stream_id'],
                 $result['type'],
                 $result['event'],
+                $result['metadata'],
                 new \DateTimeImmutable($result['occurred_on']),
                 Version::fromString($result['version'])
             );

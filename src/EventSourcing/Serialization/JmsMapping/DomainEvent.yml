@@ -1,0 +1,6 @@
+DDDominio\EventSourcing\Common\DomainEvent:
+    properties:
+        metadata:
+            type: array
+        occurredOn:
+            type: DateTimeImmutable<'Y-m-d H:i:s'>

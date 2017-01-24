@@ -1,0 +1,4 @@
+DDDominio\Tests\EventSourcing\TestData\DummyEntityNameChanged:
+    properties:
+        name:
+            type: string
