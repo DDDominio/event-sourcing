@@ -24,7 +24,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             NameChanged::class,
-            '{"name":"Name","version":"1.0"}',
+            '{"name":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
@@ -32,7 +32,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('2.0'));
 
-        $this->assertEquals('{"version":"2.0","username":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('2.0'), $storedEvent->version());
     }
 
@@ -46,7 +46,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             NameChanged::class,
-            '{"username":"Name","version":"2.0"}',
+            '{"username":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('2.0')
@@ -54,7 +54,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"version":"1.0","name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('1.0'), $storedEvent->version());
     }
 
@@ -68,7 +68,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             'Event\Type\Without\Upgrade',
-            '{"name":"Name","version":"1.0"}',
+            '{"name":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
@@ -76,7 +76,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('2.0'));
 
-        $this->assertEquals('{"name":"Name","version":"1.0"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('1.0'), $storedEvent->version());
     }
 
@@ -90,7 +90,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             NameChanged::class,
-            '{"name":"Name","version":"1.5"}',
+            '{"name":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.5')
@@ -98,7 +98,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('2.0'));
 
-        $this->assertEquals('{"name":"Name","version":"1.5"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('1.5'), $storedEvent->version());
     }
 
@@ -112,7 +112,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             'Event\Type\Without\Upgrade',
-            '{"username":"Name","version":"2.0"}',
+            '{"username":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('2.0')
@@ -120,7 +120,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"username":"Name","version":"2.0"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('2.0'), $storedEvent->version());
     }
 
@@ -134,7 +134,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             NameChanged::class,
-            '{"username":"Name","version":"1.5"}',
+            '{"username":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.5')
@@ -142,7 +142,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"username":"Name","version":"1.5"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('1.5'), $storedEvent->version());
     }
 
@@ -156,7 +156,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             NameChanged::class,
-            '{"name":"Name","version":"1.0"}',
+            '{"name":"Name"}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
@@ -164,7 +164,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent);
 
-        $this->assertEquals('{"version":"3.0","name":{"first":"Name","last":""}}', $storedEvent->body());
+        $this->assertEquals('{"name":{"first":"Name","last":""}}', $storedEvent->body());
         $this->assertEquals(Version::fromString('3.0'), $storedEvent->version());
     }
 
@@ -178,7 +178,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
             'id',
             'streamId',
             NameChanged::class,
-            '{"version":"3.0","name":{"first":"Name","last":""}}',
+            '{"name":{"first":"Name","last":""}}',
             '{}',
             new \DateTimeImmutable(),
             Version::fromString('3.0')
@@ -186,7 +186,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"version":"1.0","name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
         $this->assertEquals(Version::fromString('1.0'), $storedEvent->version());
     }
 

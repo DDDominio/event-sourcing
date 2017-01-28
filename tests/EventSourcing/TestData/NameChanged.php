@@ -2,11 +2,13 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Versioning\Version;
-use DDDominio\EventSourcing\Versioning\Versionable;
+use DDDominio\EventSourcing\Versioning\Annotation\Version;
 use JMS\Serializer\Annotation as Serializer;
 
-class NameChanged implements Versionable
+/**
+ * @Version("3.0")
+ */
+class NameChanged
 {
     /**
      * @var string
@@ -29,13 +31,5 @@ class NameChanged implements Versionable
     public function name()
     {
         return $this->name;
-    }
-
-    /**
-     * @return Version
-     */
-    public function version()
-    {
-        return Version::fromString('3.0');
     }
 }

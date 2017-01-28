@@ -2,7 +2,6 @@
 
 namespace DDDominio\EventSourcing\EventStore;
 
-use DDDominio\Common\Event;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
@@ -10,7 +9,6 @@ use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
 use DDDominio\EventSourcing\Versioning\Version;
-use DDDominio\EventSourcing\Versioning\Versionable;
 use Ramsey\Uuid\Uuid;
 
 abstract class AbstractEventStore implements EventStore, UpgradableEventStore
@@ -114,13 +112,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      */
     private function storedEventsFromEvents($streamId, $events)
     {
-        $storedEvents = array_map(function (Event $event) use ($streamId) {
-            if ($event instanceof Versionable) {
-                $version = $event->version();
-            } else {
-                $version = Version::fromString('1.0');
-            }
-
+        $storedEvents = array_map(function (DomainEvent $event) use ($streamId) {
             return new StoredEvent(
                 $this->nextStoredEventId(),
                 $streamId,
@@ -128,7 +120,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                 $this->serializer->serialize($event->data()),
                 $this->serializer->serialize($event->metadata()),
                 $event->occurredOn(),
-                $version
+                is_null($event->version()) ? Version::fromString('1.0') : $event->version()
             );
         }, $events);
         return $storedEvents;

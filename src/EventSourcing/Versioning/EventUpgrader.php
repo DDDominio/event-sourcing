@@ -59,9 +59,6 @@ class EventUpgrader
             foreach ($this->upgrades[$storedEvent->type()] as $upgrade) {
                 if ($storedEvent->version()->equalTo($upgrade->from())) {
                     $upgrade->upgrade($storedEvent);
-                    $this->eventAdapter->changeValue($storedEvent, "version", function() use ($upgrade) {
-                        return (string)$upgrade->to();
-                    });
                     $storedEvent->setVersion($upgrade->to());
                     if (!is_null($version) && $upgrade->to()->equalTo($version)) {
                         return;
@@ -82,9 +79,6 @@ class EventUpgrader
             foreach ($upgrades as $upgrade) {
                 if ($storedEvent->version()->equalTo($upgrade->to())) {
                     $upgrade->downgrade($storedEvent);
-                    $this->eventAdapter->changeValue($storedEvent, "version", function() use ($upgrade) {
-                        return (string)$upgrade->from();
-                    });
                     $storedEvent->setVersion($upgrade->from());
                     if (!is_null($version) && $upgrade->to()->equalTo($version)) {
                         return;

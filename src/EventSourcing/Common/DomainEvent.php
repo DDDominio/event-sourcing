@@ -3,7 +3,7 @@
 namespace DDDominio\EventSourcing\Common;
 
 use DDDominio\Common\Event;
-use JMS\Serializer\Annotation as Serializer;
+use DDDominio\EventSourcing\Versioning\Version;
 
 class DomainEvent implements Event
 {
@@ -23,25 +23,33 @@ class DomainEvent implements Event
     private $occurredOn;
 
     /**
+     * @var Version
+     */
+    private $version;
+
+    /**
      * @param mixed $data
      * @param array $metadata
      * @param \DateTimeImmutable $occurredOn
+     * @param Version|null $version
      */
-    public function __construct($data, array $metadata = [], \DateTimeImmutable $occurredOn)
+    public function __construct($data, array $metadata = [], \DateTimeImmutable $occurredOn, $version = null)
     {
         $this->data = $data;
         $this->metadata = new MetadataBag($metadata);
         $this->occurredOn = $occurredOn;
+        $this->version = $version;
     }
 
     /**
      * @param mixed $data
      * @param array $metadata
+     * @param Version|null $version
      * @return DomainEvent
      */
-    public static function record($data, array $metadata = [])
+    public static function record($data, array $metadata = [], $version = null)
     {
-        return new self($data, $metadata, new \DateTimeImmutable());
+        return new self($data, $metadata, new \DateTimeImmutable(), $version);
     }
 
     /**
@@ -66,5 +74,13 @@ class DomainEvent implements Event
     public function occurredOn()
     {
         return $this->occurredOn;
+    }
+
+    /**
+     * @return Version|null
+     */
+    public function version()
+    {
+        return $this->version;
     }
 }
