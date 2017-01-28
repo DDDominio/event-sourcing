@@ -2,9 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\DomainEvent;
-
-class DummyEntityNameChanged extends DomainEvent
+class DummyEntityNameChanged
 {
     /**
      * @var string
@@ -13,12 +11,10 @@ class DummyEntityNameChanged extends DomainEvent
 
     /**
      * @param string $name
-     * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($name, \DateTimeImmutable $occurredOn)
+    public function __construct($name)
     {
         $this->name = $name;
-        parent::__construct([], $occurredOn);
     }
 
     /**

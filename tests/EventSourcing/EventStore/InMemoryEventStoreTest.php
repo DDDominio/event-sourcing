@@ -66,7 +66,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
         $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $stream = $eventStore->readFullStream('streamId');
@@ -81,7 +81,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function appendAnEventToAnExistentStream()
     {
         $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $eventStore->appendToStream('streamId', [$domainEvent], 1);
@@ -127,12 +127,12 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEventStream()
     {
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
         $storedEvent = new StoredEvent(
             'id',
             'streamId',
-            get_class($domainEvent),
-            $this->serializer->serialize($domainEvent),
+            get_class($domainEvent->data()),
+            $this->serializer->serialize($domainEvent->data()),
             $this->serializer->serialize($domainEvent->metadata()),
             $domainEvent->occurredOn(),
             Version::fromString('1.0')
@@ -147,7 +147,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readFullStream('streamId');
 
         $this->assertCount(1, $stream);
-        $this->assertInstanceOf(DomainEvent::class, $stream->events()[0]);
+        $this->assertInstanceOf(NameChanged::class, $stream->events()[0]);
     }
 
     /**
@@ -169,10 +169,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsForward()
     {
         $domainEvents = [
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -197,10 +197,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsForwardWithEventCount()
     {
         $domainEvents = [
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -225,10 +225,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
         $domainEvents = [
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -343,14 +343,16 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     {
         $appendedEvents = [];
         $eventListener = function($events) use (&$appendedEvents) {
-            $appendedEvents = $events;
+            foreach ($events as $event) {
+                $appendedEvents[] = $event->data();
+            }
         };
         $eventStore = new InMemoryEventStore(
             $this->serializer,
             $this->eventUpgrader
         );
         $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $eventListener);
-        $events = [new NameChanged('name', new \DateTimeImmutable())];
+        $events = [DomainEvent::record(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
@@ -378,7 +380,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $anEventListener);
         $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $anotherEventListener);
-        $events = [new NameChanged('name', new \DateTimeImmutable())];
+        $events = [DomainEvent::record(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
@@ -396,8 +398,8 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             return new StoredEvent(
                 'id',
                 'streamId',
-                get_class($domainEvent),
-                $this->serializer->serialize($domainEvent),
+                get_class($domainEvent->data()),
+                $this->serializer->serialize($domainEvent->data()),
                 $this->serializer->serialize($domainEvent->metadata()),
                 $domainEvent->occurredOn(),
                 Version::fromString('1.0')

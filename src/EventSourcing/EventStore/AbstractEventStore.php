@@ -3,6 +3,7 @@
 namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\Common\Event;
+use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\Serialization\Serializer;
@@ -43,7 +44,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
 
     /**
      * @param string $streamId
-     * @param Event[] $events
+     * @param DomainEvent[] $events
      * @param int $expectedVersion
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
@@ -108,7 +109,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
 
     /**
      * @param string $streamId
-     * @param Event[] $events
+     * @param DomainEvent[] $events
      * @return array
      */
     private function storedEventsFromEvents($streamId, $events)
@@ -123,8 +124,8 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
             return new StoredEvent(
                 $this->nextStoredEventId(),
                 $streamId,
-                get_class($event),
-                $this->serializer->serialize($event),
+                get_class($event->data()),
+                $this->serializer->serialize($event->data()),
                 $this->serializer->serialize($event->metadata()),
                 $event->occurredOn(),
                 $version

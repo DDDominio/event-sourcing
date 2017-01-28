@@ -2,10 +2,9 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\DomainEvent;
 use JMS\Serializer\Annotation as Serializer;
 
-class DummyCreated extends DomainEvent
+class DummyCreated
 {
     /**
      * @var string
@@ -26,14 +25,12 @@ class DummyCreated extends DomainEvent
      * @param string $id
      * @param string $name
      * @param string $description
-     * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($id, $name, $description, \DateTimeImmutable $occurredOn)
+    public function __construct($id, $name, $description)
     {
         $this->id = $id;
         $this->name = $name;
         $this->description = $description;
-        parent::__construct([], $occurredOn);
     }
 
     /**

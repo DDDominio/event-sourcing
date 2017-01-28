@@ -2,9 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\DomainEvent;
-
-class DescriptionChanged extends DomainEvent
+class DescriptionChanged
 {
     /**
      * @var string
@@ -13,12 +11,10 @@ class DescriptionChanged extends DomainEvent
 
     /**
      * @param string $description
-     * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($description, \DateTimeImmutable $occurredOn)
+    public function __construct($description)
     {
         $this->description = $description;
-        parent::__construct([], $occurredOn);
     }
 
     /**

@@ -203,8 +203,12 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function findAnAggregateCooperatesWithAggregateReconstructor()
     {
         $domainEvents = [
-            new DummyCreated('id', 'name', 'description', new \DateTimeImmutable()),
-            new NameChanged('new name', new \DateTimeImmutable())
+            DomainEvent::record(
+                new DummyCreated('id', 'name', 'description')
+            ),
+            DomainEvent::record(
+                new NameChanged('new name')
+            )
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
@@ -332,7 +336,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     private function buildDummyDomainEvents($eventCount)
     {
-        $event = new NameChanged('name', new \DateTimeImmutable());
+        $event = DomainEvent::record(new NameChanged('name'));
         $events = [];
         while ($eventCount > 0) {
             $events[] = $event;
@@ -351,8 +355,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             return new StoredEvent(
                 'id',
                 'streamId',
-                get_class($domainEvent),
-                $this->serializer->serialize($domainEvent),
+                get_class($domainEvent->data()),
+                $this->serializer->serialize($domainEvent->data()),
                 $this->serializer->serialize($domainEvent->metadata()),
                 $domainEvent->occurredOn(),
                 Version::fromString('1.0')

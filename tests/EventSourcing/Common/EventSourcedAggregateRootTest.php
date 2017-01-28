@@ -9,7 +9,7 @@ use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 use DDDominio\Tests\EventSourcing\TestData\NotUnderstandableDomainEvent;
 
-class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
+class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var DummyEventSourcedAggregate
@@ -104,7 +104,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
      */
     public function applyDifferentDomainEvent()
     {
-        $descriptionChangedEvent = new DescriptionChanged('new description', new \DateTimeImmutable());
+        $descriptionChangedEvent = new DescriptionChanged('new description');
 
         $this->eventSourcedAggregate->apply($descriptionChangedEvent, false);
 
@@ -133,10 +133,9 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(1, count($changes));
-        /** @var NameChanged $change */
         $change = $changes[0];
-        $this->assertInstanceOf(NameChanged::class, $change);
-        $this->assertEquals('new name', $change->name());
+        $this->assertInstanceOf(NameChanged::class, $change->data());
+        $this->assertEquals('new name', $change->data()->name());
     }
 
     /**
@@ -149,14 +148,12 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(2, count($changes));
-        /** @var NameChanged $firstChange */
         $firstChange = $changes[0];
-        $this->assertInstanceOf(NameChanged::class, $firstChange);
-        $this->assertEquals('new name', $firstChange->name());
-        /** @var DescriptionChanged $secondChange */
+        $this->assertInstanceOf(NameChanged::class, $firstChange->data());
+        $this->assertEquals('new name', $firstChange->data()->name());
         $secondChange = $changes[1];
-        $this->assertInstanceOf(DescriptionChanged::class, $secondChange);
-        $this->assertEquals('new description', $secondChange->description());
+        $this->assertInstanceOf(DescriptionChanged::class, $secondChange->data());
+        $this->assertEquals('new description', $secondChange->data()->description());
     }
 
     /**
@@ -263,8 +260,8 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $changes = $aggregate->changes();
         $lastChange = end($changes);
-        $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange);
-        $this->assertEquals('new entity name', $lastChange->name());
+        $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange->data());
+        $this->assertEquals('new entity name', $lastChange->data()->name());
     }
 
     /**
@@ -280,7 +277,7 @@ class EventSourcedAggregateTest extends \PHPUnit_Framework_TestCase
 
         $changes = $aggregate->changes();
         $lastChange = end($changes);
-        $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange);
-        $this->assertEquals('new entity name', $lastChange->name());
+        $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange->data());
+        $this->assertEquals('new entity name', $lastChange->data()->name());
     }
 }

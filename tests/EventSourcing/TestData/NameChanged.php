@@ -2,12 +2,11 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Versioning\Version;
-use DDDominio\EventSourcing\Versioning\VersionableDomainEvent;
+use DDDominio\EventSourcing\Versioning\Versionable;
 use JMS\Serializer\Annotation as Serializer;
 
-class NameChanged extends DomainEvent implements VersionableDomainEvent
+class NameChanged implements Versionable
 {
     /**
      * @var string
@@ -18,12 +17,10 @@ class NameChanged extends DomainEvent implements VersionableDomainEvent
 
     /**
      * @param string $name
-     * @param \DateTimeImmutable $occurredOn
      */
-    public function __construct($name, \DateTimeImmutable $occurredOn)
+    public function __construct($name)
     {
         $this->name = $name;
-        parent::__construct([], $occurredOn);
     }
 
     /**

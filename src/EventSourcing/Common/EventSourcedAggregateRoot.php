@@ -7,7 +7,7 @@ use DDDominio\Common\Event;
 trait EventSourcedAggregateRoot
 {
     /**
-     * @var Event[]
+     * @var DomainEvent[]
      */
     private $changes = [];
 
@@ -17,29 +17,29 @@ trait EventSourcedAggregateRoot
     private $version = 0;
 
     /**
-     * @param Event $domainEvent
+     * @param mixed $domainEventData
      * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply(Event $domainEvent, $trackChanges = true)
+    public function apply($domainEventData, $trackChanges = true)
     {
-        $eventHandlerName = $this->getEventHandlerName($domainEvent);
+        $eventHandlerName = $this->getEventHandlerName($domainEventData);
         if (!method_exists($this, $eventHandlerName)) {
-            if (!$this->applyRecursively($eventHandlerName, $domainEvent, $trackChanges)) {
+            if (!$this->applyRecursively($eventHandlerName, $domainEventData, $trackChanges)) {
                 throw new DomainEventNotUnderstandableException();
             }
         } else {
-            $this->executeEventHandler($this, $eventHandlerName, $domainEvent, $trackChanges);
+            $this->executeEventHandler($this, $eventHandlerName, $domainEventData, $trackChanges);
         }
     }
 
     /**
      * @param string $eventHandlerName
-     * @param Event $domainEvent
+     * @param mixed $domainEventData
      * @param bool $trackChanges
      * @return bool
      */
-    private function applyRecursively($eventHandlerName, Event $domainEvent, $trackChanges)
+    private function applyRecursively($eventHandlerName, $domainEventData, $trackChanges)
     {
         $applied = false;
         $reflectedClass = new \ReflectionClass(get_class($this));
@@ -47,14 +47,14 @@ trait EventSourcedAggregateRoot
             $propertyValue = $this->{$property->getName()};
             if (is_object($propertyValue)) {
                 if (method_exists($propertyValue, $eventHandlerName)) {
-                    $this->executeEventHandler($propertyValue, $eventHandlerName, $domainEvent, $trackChanges);
+                    $this->executeEventHandler($propertyValue, $eventHandlerName, $domainEventData, $trackChanges);
                     $applied = true;
                 }
             }
             if (is_array($propertyValue)) {
                 foreach ($propertyValue as $item) {
                     if (method_exists($item, $eventHandlerName)) {
-                        $this->executeEventHandler($item, $eventHandlerName, $domainEvent, $trackChanges);
+                        $this->executeEventHandler($item, $eventHandlerName, $domainEventData, $trackChanges);
                         $applied = true;
                     }
                 }
@@ -75,14 +75,18 @@ trait EventSourcedAggregateRoot
     /**
      * @param object $entity
      * @param string $eventHandlerName
-     * @param Event $domainEvent
+     * @param Event $domainEventData
      * @param bool $trackChanges
      */
-    private function executeEventHandler($entity, $eventHandlerName, $domainEvent, $trackChanges)
+    private function executeEventHandler($entity, $eventHandlerName, $domainEventData, $trackChanges)
     {
-        $entity->{$eventHandlerName}($domainEvent);
+        $entity->{$eventHandlerName}($domainEventData);
         if ($trackChanges) {
-            $this->changes[] = $domainEvent;
+            $this->changes[] = new DomainEvent(
+                $domainEventData,
+                [],
+                new \DateTimeImmutable()
+            );
         }
         $this->increaseAggregateVersion();
     }
@@ -93,7 +97,7 @@ trait EventSourcedAggregateRoot
     }
 
     /**
-     * @return array
+     * @return DomainEvent[]
      */
     public function changes()
     {
