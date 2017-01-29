@@ -77,10 +77,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                     $storedEvent->body(),
                     $storedEvent->type()
                 ),
-                $this->serializer->deserialize(
-                    $storedEvent->metadata(),
-                    MetadataBag::class
-                )->all(),
+                json_decode($storedEvent->metadata(), true),
                 $storedEvent->occurredOn(),
                 $storedEvent->version()
             );
@@ -124,7 +121,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                 $streamId,
                 get_class($event->data()),
                 $this->serializer->serialize($event->data()),
-                $this->serializer->serialize($event->metadata()),
+                json_encode($event->metadata()->all()),
                 $event->occurredOn(),
                 is_null($event->version()) ? Version::fromString('1.0') : $event->version()
             );
