@@ -7,8 +7,6 @@ use DDDominio\EventSourcing\Common\EventStreamInterface;
 
 interface EventStore
 {
-    const AFTER_EVENTS_APPENDED = 'after_events_appended';
-
     const EXPECTED_VERSION_EMPTY_STREAM = 0;
 
     /**

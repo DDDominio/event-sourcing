@@ -2,7 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\EventStore;
 
-use DDDominio\EventSourcing\EventStore\EventStore;
+use DDDominio\EventSourcing\EventStore\EventStoreEvents;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
@@ -339,7 +339,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function addAfterEventsAppendedEventListener()
+    public function addPostAppendEventListener()
     {
         $appendedEvents = [];
         $eventListener = function($events) use (&$appendedEvents) {
@@ -351,7 +351,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer,
             $this->eventUpgrader
         );
-        $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $eventListener);
+        $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $eventListener);
         $events = [DomainEvent::record(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
@@ -364,7 +364,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function addMultipleAfterEventsAppendedEventListener()
+    public function addMultiplePostAppendEventListener()
     {
         $anEventListenerCalled = false;
         $anEventListener = function() use (&$anEventListenerCalled) {
@@ -378,14 +378,39 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer,
             $this->eventUpgrader
         );
-        $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $anEventListener);
-        $eventStore->addEventListener(EventStore::AFTER_EVENTS_APPENDED, $anotherEventListener);
+        $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $anEventListener);
+        $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $anotherEventListener);
         $events = [DomainEvent::record(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
         $this->assertTrue($anEventListenerCalled);
         $this->assertTrue($anotherEventListenerCalled);
+    }
+
+    /**
+     * @test
+     */
+    public function addPreAppendEventListener()
+    {
+        $appendedEvents = [];
+        $eventListener = function($events) use (&$appendedEvents) {
+            foreach ($events as $event) {
+                $appendedEvents[] = $event->data();
+            }
+        };
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader
+        );
+        $eventStore->addEventListener(EventStoreEvents::PRE_APPEND, $eventListener);
+        $events = [DomainEvent::record(new NameChanged('name'))];
+
+        $eventStore->appendToStream('streamId', $events);
+
+        $this->assertCount(1, $appendedEvents);
+        $this->assertInstanceOf(NameChanged::class, $appendedEvents[0]);
+        $this->assertEquals('name', $appendedEvents[0]->name());
     }
 
     /**

@@ -54,16 +54,13 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
         } else {
             $this->assertEventStreamExistence($expectedVersion);
         }
+        $this->executeEventListeners($events, EventStoreEvents::PRE_APPEND);
         $this->appendStoredEvents(
             $streamId,
             $this->storedEventsFromEvents($streamId, $events),
             $expectedVersion
         );
-        if (isset($this->eventListeners[EventStore::AFTER_EVENTS_APPENDED])) {
-            foreach ($this->eventListeners[EventStore::AFTER_EVENTS_APPENDED] as $eventListener) {
-                $eventListener($events);
-            }
-        }
+        $this->executeEventListeners($events, EventStoreEvents::POST_APPEND);
     }
 
     /**
@@ -182,4 +179,17 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      * @return EventStreamInterface
      */
     protected abstract function readStoredEventsOfTypeAndVersion($type, $version);
+
+    /**
+     * @param DomainEvent[] $events
+     * @param string $eventStoreEvent
+     */
+    protected function executeEventListeners($events, $eventStoreEvent)
+    {
+        if (isset($this->eventListeners[$eventStoreEvent])) {
+            foreach ($this->eventListeners[$eventStoreEvent] as $eventListener) {
+                $eventListener($events);
+            }
+        }
+    }
 }
