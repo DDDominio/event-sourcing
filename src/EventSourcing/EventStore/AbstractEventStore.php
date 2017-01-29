@@ -5,7 +5,6 @@ namespace DDDominio\EventSourcing\EventStore;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
-use DDDominio\EventSourcing\Common\MetadataBag;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
@@ -77,10 +76,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                     $storedEvent->body(),
                     $storedEvent->type()
                 ),
-                $this->serializer->deserialize(
-                    $storedEvent->metadata(),
-                    MetadataBag::class
-                )->all(),
+                json_decode($storedEvent->metadata(), true),
                 $storedEvent->occurredOn(),
                 $storedEvent->version()
             );
@@ -124,7 +120,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
                 $streamId,
                 get_class($event->data()),
                 $this->serializer->serialize($event->data()),
-                $this->serializer->serialize($event->metadata()),
+                json_encode($event->metadata()->all()),
                 $event->occurredOn(),
                 is_null($event->version()) ? Version::fromString('1.0') : $event->version()
             );
