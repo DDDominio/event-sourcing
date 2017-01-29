@@ -280,4 +280,15 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange->data());
         $this->assertEquals('new entity name', $lastChange->data()->name());
     }
+
+    public function useTheOccurredOnValueOfDomainEventInTheEventHandler()
+    {
+        $nameChangedEvent = new NameChanged('new name');
+        $nameChangedAtBeforeApplyEvent = $this->eventSourcedAggregate->nameChangedAt();
+
+        $this->eventSourcedAggregate->apply($nameChangedEvent, false);
+
+        $this->assertNull($nameChangedAtBeforeApplyEvent);
+        $this->assertGreaterThan(new \DateTimeImmutable(), $this->eventSourcedAggregate->nameChangedAt());
+    }
 }

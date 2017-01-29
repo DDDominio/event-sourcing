@@ -7,7 +7,7 @@ class MetadataBag
     /**
      * @var array
      */
-    private $metadata;
+    private $metadata = [];
 
     /**
      * @param array $metadata

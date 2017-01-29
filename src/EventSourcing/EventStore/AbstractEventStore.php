@@ -5,6 +5,7 @@ namespace DDDominio\EventSourcing\EventStore;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
+use DDDominio\EventSourcing\Common\MetadataBag;
 use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
@@ -71,9 +72,17 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     {
         $domainEvents = array_map(function (StoredEvent $storedEvent) {
             $this->eventUpgrader->migrate($storedEvent);
-            return $this->serializer->deserialize(
-                $storedEvent->body(),
-                $storedEvent->type()
+            return new DomainEvent(
+                $this->serializer->deserialize(
+                    $storedEvent->body(),
+                    $storedEvent->type()
+                ),
+                $this->serializer->deserialize(
+                    $storedEvent->metadata(),
+                    MetadataBag::class
+                )->all(),
+                $storedEvent->occurredOn(),
+                $storedEvent->version()
             );
         }, $storedEvents);
         return new EventStream($domainEvents);

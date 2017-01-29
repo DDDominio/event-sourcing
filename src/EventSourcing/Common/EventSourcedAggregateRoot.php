@@ -2,8 +2,6 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use DDDominio\Common\Event;
-
 trait EventSourcedAggregateRoot
 {
     /**
@@ -17,29 +15,32 @@ trait EventSourcedAggregateRoot
     private $version = 0;
 
     /**
-     * @param mixed $domainEventData
+     * @param mixed $domainEvent
      * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply($domainEventData, $trackChanges = true)
+    public function apply($domainEvent, $trackChanges = true)
     {
-        $eventHandlerName = $this->getEventHandlerName($domainEventData);
-        if (!method_exists($this, $eventHandlerName)) {
-            if (!$this->applyRecursively($eventHandlerName, $domainEventData, $trackChanges)) {
-                throw new DomainEventNotUnderstandableException();
-            }
+        if (!$domainEvent instanceof DomainEvent) {
+            $domainEvent = DomainEvent::record($domainEvent);
+        }
+        if ($trackChanges) {
+            $this->changes[] = $domainEvent;
+        }
+        $eventHandlerName = $this->getEventHandlerName($domainEvent);
+        if (method_exists($this, $eventHandlerName)) {
+            $this->executeEventHandler($this, $eventHandlerName, $domainEvent);
         } else {
-            $this->executeEventHandler($this, $eventHandlerName, $domainEventData, $trackChanges);
+            $this->applyRecursively($eventHandlerName, $domainEvent);
         }
     }
 
     /**
      * @param string $eventHandlerName
      * @param mixed $domainEventData
-     * @param bool $trackChanges
-     * @return bool
+     * @throws DomainEventNotUnderstandableException
      */
-    private function applyRecursively($eventHandlerName, $domainEventData, $trackChanges)
+    private function applyRecursively($eventHandlerName, $domainEventData)
     {
         $applied = false;
         $reflectedClass = new \ReflectionClass(get_class($this));
@@ -47,47 +48,41 @@ trait EventSourcedAggregateRoot
             $propertyValue = $this->{$property->getName()};
             if (is_object($propertyValue)) {
                 if (method_exists($propertyValue, $eventHandlerName)) {
-                    $this->executeEventHandler($propertyValue, $eventHandlerName, $domainEventData, $trackChanges);
+                    $this->executeEventHandler($propertyValue, $eventHandlerName, $domainEventData);
                     $applied = true;
                 }
             }
             if (is_array($propertyValue)) {
                 foreach ($propertyValue as $item) {
                     if (method_exists($item, $eventHandlerName)) {
-                        $this->executeEventHandler($item, $eventHandlerName, $domainEventData, $trackChanges);
+                        $this->executeEventHandler($item, $eventHandlerName, $domainEventData);
                         $applied = true;
                     }
                 }
             }
         }
-        return $applied;
+        if (!$applied) {
+            throw new DomainEventNotUnderstandableException();
+        }
     }
 
     /**
-     * @param Event $domainEvent
+     * @param DomainEvent $domainEvent
      * @return string
      */
     private function getEventHandlerName($domainEvent)
     {
-        return 'when' . (new \ReflectionClass($domainEvent))->getShortName();
+        return 'when' . (new \ReflectionClass($domainEvent->data()))->getShortName();
     }
 
     /**
      * @param object $entity
      * @param string $eventHandlerName
-     * @param Event $domainEventData
-     * @param bool $trackChanges
+     * @param DomainEvent $domainEvent
      */
-    private function executeEventHandler($entity, $eventHandlerName, $domainEventData, $trackChanges)
+    private function executeEventHandler($entity, $eventHandlerName, $domainEvent)
     {
-        $entity->{$eventHandlerName}($domainEventData);
-        if ($trackChanges) {
-            $this->changes[] = new DomainEvent(
-                $domainEventData,
-                [],
-                new \DateTimeImmutable()
-            );
-        }
+        $entity->{$eventHandlerName}($domainEvent->data(), $domainEvent->occurredOn());
         $this->increaseAggregateVersion();
     }
 

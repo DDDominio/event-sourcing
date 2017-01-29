@@ -1,6 +1,6 @@
 DDDominio\EventSourcing\Common\DomainEvent:
     properties:
         metadata:
-            type: array
+            type: DDDominio\EventSourcing\Common\MetadataBag
         occurredOn:
             type: DateTimeImmutable<'Y-m-d H:i:s'>

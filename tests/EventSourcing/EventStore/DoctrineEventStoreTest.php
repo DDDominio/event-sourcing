@@ -230,9 +230,9 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
-        $this->assertEquals('new description', $events[0]->description());
-        $this->assertEquals('another name', $events[1]->name());
-        $this->assertEquals('my name', $events[2]->name());
+        $this->assertEquals('new description', $events[0]->data()->description());
+        $this->assertEquals('another name', $events[1]->data()->name());
+        $this->assertEquals('my name', $events[2]->data()->name());
     }
 
     /**
@@ -256,8 +256,8 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
-        $this->assertEquals('new description', $events[0]->description());
-        $this->assertEquals('another name', $events[1]->name());
+        $this->assertEquals('new description', $events[0]->data()->description());
+        $this->assertEquals('another name', $events[1]->data()->name());
     }
 
     /**
@@ -312,7 +312,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readFullStream('streamId');
 
         $domainEvent = $stream->events()[0];
-        $this->assertEquals('Name', $domainEvent->username());
+        $this->assertEquals('Name', $domainEvent->data()->username());
     }
 
     /**
@@ -345,7 +345,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readStreamEventsForward('streamId');
 
         $domainEvent = $stream->events()[0];
-        $this->assertEquals('Name', $domainEvent->username());
+        $this->assertEquals('Name', $domainEvent->data()->username());
     }
 
     /**
@@ -385,7 +385,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $stream);
         $event = $stream->events()[0];
         $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
-        $this->assertEquals('Name', $event->username());
+        $this->assertEquals('Name', $event->data()->username());
         $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
     }
 }

@@ -35,6 +35,11 @@ class DummyEventSourcedAggregate
     private $entityMember;
 
     /**
+     * @var \DateTimeImmutable
+     */
+    private $nameChangedAt;
+
+    /**
      * @param $id
      * @param string $name
      * @param string $description
@@ -42,7 +47,7 @@ class DummyEventSourcedAggregate
     public function __construct($id, $name, $description)
     {
         $this->assertValidName($name);
-        $this->apply(new DummyCreated($id, $name, $description, new \DateTimeImmutable()));
+        $this->apply(new DummyCreated($id, $name, $description));
     }
 
     /**
@@ -75,12 +80,20 @@ class DummyEventSourcedAggregate
     }
 
     /**
+     * @return \DateTimeImmutable
+     */
+    public function nameChangedAt()
+    {
+        return $this->nameChangedAt;
+    }
+
+    /**
      * @param string $name
      */
     public function changeName($name)
     {
         $this->assertValidName($name);
-        $this->apply(new NameChanged($name, new \DateTimeImmutable()));
+        $this->apply(new NameChanged($name));
     }
 
     /**
@@ -95,10 +108,12 @@ class DummyEventSourcedAggregate
 
     /**
      * @param NameChanged $event
+     * @param \DateTimeImmutable $occurredOn
      */
-    private function whenNameChanged(NameChanged $event)
+    private function whenNameChanged(NameChanged $event, \DateTimeImmutable $occurredOn)
     {
         $this->name = $event->name();
+        $this->nameChangedAt = $occurredOn;
     }
 
     /**
@@ -114,7 +129,7 @@ class DummyEventSourcedAggregate
      */
     public function changeDescription($description)
     {
-        $this->apply(new DescriptionChanged($description, new \DateTimeImmutable()));
+        $this->apply(new DescriptionChanged($description));
     }
 
     /**
@@ -140,7 +155,7 @@ class DummyEventSourcedAggregate
      */
     public function addDummyEntity($id, $name)
     {
-        $this->apply(new DummyEntityAdded($id, $name, new \DateTimeImmutable()));
+        $this->apply(new DummyEntityAdded($id, $name));
     }
 
     /**
