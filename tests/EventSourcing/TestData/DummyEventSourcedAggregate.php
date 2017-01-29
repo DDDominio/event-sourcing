@@ -2,6 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
+use DDDominio\EventSourcing\Common\Annotation\AggregateId;
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 
 class DummyEventSourcedAggregate
@@ -57,6 +58,8 @@ class DummyEventSourcedAggregate
 
     /**
      * @return string
+     *
+     * @AggregateId()
      */
     public function id()
     {

@@ -44,6 +44,9 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         AnnotationRegistry::registerAutoloadNamespace(
             'JMS\Serializer\Annotation', __DIR__ . '/../../../vendor/jms/serializer/src'
         );
+        AnnotationRegistry::registerFile(
+            __DIR__ . '/../../../src/EventSourcing/Common/Annotation/AggregateId.php'
+        );
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
@@ -79,7 +82,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->add($aggregate);
 
-        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-id');
+        $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class . '-id');
         $this->assertCount(3, $stream->events());
     }
 
@@ -100,7 +103,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->add($aggregate);
 
-        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-anotherId');
+        $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class . '-anotherId');
         $this->assertCount(3, $stream->events());
     }
 
@@ -109,7 +112,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function saveAnAggregate()
     {
-        $stream = $this->buildDummyStoredEventStream('DummyEventSourcedAggregate-id', 2);
+        $stream = $this->buildDummyStoredEventStream(DummyEventSourcedAggregate::class .'-id', 2);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
             $this->eventUpgrader,
@@ -127,7 +130,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->save($aggregate);
 
-        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-id');
+        $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class .'-id');
         $this->assertCount(5, $stream->events());
     }
 
@@ -136,7 +139,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function saveAnotherAggregate()
     {
-        $stream = $this->buildDummyStoredEventStream('DummyEventSourcedAggregate-anotherId', 2);
+        $stream = $this->buildDummyStoredEventStream(DummyEventSourcedAggregate::class .'-anotherId', 2);
         $eventStore = new InMemoryEventStore(
             $this->serializer,
             $this->eventUpgrader,
@@ -154,7 +157,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repository->save($aggregate);
 
-        $stream = $eventStore->readFullStream('DummyEventSourcedAggregate-anotherId');
+        $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class .'-anotherId');
         $this->assertCount(5, $stream->events());
     }
 
@@ -258,7 +261,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $eventStore
             ->expects($this->once())
             ->method('readStreamEventsForward')
-            ->with('DummyEventSourcedAggregate-id', $snapshot->version() + 1)
+            ->with(DummyEventSourcedAggregate::class . '-id', $snapshot->version() + 1)
             ->willReturn($stream);
         $snapshotStore = $this->createMock(SnapshotStore::class);
         $snapshotStore
@@ -269,7 +272,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $aggregateReconstructor
             ->expects($this->once())
             ->method('reconstitute')
-            ->with('DummyEventSourcedAggregate', $stream, $snapshot);
+            ->with(DummyEventSourcedAggregate::class, $stream, $snapshot);
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
