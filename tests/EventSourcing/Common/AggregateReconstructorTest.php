@@ -12,9 +12,15 @@ use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\DummyReflectionSnapshotTranslator;
 use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 use DDDominio\Tests\EventSourcing\TestData\NameChanged;
+use Doctrine\Common\Annotations\AnnotationRegistry;
 
 class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
 {
+    protected function setUp()
+    {
+        AnnotationRegistry::registerLoader('class_exists');
+    }
+
     /**
      * @test
      */

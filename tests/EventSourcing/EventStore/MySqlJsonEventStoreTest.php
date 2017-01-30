@@ -50,10 +50,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->connection->query('TRUNCATE events')->execute();
         $this->connection->query('DELETE FROM streams')->execute();
 
-        AnnotationRegistry::registerAutoloadNamespace(
-            'JMS\Serializer\Annotation',
-            __DIR__ . '/../../../vendor/jms/serializer/src'
-        );
+        AnnotationRegistry::registerLoader('class_exists');
 
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()

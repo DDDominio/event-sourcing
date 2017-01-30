@@ -11,9 +11,7 @@ class VersionTest extends \PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
-        AnnotationRegistry::registerFile(
-            __DIR__ . '/../../../../src/EventSourcing/Versioning/Annotation/Version.php'
-        );
+        AnnotationRegistry::registerLoader('class_exists');
     }
 
     /**

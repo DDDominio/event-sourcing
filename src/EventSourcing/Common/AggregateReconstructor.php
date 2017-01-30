@@ -2,8 +2,10 @@
 
 namespace DDDominio\EventSourcing\Common;
 
+use DDDominio\EventSourcing\Common\Annotation\AggregateDeleter;
 use DDDominio\EventSourcing\Snapshotting\Snapshot;
 use DDDominio\EventSourcing\Snapshotting\Snapshotter;
+use Doctrine\Common\Annotations\AnnotationReader;
 
 class AggregateReconstructor
 {
@@ -13,11 +15,17 @@ class AggregateReconstructor
     private $snapshooter;
 
     /**
+     * @var AnnotationReader
+     */
+    private $annotationReader;
+
+    /**
      * @param Snapshotter $snapshotter
      */
     public function __construct($snapshotter)
     {
         $this->snapshooter = $snapshotter;
+        $this->annotationReader = new AnnotationReader();
     }
 
     /**
@@ -35,9 +43,15 @@ class AggregateReconstructor
         }
 
         $events = $eventStream->events();
-        $lastEvent = end($events);
-        if ($lastEvent instanceof AggregateDeleterDomainEvent) {
-            return null;
+        if (!$eventStream->isEmpty()) {
+            $lastEvent = end($events);
+            $aggregateDeleterAnnotation = $this->annotationReader->getClassAnnotation(
+                new \ReflectionClass(get_class($lastEvent)),
+                AggregateDeleter::class
+            );
+            if (!is_null($aggregateDeleterAnnotation)) {
+                return null;
+            }
         }
 
         if ($snapshot instanceof Snapshot) {

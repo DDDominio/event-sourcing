@@ -41,12 +41,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        AnnotationRegistry::registerAutoloadNamespace(
-            'JMS\Serializer\Annotation', __DIR__ . '/../../../vendor/jms/serializer/src'
-        );
-        AnnotationRegistry::registerFile(
-            __DIR__ . '/../../../src/EventSourcing/Common/Annotation/AggregateId.php'
-        );
+        AnnotationRegistry::registerLoader('class_exists');
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(

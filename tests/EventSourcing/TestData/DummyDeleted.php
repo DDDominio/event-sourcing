@@ -2,9 +2,12 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Common\AggregateDeleterDomainEvent;
+use DDDominio\EventSourcing\Common\Annotation\AggregateDeleter;
 
-class DummyDeleted implements AggregateDeleterDomainEvent
+/**
+ * @AggregateDeleter()
+ */
+class DummyDeleted
 {
     /**
      * @var string

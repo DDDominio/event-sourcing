@@ -45,10 +45,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             file_get_contents(__DIR__ . '/../TestData/dbal_event_store_schema.sql')
         );
 
-        AnnotationRegistry::registerAutoloadNamespace(
-            'JMS\Serializer\Annotation',
-            __DIR__ . '/../../../vendor/jms/serializer/src'
-        );
+        AnnotationRegistry::registerLoader('class_exists');
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
