@@ -131,7 +131,10 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStoreInterf
             }
             $streamFinalVersion = $this->streamVersion($streamId);
             if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
-                throw new ConcurrencyException();
+                throw ConcurrencyException::fromVersions(
+                    $this->streamVersion($streamId),
+                    $expectedVersion
+                );
             }
             $this->connection->commit();
         } catch (\Exception $e) {

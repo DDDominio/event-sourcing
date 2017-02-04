@@ -93,7 +93,10 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
     {
         if ($expectedVersion !== self::EXPECTED_VERSION_ANY
             && $expectedVersion !== $this->streamVersion($streamId)) {
-            throw new ConcurrencyException();
+            throw ConcurrencyException::fromVersions(
+                $this->streamVersion($streamId),
+                $expectedVersion
+            );
         }
     }
 

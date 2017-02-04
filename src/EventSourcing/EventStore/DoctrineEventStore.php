@@ -160,7 +160,10 @@ class DoctrineEventStore extends AbstractEventStore
             }
             $streamFinalVersion = $this->streamVersion($streamId);
             if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
-                throw new ConcurrencyException();
+                throw ConcurrencyException::fromVersions(
+                    $this->streamVersion($streamId),
+                    $expectedVersion
+                );
             }
         });
     }
