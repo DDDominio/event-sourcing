@@ -8,6 +8,7 @@ use DDDominio\EventSourcing\Common\EventStreamInterface;
 interface EventStoreInterface
 {
     const EXPECTED_VERSION_EMPTY_STREAM = 0;
+    const EXPECTED_VERSION_ANY = -1;
 
     /**
      * @param string $streamId

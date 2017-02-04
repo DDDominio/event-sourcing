@@ -91,7 +91,8 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
      */
     private function assertOptimisticConcurrency($streamId, $expectedVersion)
     {
-        if ($this->streamVersion($streamId) !== $expectedVersion) {
+        if ($expectedVersion !== self::EXPECTED_VERSION_ANY
+            && $expectedVersion !== $this->streamVersion($streamId)) {
             throw new ConcurrencyException();
         }
     }

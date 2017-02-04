@@ -3,6 +3,7 @@
 namespace DDDominio\Tests\EventSourcing\EventStore;
 
 use DDDominio\EventSourcing\EventStore\EventStoreEvents;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
@@ -409,6 +410,32 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $appendedEvents);
         $this->assertInstanceOf(NameChanged::class, $appendedEvents[0]);
         $this->assertEquals('name', $appendedEvents[0]->name());
+    }
+
+    /**
+     * @test
+     */
+    public function appendEventsWithoutTakeIntoAccountExpectedVersion()
+    {
+        $domainEvents = [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            ['streamId' => $storedEventStream]
+        );
+
+        $eventStore->appendToStream(
+            'streamId',
+            [DomainEvent::record(new NameChanged('name'))],
+            EventStoreInterface::EXPECTED_VERSION_ANY
+        );
     }
 
     /**
