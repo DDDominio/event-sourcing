@@ -52,7 +52,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
         if ($this->streamExists($streamId)) {
             $this->assertOptimisticConcurrency($streamId, $expectedVersion);
         } else {
-            $this->assertEventStreamExistence($expectedVersion);
+            $this->assertEventStreamExistence($streamId, $expectedVersion);
         }
         $this->executeEventListeners($events, EventStoreEvents::PRE_APPEND);
         $this->appendStoredEvents(
@@ -101,13 +101,14 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
     }
 
     /**
+     * @param string $streamId
      * @param int $expectedVersion
      * @throws EventStreamDoesNotExistException
      */
-    private function assertEventStreamExistence($expectedVersion)
+    private function assertEventStreamExistence($streamId, $expectedVersion)
     {
         if ($expectedVersion > 0) {
-            throw new EventStreamDoesNotExistException();
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
         }
     }
 
