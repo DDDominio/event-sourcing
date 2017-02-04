@@ -62,7 +62,10 @@ trait EventSourcedAggregateRoot
             }
         }
         if (!$applied) {
-            throw new DomainEventNotUnderstandableException();
+            throw DomainEventNotUnderstandableException::fromAggreagteAndEventTypes(
+                get_class($this),
+                get_class($domainEventData)
+            );
         }
     }
 
