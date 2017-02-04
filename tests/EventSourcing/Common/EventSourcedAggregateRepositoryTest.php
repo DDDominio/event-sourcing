@@ -78,7 +78,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository->add($aggregate);
 
         $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class . '-id');
-        $this->assertCount(3, $stream->events());
+        $this->assertCount(3, $stream);
     }
 
     /**
@@ -99,7 +99,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository->add($aggregate);
 
         $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class . '-anotherId');
-        $this->assertCount(3, $stream->events());
+        $this->assertCount(3, $stream);
     }
 
     /**
@@ -126,7 +126,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository->save($aggregate);
 
         $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class .'-id');
-        $this->assertCount(5, $stream->events());
+        $this->assertCount(5, $stream);
     }
 
     /**
@@ -153,7 +153,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository->save($aggregate);
 
         $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class .'-anotherId');
-        $this->assertCount(5, $stream->events());
+        $this->assertCount(5, $stream);
     }
 
     /**

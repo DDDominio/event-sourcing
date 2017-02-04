@@ -4,7 +4,7 @@ namespace DDDominio\EventSourcing\Common;
 
 use DDDominio\Common\EventInterface;
 
-interface EventStreamInterface extends \IteratorAggregate
+interface EventStreamInterface extends \IteratorAggregate, \Countable
 {
     /**
      * @param EventInterface[] $events
