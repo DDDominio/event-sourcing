@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/DDDominio/common",
-                "reference": "cd44450a4fac4279f5aa16b6bda2754e2a21cce8"
+                "reference": "be796202e78150f58604bd81c89a7c1df89750e3"
             },
             "require": {
                 "php": "^5.6 || ^7.0"
@@ -46,7 +46,7 @@
                 }
             ],
             "description": "Common library for DDDominio Framework",
-            "time": "2017-01-18 19:33:43"
+            "time": "2017-02-04 14:36:52"
         },
         {
             "name": "doctrine/annotations",

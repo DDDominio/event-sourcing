@@ -2,10 +2,10 @@
 
 namespace DDDominio\EventSourcing\Serialization;
 
-interface Serializer
+interface SerializerInterface
 {
     /**
-     * @param object $object
+     * @param object|array $object
      * @return string
      */
     public function serialize($object);
@@ -13,7 +13,7 @@ interface Serializer
     /**
      * @param string $serializedObject
      * @param string $class
-     * @return object
+     * @return object|array
      */
     public function deserialize($serializedObject, $class);
 }

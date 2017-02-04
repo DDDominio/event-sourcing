@@ -2,18 +2,17 @@
 
 namespace DDDominio\EventSourcing\EventStore;
 
-use DDDominio\Common\Event;
+use DDDominio\Common\EventInterface;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 
-interface EventStore
+interface EventStoreInterface
 {
-    const AFTER_EVENTS_APPENDED = 'after_events_appended';
-
     const EXPECTED_VERSION_EMPTY_STREAM = 0;
+    const EXPECTED_VERSION_ANY = -1;
 
     /**
      * @param string $streamId
-     * @param Event[] $events
+     * @param EventInterface[] $events
      * @param int $expectedVersion
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException

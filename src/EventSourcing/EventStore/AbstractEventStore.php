@@ -2,20 +2,19 @@
 
 namespace DDDominio\EventSourcing\EventStore;
 
-use DDDominio\Common\Event;
+use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
-use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
+use DDDominio\EventSourcing\Versioning\UpgradableEventStoreInterface;
 use DDDominio\EventSourcing\Versioning\Version;
-use DDDominio\EventSourcing\Versioning\Versionable;
 use Ramsey\Uuid\Uuid;
 
-abstract class AbstractEventStore implements EventStore, UpgradableEventStore
+abstract class AbstractEventStore implements EventStoreInterface, UpgradableEventStoreInterface
 {
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -30,7 +29,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     private $eventListeners;
 
     /**
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      * @param EventUpgrader $eventUpgrader
      */
     public function __construct(
@@ -43,7 +42,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
 
     /**
      * @param string $streamId
-     * @param Event[] $events
+     * @param DomainEvent[] $events
      * @param int $expectedVersion
      * @throws ConcurrencyException
      * @throws EventStreamDoesNotExistException
@@ -53,18 +52,15 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
         if ($this->streamExists($streamId)) {
             $this->assertOptimisticConcurrency($streamId, $expectedVersion);
         } else {
-            $this->assertEventStreamExistence($expectedVersion);
+            $this->assertEventStreamExistence($streamId, $expectedVersion);
         }
+        $this->executeEventListeners($events, EventStoreEvents::PRE_APPEND);
         $this->appendStoredEvents(
             $streamId,
             $this->storedEventsFromEvents($streamId, $events),
             $expectedVersion
         );
-        if (isset($this->eventListeners[EventStore::AFTER_EVENTS_APPENDED])) {
-            foreach ($this->eventListeners[EventStore::AFTER_EVENTS_APPENDED] as $eventListener) {
-                $eventListener($events);
-            }
-        }
+        $this->executeEventListeners($events, EventStoreEvents::POST_APPEND);
     }
 
     /**
@@ -75,9 +71,14 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     {
         $domainEvents = array_map(function (StoredEvent $storedEvent) {
             $this->eventUpgrader->migrate($storedEvent);
-            return $this->serializer->deserialize(
-                $storedEvent->body(),
-                $storedEvent->type()
+            return new DomainEvent(
+                $this->serializer->deserialize(
+                    $storedEvent->data(),
+                    $storedEvent->type()
+                ),
+                json_decode($storedEvent->metadata(), true),
+                $storedEvent->occurredOn(),
+                $storedEvent->version()
             );
         }, $storedEvents);
         return new EventStream($domainEvents);
@@ -90,43 +91,43 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      */
     private function assertOptimisticConcurrency($streamId, $expectedVersion)
     {
-        if ($this->streamVersion($streamId) !== $expectedVersion) {
-            throw new ConcurrencyException();
+        if ($expectedVersion !== self::EXPECTED_VERSION_ANY
+            && $expectedVersion !== $this->streamVersion($streamId)) {
+            throw ConcurrencyException::fromVersions(
+                $this->streamVersion($streamId),
+                $expectedVersion
+            );
         }
     }
 
     /**
+     * @param string $streamId
      * @param int $expectedVersion
      * @throws EventStreamDoesNotExistException
      */
-    private function assertEventStreamExistence($expectedVersion)
+    private function assertEventStreamExistence($streamId, $expectedVersion)
     {
         if ($expectedVersion > 0) {
-            throw new EventStreamDoesNotExistException();
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
         }
     }
 
     /**
-     * @param $streamId
-     * @param $events
+     * @param string $streamId
+     * @param DomainEvent[] $events
      * @return array
      */
     private function storedEventsFromEvents($streamId, $events)
     {
-        $storedEvents = array_map(function (Event $event) use ($streamId) {
-            if ($event instanceof Versionable) {
-                $version = $event->version();
-            } else {
-                $version = Version::fromString('1.0');
-            }
-
+        $storedEvents = array_map(function (DomainEvent $event) use ($streamId) {
             return new StoredEvent(
                 $this->nextStoredEventId(),
                 $streamId,
-                get_class($event),
-                $this->serializer->serialize($event),
+                get_class($event->data()),
+                $this->serializer->serialize($event->data()),
+                json_encode($event->metadata()->all()),
                 $event->occurredOn(),
-                $version
+                is_null($event->version()) ? Version::fromString('1.0') : $event->version()
             );
         }, $events);
         return $storedEvents;
@@ -188,4 +189,17 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
      * @return EventStreamInterface
      */
     protected abstract function readStoredEventsOfTypeAndVersion($type, $version);
+
+    /**
+     * @param DomainEvent[] $events
+     * @param string $eventStoreEvent
+     */
+    protected function executeEventListeners($events, $eventStoreEvent)
+    {
+        if (isset($this->eventListeners[$eventStoreEvent])) {
+            foreach ($this->eventListeners[$eventStoreEvent] as $eventListener) {
+                $eventListener($events);
+            }
+        }
+    }
 }

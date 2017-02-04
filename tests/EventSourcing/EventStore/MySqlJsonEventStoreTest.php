@@ -2,11 +2,12 @@
 
 namespace DDDominio\Tests\EventSourcing\EventStore;
 
+use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\EventStore\MySqlJsonEventStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -30,7 +31,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     private $connection;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -49,13 +50,19 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->connection->query('TRUNCATE events')->execute();
         $this->connection->query('DELETE FROM streams')->execute();
 
-        AnnotationRegistry::registerAutoloadNamespace(
-            'JMS\Serializer\Annotation',
-            __DIR__ . '/../../../vendor/jms/serializer/src'
-        );
+        AnnotationRegistry::registerLoader('class_exists');
 
         $this->serializer = new JsonSerializer(
-            SerializerBuilder::create()->build()
+            SerializerBuilder::create()
+                ->addMetadataDir(
+                    __DIR__ . '/../TestData/Serializer',
+                    'DDDominio\Tests\EventSourcing\TestData'
+                )
+                ->addMetadataDir(
+                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    'DDDominio\EventSourcing\Common'
+                )
+                ->build()
         );
 
         $tokenExtractor = new TokenExtractor();
@@ -77,7 +84,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer,
             $this->eventUpgrader
         );
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $stream = $eventStore->readFullStream('streamId');
@@ -96,7 +103,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer,
             $this->eventUpgrader
         );
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $eventStore->appendToStream('streamId', [$domainEvent], 1);
@@ -111,7 +118,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
         $eventStore = new MySqlJsonEventStore(
             $this->connection,
             $this->serializer,
@@ -133,7 +140,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer,
             $this->eventUpgrader
         );
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
 
         $eventStore->appendToStream('newStreamId', [$domainEvent], 10);
     }
@@ -148,7 +155,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->serializer,
             $this->eventUpgrader
         );
-        $domainEvent = new NameChanged('name', new \DateTimeImmutable());
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
         $eventStore->appendToStream('streamId', [$domainEvent]);
 
         $stream = $eventStore->readFullStream('streamId');
@@ -184,19 +191,19 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
         ]);
 
         $stream = $eventStore->readStreamEventsForward('streamId', 2);
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
-        $this->assertEquals('new description', $events[0]->description());
-        $this->assertEquals('another name', $events[1]->name());
-        $this->assertEquals('my name', $events[2]->name());
+        $this->assertEquals('new description', $events[0]->data()->description());
+        $this->assertEquals('another name', $events[1]->data()->name());
+        $this->assertEquals('my name', $events[2]->data()->name());
     }
 
     /**
@@ -210,18 +217,18 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
         ]);
 
         $stream = $eventStore->readStreamEventsForward('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
-        $this->assertEquals('new description', $events[0]->description());
-        $this->assertEquals('another name', $events[1]->name());
+        $this->assertEquals('new description', $events[0]->data()->description());
+        $this->assertEquals('another name', $events[1]->data()->name());
     }
 
     /**
@@ -235,10 +242,10 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->eventUpgrader
         );
         $eventStore->appendToStream('streamId', [
-            new NameChanged('new name', new \DateTimeImmutable()),
-            new DescriptionChanged('new description', new \DateTimeImmutable()),
-            new NameChanged('another name', new \DateTimeImmutable()),
-            new NameChanged('my name', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
         ]);
 
         $stream = $eventStore->readStreamEventsForward('streamId', 5);
@@ -257,12 +264,13 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurred_on, version)
-                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+            'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':type', VersionedEvent::class);
         $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':metadata', '{}');
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();
@@ -275,7 +283,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readFullStream('streamId');
 
         $domainEvent = $stream->events()[0];
-        $this->assertEquals('Name', $domainEvent->username());
+        $this->assertEquals('Name', $domainEvent->data()->username());
     }
 
     /**
@@ -289,12 +297,13 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         $stmt = $this->connection->prepare(
-            'INSERT INTO events (stream_id, type, event, occurred_on, version)
-                 VALUES (:streamId, :type, :event, :occurredOn, :version)'
+            'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
         );
         $stmt->bindValue(':streamId', $streamId);
         $stmt->bindValue(':type', VersionedEvent::class);
         $stmt->bindValue(':event', '{"name":"Name","occurredOn":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':metadata', '{}');
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();
@@ -307,6 +316,6 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $eventStore->readStreamEventsForward('streamId');
 
         $domainEvent = $stream->events()[0];
-        $this->assertEquals('Name', $domainEvent->username());
+        $this->assertEquals('Name', $domainEvent->data()->username());
     }
 }

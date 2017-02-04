@@ -2,18 +2,25 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use DDDominio\EventSourcing\EventStore\EventStore;
-use DDDominio\EventSourcing\Snapshotting\SnapshotStore;
+use DDDominio\EventSourcing\Common\Annotation\AggregateId;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
+use Doctrine\Common\Annotations\AnnotationReader;
 
-abstract class EventSourcedAggregateRepository
+class EventSourcedAggregateRepository
 {
     /**
-     * @var EventStore
+     * @var string
+     */
+    private $aggregateClass;
+
+    /**
+     * @var EventStoreInterface
      */
     private $eventStore;
 
     /**
-     * @var SnapshotStore
+     * @var SnapshotStoreInterface
      */
     private $snapshotStore;
 
@@ -23,15 +30,18 @@ abstract class EventSourcedAggregateRepository
     private $aggregateReconstructor;
 
     /**
-     * @param EventStore $eventStore
-     * @param $snapshotStore
+     * @param string $aggregateClass
+     * @param EventStoreInterface $eventStore
+     * @param SnapshotStoreInterface $snapshotStore
      * @param AggregateReconstructor $aggregateReconstructor
      */
     public function __construct(
-        EventStore $eventStore,
-        SnapshotStore $snapshotStore,
+        $aggregateClass,
+        EventStoreInterface $eventStore,
+        SnapshotStoreInterface $snapshotStore,
         $aggregateReconstructor
     ) {
+        $this->aggregateClass = $aggregateClass;
         $this->eventStore = $eventStore;
         $this->snapshotStore = $snapshotStore;
         $this->aggregateReconstructor = $aggregateReconstructor;
@@ -69,7 +79,7 @@ abstract class EventSourcedAggregateRepository
     public function findById($id)
     {
         $snapshot = $this->snapshotStore
-            ->findLastSnapshot($this->aggregateClass(), $id);
+            ->findLastSnapshot($this->aggregateClass, $id);
 
         $streamId = $this->streamIdFromAggregateId($id);
         if ($snapshot) {
@@ -80,7 +90,7 @@ abstract class EventSourcedAggregateRepository
         }
 
         return $this->aggregateReconstructor->reconstitute(
-            $this->aggregateClass(),
+            $this->aggregateClass,
             $stream,
             $snapshot
         );
@@ -94,7 +104,7 @@ abstract class EventSourcedAggregateRepository
     public function findByIdAndVersion($id, $version)
     {
         $snapshot = $this->snapshotStore
-            ->findNearestSnapshotToVersion($this->aggregateClass(), $id, $version);
+            ->findNearestSnapshotToVersion($this->aggregateClass, $id, $version);
 
         $streamId = $this->streamIdFromAggregateId($id);
         if ($snapshot) {
@@ -113,7 +123,7 @@ abstract class EventSourcedAggregateRepository
                 );
         }
         return $this->aggregateReconstructor->reconstitute(
-            $this->aggregateClass(),
+            $this->aggregateClass,
             $stream,
             $snapshot
         );
@@ -134,17 +144,38 @@ abstract class EventSourcedAggregateRepository
      */
     protected function streamIdFromAggregateId($aggregateId)
     {
-        return $this->aggregateClass() . '-' . $aggregateId;
+        return $this->aggregateClass . '-' . $aggregateId;
     }
-
-    /**
-     * @return string
-     */
-    protected abstract function aggregateClass();
 
     /**
      * @param EventSourcedAggregateRoot $aggregate
      * @return string
+     * @throws \Exception
      */
-    protected abstract function aggregateId($aggregate);
+    private function aggregateId($aggregate)
+    {
+        if (method_exists($aggregate, 'id')) {
+            return (string) $aggregate->id();
+        }
+        if (method_exists($aggregate, 'getId')) {
+            return (string) $aggregate->getId();
+        }
+        $reflection = new \ReflectionClass($aggregate);
+        $annotationReader = new AnnotationReader();
+        $aggregateIdMethodName = null;
+        foreach ($reflection->getMethods() as $reflectionMethod) {
+            $annotation = $annotationReader->getMethodAnnotation(
+                $reflectionMethod,
+                AggregateId::class
+            );
+            if (!is_null($annotation)) {
+                $aggregateIdMethodName = $reflectionMethod->getName();
+                break;
+            }
+        }
+        if (is_null($aggregateIdMethodName)) {
+            throw new \RuntimeException('No method "id", "getId" or with "@AggregateId" annotation found in '. get_class($aggregate));
+        }
+        return (string) $aggregate->{$aggregateIdMethodName}();
+    }
 }

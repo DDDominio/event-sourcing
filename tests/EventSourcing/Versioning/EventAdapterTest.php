@@ -23,6 +23,7 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
@@ -45,13 +46,14 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
         $eventAdapter->renameField($storedEvent, 'name', 'username');
 
-        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->data());
     }
 
     /**
@@ -67,15 +69,16 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
-        $eventAdapter->enrich($storedEvent, 'description', function($body) {
-            return 'description_' . $body->name;
+        $eventAdapter->enrich($storedEvent, 'description', function($data) {
+            return 'description_' . $data->name;
         });
 
-        $this->assertEquals('{"name":"Name","description":"description_Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name","description":"description_Name"}', $storedEvent->data());
     }
 
     /**
@@ -91,13 +94,14 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name","description":"Description"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
         $eventAdapter->removeField($storedEvent, 'description');
 
-        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->data());
     }
 
     /**
@@ -113,17 +117,18 @@ class EventAdapterTest extends \PHPUnit_Framework_TestCase
             'streamId',
             'Full\Class\Name',
             '{"name":"Name"}',
+            '{}',
             new \DateTimeImmutable(),
             Version::fromString('1.0')
         );
 
-        $eventAdapter->changeValue($storedEvent, 'name', function($body) {
+        $eventAdapter->changeValue($storedEvent, 'name', function($data) {
             $value = json_decode('{}');
-            $value->first = $body->name;
+            $value->first = $data->name;
             $value->last = '';
             return $value;
         });
 
-        $this->assertEquals('{"name":{"first":"Name","last":""}}', $storedEvent->body());
+        $this->assertEquals('{"name":{"first":"Name","last":""}}', $storedEvent->data());
     }
 }

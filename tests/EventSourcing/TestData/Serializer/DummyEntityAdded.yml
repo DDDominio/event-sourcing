@@ -1,0 +1,6 @@
+DDDominio\Tests\EventSourcing\TestData\DummyEntityAdded:
+    properties:
+        id:
+            type: string
+        name:
+            type: string

@@ -14,9 +14,9 @@ class NameChangedUpgrade20_30 extends Upgrade
     public function upgrade(StoredEvent $event)
     {
         $this->eventAdapter->renameField($event, 'username', 'name');
-        $this->eventAdapter->changeValue($event, 'name', function($body) {
+        $this->eventAdapter->changeValue($event, 'name', function($data) {
             $value = json_decode('{}');
-            $value->first = $body->name;
+            $value->first = $data->name;
             $value->last = '';
             return $value;
         });
@@ -28,8 +28,8 @@ class NameChangedUpgrade20_30 extends Upgrade
     public function downgrade(StoredEvent $event)
     {
         $this->eventAdapter->renameField($event, 'name', 'username');
-        $this->eventAdapter->changeValue($event, 'username', function($body) {
-            return $body->username->first;
+        $this->eventAdapter->changeValue($event, 'username', function($data) {
+            return $data->username->first;
         });
     }
 

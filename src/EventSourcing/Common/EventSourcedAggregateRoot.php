@@ -15,29 +15,32 @@ trait EventSourcedAggregateRoot
     private $version = 0;
 
     /**
-     * @param DomainEvent $domainEvent
+     * @param mixed $domainEvent
      * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply(DomainEvent $domainEvent, $trackChanges = true)
+    public function apply($domainEvent, $trackChanges = true)
     {
+        if (!$domainEvent instanceof DomainEvent) {
+            $domainEvent = DomainEvent::record($domainEvent);
+        }
+        if ($trackChanges) {
+            $this->changes[] = $domainEvent;
+        }
         $eventHandlerName = $this->getEventHandlerName($domainEvent);
-        if (!method_exists($this, $eventHandlerName)) {
-            if (!$this->applyRecursively($eventHandlerName, $domainEvent, $trackChanges)) {
-                throw new DomainEventNotUnderstandableException();
-            }
+        if (method_exists($this, $eventHandlerName)) {
+            $this->executeEventHandler($this, $eventHandlerName, $domainEvent);
         } else {
-            $this->executeDomainEventHandler($this, $eventHandlerName, $domainEvent, $trackChanges);
+            $this->applyRecursively($eventHandlerName, $domainEvent);
         }
     }
 
     /**
      * @param string $eventHandlerName
-     * @param DomainEvent $domainEvent
-     * @param bool $trackChanges
-     * @return bool
+     * @param mixed $domainEventData
+     * @throws DomainEventNotUnderstandableException
      */
-    private function applyRecursively($eventHandlerName, DomainEvent $domainEvent, $trackChanges)
+    private function applyRecursively($eventHandlerName, $domainEventData)
     {
         $applied = false;
         $reflectedClass = new \ReflectionClass(get_class($this));
@@ -45,20 +48,25 @@ trait EventSourcedAggregateRoot
             $propertyValue = $this->{$property->getName()};
             if (is_object($propertyValue)) {
                 if (method_exists($propertyValue, $eventHandlerName)) {
-                    $this->executeDomainEventHandler($propertyValue, $eventHandlerName, $domainEvent, $trackChanges);
+                    $this->executeEventHandler($propertyValue, $eventHandlerName, $domainEventData);
                     $applied = true;
                 }
             }
             if (is_array($propertyValue)) {
                 foreach ($propertyValue as $item) {
                     if (method_exists($item, $eventHandlerName)) {
-                        $this->executeDomainEventHandler($item, $eventHandlerName, $domainEvent, $trackChanges);
+                        $this->executeEventHandler($item, $eventHandlerName, $domainEventData);
                         $applied = true;
                     }
                 }
             }
         }
-        return $applied;
+        if (!$applied) {
+            throw DomainEventNotUnderstandableException::fromAggreagteAndEventTypes(
+                get_class($this),
+                get_class($domainEventData)
+            );
+        }
     }
 
     /**
@@ -67,21 +75,17 @@ trait EventSourcedAggregateRoot
      */
     private function getEventHandlerName($domainEvent)
     {
-        return 'when' . (new \ReflectionClass($domainEvent))->getShortName();
+        return 'when' . (new \ReflectionClass($domainEvent->data()))->getShortName();
     }
 
     /**
      * @param object $entity
      * @param string $eventHandlerName
      * @param DomainEvent $domainEvent
-     * @param bool $trackChanges
      */
-    private function executeDomainEventHandler($entity, $eventHandlerName, $domainEvent, $trackChanges)
+    private function executeEventHandler($entity, $eventHandlerName, $domainEvent)
     {
-        $entity->{$eventHandlerName}($domainEvent);
-        if ($trackChanges) {
-            $this->changes[] = $domainEvent;
-        }
+        $entity->{$eventHandlerName}($domainEvent->data(), $domainEvent->occurredOn());
         $this->increaseAggregateVersion();
     }
 
@@ -91,7 +95,7 @@ trait EventSourcedAggregateRoot
     }
 
     /**
-     * @return array
+     * @return DomainEvent[]
      */
     public function changes()
     {

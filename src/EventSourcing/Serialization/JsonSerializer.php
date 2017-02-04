@@ -4,7 +4,7 @@ namespace DDDominio\EventSourcing\Serialization;
 
 use JMS\Serializer\Serializer as JmsSerializer;
 
-class JsonSerializer implements Serializer
+class JsonSerializer implements SerializerInterface
 {
     /**
      * @var JmsSerializer

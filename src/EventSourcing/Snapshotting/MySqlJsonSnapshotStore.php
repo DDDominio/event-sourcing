@@ -2,9 +2,9 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 
-class MySqlJsonSnapshotStore implements SnapshotStore
+class MySqlJsonSnapshotStore implements SnapshotStoreInterface
 {
     /**
      * @var \PDO
@@ -12,24 +12,24 @@ class MySqlJsonSnapshotStore implements SnapshotStore
     private $connection;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
     /**
      * @param \PDO $connection
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      */
     public function __construct(
         \PDO $connection,
-        Serializer $serializer
+        SerializerInterface $serializer
     ) {
         $this->connection = $connection;
         $this->serializer = $serializer;
     }
 
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      */
     public function addSnapshot($snapshot)
     {
@@ -46,7 +46,7 @@ class MySqlJsonSnapshotStore implements SnapshotStore
     /**
      * @param string $aggregateClass
      * @param string $aggregateId
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findLastSnapshot($aggregateClass, $aggregateId)
     {
@@ -63,7 +63,7 @@ class MySqlJsonSnapshotStore implements SnapshotStore
      * @param string $aggregateClass
      * @param string $aggregateId
      * @param int $version
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version)
     {

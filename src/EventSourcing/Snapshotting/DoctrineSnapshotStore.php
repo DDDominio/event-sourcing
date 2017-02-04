@@ -3,9 +3,9 @@
 namespace DDDominio\EventSourcing\Snapshotting;
 
 use Doctrine\DBAL\Driver\Connection;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 
-class DoctrineSnapshotStore implements SnapshotStore
+class DoctrineSnapshotStore implements SnapshotStoreInterface
 {
     /**
      * @var Connection
@@ -13,22 +13,22 @@ class DoctrineSnapshotStore implements SnapshotStore
     private $connection;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
     /**
      * @param Connection $connection
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      */
-    public function __construct(Connection $connection, Serializer $serializer)
+    public function __construct(Connection $connection, SerializerInterface $serializer)
     {
         $this->connection = $connection;
         $this->serializer = $serializer;
     }
 
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      */
     public function addSnapshot($snapshot)
     {
@@ -45,7 +45,7 @@ class DoctrineSnapshotStore implements SnapshotStore
     /**
      * @param string $aggregateClass
      * @param string $aggregateId
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findLastSnapshot($aggregateClass, $aggregateId)
     {
@@ -62,7 +62,7 @@ class DoctrineSnapshotStore implements SnapshotStore
      * @param string $aggregateClass
      * @param string $aggregateId
      * @param int $version
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version)
     {

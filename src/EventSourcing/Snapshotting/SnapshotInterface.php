@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-interface Snapshot
+interface SnapshotInterface
 {
     /**
      * @return string

@@ -2,18 +2,17 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use DDDominio\Common\Event;
-use Traversable;
+use DDDominio\Common\EventInterface;
 
 class EventStream implements EventStreamInterface
 {
     /**
-     * @var Event[]
+     * @var EventInterface[]
      */
     private $events;
 
     /**
-     * @param Event[] $events
+     * @param EventInterface[] $events
      */
     public function __construct(array $events)
     {
@@ -29,7 +28,7 @@ class EventStream implements EventStreamInterface
     }
 
     /**
-     * @param Event[] $events
+     * @param EventInterface[] $events
      * @return EventStream
      */
     public function append($events)
@@ -38,7 +37,7 @@ class EventStream implements EventStreamInterface
     }
 
     /**
-     * @return Event[]
+     * @return EventInterface[]
      */
     public function events()
     {
@@ -54,14 +53,18 @@ class EventStream implements EventStreamInterface
     }
 
     /**
-     * Retrieve an external iterator
-     * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
-     * @return Traversable An instance of an object implementing <b>Iterator</b> or
-     * <b>Traversable</b>
-     * @since 5.0.0
+     * {@inheritdoc}
      */
     public function getIterator()
     {
         return new \ArrayIterator($this->events());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count()
+    {
+        return count($this->events);
     }
 }

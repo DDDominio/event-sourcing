@@ -2,15 +2,15 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-class InMemorySnapshotStore implements SnapshotStore
+class InMemorySnapshotStore implements SnapshotStoreInterface
 {
     /**
-     * @var Snapshot[]
+     * @var SnapshotInterface[]
      */
     private $snapshots;
 
     /**
-     * @param Snapshot[] $snapshots
+     * @param SnapshotInterface[] $snapshots
      */
     public function __construct(array $snapshots = [])
     {
@@ -18,7 +18,7 @@ class InMemorySnapshotStore implements SnapshotStore
     }
 
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      */
     public function addSnapshot($snapshot)
     {
@@ -28,7 +28,7 @@ class InMemorySnapshotStore implements SnapshotStore
     /**
      * @param string $aggregateClass
      * @param string $aggregateId
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findLastSnapshot($aggregateClass, $aggregateId)
     {
@@ -45,7 +45,7 @@ class InMemorySnapshotStore implements SnapshotStore
      * @param string $aggregateClass
      * @param string $aggregateId
      * @param int $version
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version)
     {
@@ -53,7 +53,7 @@ class InMemorySnapshotStore implements SnapshotStore
             return null;
         }
 
-        /** @var Snapshot[] $snapshots */
+        /** @var SnapshotInterface[] $snapshots */
         $snapshots = $this->snapshots[$aggregateClass][$aggregateId];
 
         $previousSnapshot = null;

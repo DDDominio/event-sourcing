@@ -3,7 +3,7 @@
 namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
 use DDDominio\EventSourcing\Snapshotting\InMemorySnapshotStore;
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 
@@ -14,8 +14,8 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findLastSnapshotOfAStream()
     {
-        $snapshot = $this->createMock(Snapshot::class);
-        $lastSnapshot = $this->createMock(Snapshot::class);
+        $snapshot = $this->createMock(SnapshotInterface::class);
+        $lastSnapshot = $this->createMock(SnapshotInterface::class);
         $lastSnapshot
             ->method('aggregateClass')
             ->willReturn('aggregateClass');
@@ -28,7 +28,7 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
 
         $retrievedSnapshot = $snapshotStore->findLastSnapshot('aggregateClass', 'aggregateId');
 
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
         $this->assertEquals('aggregateClass', $retrievedSnapshot->aggregateClass());
         $this->assertEquals('aggregateId', $retrievedSnapshot->aggregateId());
     }
@@ -38,7 +38,7 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function addAnSnapshot()
     {
-        $snapshot = $this->createMock(Snapshot::class);
+        $snapshot = $this->createMock(SnapshotInterface::class);
         $snapshot
             ->method('aggregateClass')
             ->willReturn('aggregateClass');
@@ -50,7 +50,7 @@ class InMemorySnapshotStoreTest extends \PHPUnit_Framework_TestCase
         $snapshotStore->addSnapshot($snapshot);
 
         $retrievedSnapshot = $snapshotStore->findLastSnapshot('aggregateClass', 'aggregateId');
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
     }
 
     /**

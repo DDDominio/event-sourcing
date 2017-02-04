@@ -4,16 +4,16 @@ namespace DDDominio\EventSourcing\Snapshotting;
 
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 
-interface SnapshotTranslator
+interface SnapshotTranslatorInterface
 {
     /**
      * @param EventSourcedAggregateRoot $aggregate
-     * @return Snapshot
+     * @return SnapshotInterface
      */
     public function buildSnapshotFromAggregate($aggregate);
 
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      * @return EventSourcedAggregateRoot
      */
     public function buildAggregateFromSnapshot($snapshot);

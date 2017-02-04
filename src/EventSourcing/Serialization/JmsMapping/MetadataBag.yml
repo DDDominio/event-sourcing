@@ -1,0 +1,5 @@
+DDDominio\EventSourcing\Common\MetadataBag:
+    properties:
+        metadata:
+            type: array<string, string>
+            inline: true

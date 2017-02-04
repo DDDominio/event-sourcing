@@ -8,6 +8,7 @@ CREATE TABLE events
   stream_id TEXT NOT NULL,
   type TEXT NOT NULL,
   event TEXT NOT NULL,
+  metadata TEXT NOT NULL,
   occurred_on TEXT NOT NULL,
   version TEXT NOT NULL,
   FOREIGN KEY (stream_id) REFERENCES streams (id) DEFERRABLE INITIALLY DEFERRED

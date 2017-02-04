@@ -2,24 +2,23 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
+use DDDominio\EventSourcing\Common\AggregateReconstructor;
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRepository;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 
 class DummyEventSourcedAggregateRepository extends EventSourcedAggregateRepository
 {
-    /**
-     * @return string
-     */
-    protected function aggregateClass()
-    {
-        return 'DummyEventSourcedAggregate';
-    }
-
-    /**
-     * @param DummyEventSourcedAggregate $aggregate
-     * @return string
-     */
-    protected function aggregateId($aggregate)
-    {
-        return $aggregate->id();
+    public function __construct(
+        EventStoreInterface $eventStore,
+        SnapshotStoreInterface $snapshotStore,
+        AggregateReconstructor $aggregateReconstructor
+    ) {
+        parent::__construct(
+            DummyEventSourcedAggregate::class,
+            $eventStore,
+            $snapshotStore,
+            $aggregateReconstructor
+        );
     }
 }

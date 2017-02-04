@@ -1,0 +1,4 @@
+DDDominio\Tests\EventSourcing\TestData\NameChanged:
+    properties:
+        name:
+            type: string
