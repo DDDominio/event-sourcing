@@ -19,7 +19,7 @@ class Snapshotter
 
     /**
      * @param EventSourcedAggregateRoot $aggregate
-     * @return Snapshot
+     * @return SnapshotInterface
      */
     public function takeSnapshot($aggregate)
     {
@@ -27,7 +27,7 @@ class Snapshotter
     }
 
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      * @return EventSourcedAggregateRoot
      */
     public function translateSnapshot($snapshot)

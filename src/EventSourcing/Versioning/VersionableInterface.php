@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Versioning;
 
-interface Versionable
+interface VersionableInterface
 {
     /**
      * @return Version

@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Versioning;
 
-interface UpgradableEventStore
+interface UpgradableEventStoreInterface
 {
     /**
      * @param string $type

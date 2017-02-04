@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Serialization;
 
-interface Serializer
+interface SerializerInterface
 {
     /**
      * @param object|array $object

@@ -32,7 +32,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('2.0'));
 
-        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('2.0'), $storedEvent->version());
     }
 
@@ -54,7 +54,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('1.0'), $storedEvent->version());
     }
 
@@ -76,7 +76,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('2.0'));
 
-        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('1.0'), $storedEvent->version());
     }
 
@@ -98,7 +98,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('2.0'));
 
-        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('1.5'), $storedEvent->version());
     }
 
@@ -120,7 +120,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('2.0'), $storedEvent->version());
     }
 
@@ -142,7 +142,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"username":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"username":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('1.5'), $storedEvent->version());
     }
 
@@ -164,7 +164,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent);
 
-        $this->assertEquals('{"name":{"first":"Name","last":""}}', $storedEvent->body());
+        $this->assertEquals('{"name":{"first":"Name","last":""}}', $storedEvent->data());
         $this->assertEquals(Version::fromString('3.0'), $storedEvent->version());
     }
 
@@ -186,7 +186,7 @@ class EventUpgraderTest extends \PHPUnit_Framework_TestCase
 
         $eventUpgrader->migrate($storedEvent, Version::fromString('1.0'));
 
-        $this->assertEquals('{"name":"Name"}', $storedEvent->body());
+        $this->assertEquals('{"name":"Name"}', $storedEvent->data());
         $this->assertEquals(Version::fromString('1.0'), $storedEvent->version());
     }
 

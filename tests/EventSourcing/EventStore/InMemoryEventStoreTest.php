@@ -10,7 +10,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -25,7 +25,7 @@ use DDDominio\Tests\EventSourcing\TestData\VersionedEventUpgrade10_20;
 class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 

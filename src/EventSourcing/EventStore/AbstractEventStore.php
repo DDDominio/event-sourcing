@@ -5,16 +5,16 @@ namespace DDDominio\EventSourcing\EventStore;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
-use DDDominio\EventSourcing\Versioning\UpgradableEventStore;
+use DDDominio\EventSourcing\Versioning\UpgradableEventStoreInterface;
 use DDDominio\EventSourcing\Versioning\Version;
 use Ramsey\Uuid\Uuid;
 
-abstract class AbstractEventStore implements EventStore, UpgradableEventStore
+abstract class AbstractEventStore implements EventStoreInterface, UpgradableEventStoreInterface
 {
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -29,7 +29,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
     private $eventListeners;
 
     /**
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      * @param EventUpgrader $eventUpgrader
      */
     public function __construct(
@@ -73,7 +73,7 @@ abstract class AbstractEventStore implements EventStore, UpgradableEventStore
             $this->eventUpgrader->migrate($storedEvent);
             return new DomainEvent(
                 $this->serializer->deserialize(
-                    $storedEvent->body(),
+                    $storedEvent->data(),
                     $storedEvent->type()
                 ),
                 json_decode($storedEvent->metadata(), true),

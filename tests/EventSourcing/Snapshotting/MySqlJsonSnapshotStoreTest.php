@@ -4,9 +4,9 @@ namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Snapshotting\MySqlJsonSnapshotStore;
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\SerializerBuilder;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
@@ -24,7 +24,7 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     private $connection;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -70,7 +70,7 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             10
         );
-        $eventStore = new MysqlJsonSnapshotStore(
+        $eventStore = new MySqlJsonSnapshotStore(
             $this->connection,
             $this->serializer
         );
@@ -82,7 +82,7 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'id'
         );
 
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
         $this->assertEquals(10, $retrievedSnapshot->version());
     }
 
@@ -108,7 +108,7 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             DummyEventSourcedAggregate::class,
             'id'
         );
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
     }
 
     /**

@@ -4,7 +4,7 @@ namespace DDDominio\Tests\EventSourcing\Common;
 
 use DDDominio\EventSourcing\Common\AggregateReconstructor;
 use DDDominio\EventSourcing\Common\EventStream;
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use DDDominio\EventSourcing\Snapshotting\Snapshotter;
 use DDDominio\Tests\EventSourcing\TestData\DummyCreated;
 use DDDominio\Tests\EventSourcing\TestData\DummyDeleted;
@@ -100,7 +100,7 @@ class AggregateReconstructorTest extends \PHPUnit_Framework_TestCase
      */
     public function reconstructUsingSnapshot()
     {
-        $snapshot = $this->createMock(Snapshot::class);
+        $snapshot = $this->createMock(SnapshotInterface::class);
         $aggregateMock = $this->createMock(DummyEventSourcedAggregate::class);
         $aggregateMock
             ->method('version')

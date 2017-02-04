@@ -10,7 +10,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -32,7 +32,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
     private $connection;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 

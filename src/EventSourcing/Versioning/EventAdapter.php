@@ -27,12 +27,12 @@ class EventAdapter
      */
     public function renameField($storedEvent, $pathExpression, $newName)
     {
-        $body = $this->jsonTransformer->renameKey(
-            $storedEvent->body(),
+        $data = $this->jsonTransformer->renameKey(
+            $storedEvent->data(),
             $pathExpression,
             $newName
         );
-        $storedEvent->setBody($body);
+        $storedEvent->setData($data);
     }
 
     /**
@@ -51,13 +51,13 @@ class EventAdapter
      */
     public function enrich($storedEvent, $pathExpression, \Closure $closure)
     {
-        $value = $closure->call($this, json_decode($storedEvent->body()));
-        $body = $this->jsonTransformer->addKey(
-            $storedEvent->body(),
+        $value = $closure->call($this, json_decode($storedEvent->data()));
+        $data = $this->jsonTransformer->addKey(
+            $storedEvent->data(),
             $pathExpression,
             $value
         );
-        $storedEvent->setBody($body);
+        $storedEvent->setData($data);
     }
 
     /**
@@ -66,11 +66,11 @@ class EventAdapter
      */
     public function removeField($storedEvent, $pathExpression)
     {
-        $body = $this->jsonTransformer->removeKey(
-            $storedEvent->body(),
+        $data = $this->jsonTransformer->removeKey(
+            $storedEvent->data(),
             $pathExpression
         );
-        $storedEvent->setBody($body);
+        $storedEvent->setData($data);
     }
 
     /**
@@ -80,12 +80,12 @@ class EventAdapter
      */
     public function changeValue($storedEvent, $pathExpression, \Closure $closure)
     {
-        $value = $closure->call($this, json_decode($storedEvent->body()));
-        $body = $this->jsonTransformer->addKey(
-            $storedEvent->body(),
+        $value = $closure->call($this, json_decode($storedEvent->data()));
+        $data = $this->jsonTransformer->addKey(
+            $storedEvent->data(),
             $pathExpression,
             $value
         );
-        $storedEvent->setBody($body);
+        $storedEvent->setData($data);
     }
 }

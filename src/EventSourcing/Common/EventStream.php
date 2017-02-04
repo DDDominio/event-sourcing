@@ -2,18 +2,18 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use DDDominio\Common\Event;
+use DDDominio\Common\EventInterface;
 use Traversable;
 
 class EventStream implements EventStreamInterface
 {
     /**
-     * @var Event[]
+     * @var EventInterface[]
      */
     private $events;
 
     /**
-     * @param Event[] $events
+     * @param EventInterface[] $events
      */
     public function __construct(array $events)
     {
@@ -29,7 +29,7 @@ class EventStream implements EventStreamInterface
     }
 
     /**
-     * @param Event[] $events
+     * @param EventInterface[] $events
      * @return EventStream
      */
     public function append($events)
@@ -38,7 +38,7 @@ class EventStream implements EventStreamInterface
     }
 
     /**
-     * @return Event[]
+     * @return EventInterface[]
      */
     public function events()
     {

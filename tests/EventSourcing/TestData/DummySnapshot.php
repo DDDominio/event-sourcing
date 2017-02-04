@@ -2,10 +2,10 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\Annotation as Serializer;
 
-class DummySnapshot implements Snapshot
+class DummySnapshot implements SnapshotInterface
 {
     /**
      * @var string

@@ -3,7 +3,7 @@
 namespace DDDominio\EventSourcing\Common;
 
 use DDDominio\EventSourcing\Common\Annotation\AggregateDeleter;
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use DDDominio\EventSourcing\Snapshotting\Snapshotter;
 use Doctrine\Common\Annotations\AnnotationReader;
 
@@ -31,7 +31,7 @@ class AggregateReconstructor
     /**
      * @param string $class
      * @param EventStreamInterface $eventStream
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      * @return EventSourcedAggregateRoot
      */
     public function reconstitute($class, $eventStream, $snapshot = null)
@@ -54,7 +54,7 @@ class AggregateReconstructor
             }
         }
 
-        if ($snapshot instanceof Snapshot) {
+        if ($snapshot instanceof SnapshotInterface) {
             $aggregate = $this->snapshooter->translateSnapshot($snapshot);
         } else {
             $aggregate = $this->buildEmptyAggregate($class);

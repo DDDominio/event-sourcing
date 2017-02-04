@@ -2,7 +2,9 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-class MetadataBag
+use DDDominio\Common\MetadataInterface;
+
+class Metadata implements MetadataInterface
 {
     /**
      * @var array
@@ -44,5 +46,21 @@ class MetadataBag
     public function all()
     {
         return $this->metadata;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->metadata);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count()
+    {
+        return count($this->metadata);
     }
 }

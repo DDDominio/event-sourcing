@@ -4,10 +4,10 @@ namespace DDDominio\Tests\EventSourcing\TestData;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Versioning\Version;
-use DDDominio\EventSourcing\Versioning\VersionableDomainEvent;
+use DDDominio\EventSourcing\Versioning\VersionableInterface;
 use JMS\Serializer\Annotation as Serializer;
 
-class VersionedEvent extends DomainEvent implements VersionableDomainEvent
+class VersionedEvent extends DomainEvent implements VersionableInterface
 {
     /**
      * @var string

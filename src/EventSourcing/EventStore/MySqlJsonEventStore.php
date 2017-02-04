@@ -4,11 +4,11 @@ namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
 
-class MySqlJsonEventStore extends AbstractEventStore implements EventStore
+class MySqlJsonEventStore extends AbstractEventStore implements EventStoreInterface
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
 
@@ -19,12 +19,12 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
 
     /**
      * @param \PDO $connection
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      * @param EventUpgrader $eventUpgrader
      */
     public function __construct(
         \PDO $connection,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         $eventUpgrader
     ) {
         $this->connection = $connection;
@@ -123,7 +123,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements EventStore
                 );
                 $stmt->bindValue(':streamId', $streamId);
                 $stmt->bindValue(':type', $storedEvent->type());
-                $stmt->bindValue(':event', $storedEvent->body());
+                $stmt->bindValue(':event', $storedEvent->data());
                 $stmt->bindValue(':metadata', $storedEvent->metadata());
                 $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
                 $stmt->bindValue(':version', $storedEvent->version());

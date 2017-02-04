@@ -7,9 +7,9 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DriverManager;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Snapshotting\DoctrineSnapshotStore;
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\SerializerBuilder;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
@@ -24,7 +24,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     private $connection;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -99,7 +99,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'id'
         );
 
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
         $this->assertEquals(10, $retrievedSnapshot->version());
     }
 
@@ -125,7 +125,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             DummyEventSourcedAggregate::class,
             'id'
         );
-        $this->assertInstanceOf(Snapshot::class, $retrievedSnapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
         $this->assertEquals('id', $retrievedSnapshot->id());
         $this->assertEquals('name', $retrievedSnapshot->name());
         $this->assertEquals('description', $retrievedSnapshot->description());

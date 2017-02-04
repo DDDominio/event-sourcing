@@ -2,17 +2,17 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-interface SnapshotStore
+interface SnapshotStoreInterface
 {
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      */
     public function addSnapshot($snapshot);
 
     /**
      * @param string $aggregateClass
      * @param string $aggregateId
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findLastSnapshot($aggregateClass, $aggregateId);
 
@@ -20,7 +20,7 @@ interface SnapshotStore
      * @param string $aggregateClass
      * @param string $aggregateId
      * @param int $version
-     * @return Snapshot|null
+     * @return SnapshotInterface|null
      */
     public function findNearestSnapshotToVersion($aggregateClass, $aggregateId, $version);
 }

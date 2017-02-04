@@ -2,7 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\Common;
 
-use DDDominio\EventSourcing\EventStore\EventStore;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
@@ -12,9 +12,9 @@ use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Snapshotting\InMemorySnapshotStore;
-use DDDominio\EventSourcing\Snapshotting\SnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -30,7 +30,7 @@ use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -162,7 +162,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function afterAddAnAggregateItShouldNotContainChanges()
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
-        $eventStore = $this->createMock(EventStore::class);
+        $eventStore = $this->createMock(EventStoreInterface::class);
         $snapshotStore = new InMemorySnapshotStore();
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
@@ -181,7 +181,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function afterSaveAnAggregateItShouldNotContainChanges()
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
-        $eventStore = $this->createMock(EventStore::class);
+        $eventStore = $this->createMock(EventStoreInterface::class);
         $snapshotStore = new InMemorySnapshotStore();
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
@@ -252,13 +252,13 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             new NameChanged('new name', new \DateTimeImmutable()),
             new NameChanged('another name', new \DateTimeImmutable()),
         ]);
-        $eventStore = $this->createMock(EventStore::class);
+        $eventStore = $this->createMock(EventStoreInterface::class);
         $eventStore
             ->expects($this->once())
             ->method('readStreamEventsForward')
             ->with(DummyEventSourcedAggregate::class . '-id', $snapshot->version() + 1)
             ->willReturn($stream);
-        $snapshotStore = $this->createMock(SnapshotStore::class);
+        $snapshotStore = $this->createMock(SnapshotStoreInterface::class);
         $snapshotStore
             ->expects($this->once())
             ->method('findLastSnapshot')

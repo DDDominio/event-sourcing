@@ -4,7 +4,7 @@ namespace DDDominio\EventSourcing\Snapshotting;
 
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 
-abstract class ReflectionSnapshotTranslator implements SnapshotTranslator
+abstract class ReflectionSnapshotTranslator implements SnapshotTranslatorInterface
 {
     /**
      * @return string
@@ -43,7 +43,7 @@ abstract class ReflectionSnapshotTranslator implements SnapshotTranslator
     }
 
     /**
-     * @param Snapshot $snapshot
+     * @param SnapshotInterface $snapshot
      * @return object
      */
     public function buildAggregateFromSnapshot($snapshot)

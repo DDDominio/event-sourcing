@@ -5,7 +5,7 @@ namespace DDDominio\EventSourcing\EventStore;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use Doctrine\DBAL\Connection;
-use DDDominio\EventSourcing\Serialization\Serializer;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
 
@@ -20,7 +20,7 @@ class DoctrineEventStore extends AbstractEventStore
 
     /**
      * @param Connection $connection
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      * @param EventUpgrader $eventUpgrader
      */
     public function __construct($connection, $serializer, $eventUpgrader)
@@ -152,7 +152,7 @@ class DoctrineEventStore extends AbstractEventStore
                 );
                 $stmt->bindValue(':streamId', $streamId);
                 $stmt->bindValue(':type', $storedEvent->type());
-                $stmt->bindValue(':event', $storedEvent->body());
+                $stmt->bindValue(':event', $storedEvent->data());
                 $stmt->bindValue(':metadata', $storedEvent->metadata());
                 $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
                 $stmt->bindValue(':version', $storedEvent->version());

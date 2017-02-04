@@ -2,10 +2,11 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use DDDominio\Common\Event;
+use DDDominio\Common\EventInterface;
 use DDDominio\EventSourcing\Versioning\Version;
+use DDDominio\EventSourcing\Versioning\VersionableInterface;
 
-class DomainEvent implements Event
+class DomainEvent implements EventInterface, VersionableInterface
 {
     /**
      * @var mixed
@@ -13,7 +14,7 @@ class DomainEvent implements Event
     private $data;
 
     /**
-     * @var MetadataBag
+     * @var Metadata
      */
     private $metadata;
 
@@ -36,7 +37,7 @@ class DomainEvent implements Event
     public function __construct($data, array $metadata = [], \DateTimeImmutable $occurredOn, $version = null)
     {
         $this->data = $data;
-        $this->metadata = new MetadataBag($metadata);
+        $this->metadata = new Metadata($metadata);
         $this->occurredOn = $occurredOn;
         $this->version = $version;
     }
@@ -61,7 +62,7 @@ class DomainEvent implements Event
     }
 
     /**
-     * @return MetadataBag
+     * @return Metadata
      */
     public function metadata()
     {

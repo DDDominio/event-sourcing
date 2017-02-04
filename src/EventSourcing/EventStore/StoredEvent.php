@@ -2,11 +2,11 @@
 
 namespace DDDominio\EventSourcing\EventStore;
 
-use DDDominio\Common\Event;
+use DDDominio\Common\EventInterface;
 use DDDominio\EventSourcing\Versioning\Version;
-use DDDominio\EventSourcing\Versioning\Versionable;
+use DDDominio\EventSourcing\Versioning\VersionableInterface;
 
-class StoredEvent implements Event, Versionable
+class StoredEvent implements EventInterface, VersionableInterface
 {
     /**
      * @var int
@@ -26,7 +26,7 @@ class StoredEvent implements Event, Versionable
     /**
      * @var string
      */
-    private $body;
+    private $data;
 
     /**
      * @var string
@@ -47,17 +47,17 @@ class StoredEvent implements Event, Versionable
      * @param int $id
      * @param string $streamId
      * @param string $type
-     * @param string $body
+     * @param string $data
      * @param string $metadata
      * @param \DateTimeImmutable $occurredOn
      * @param Version $version
      */
-    public function __construct($id, $streamId, $type, $body, $metadata, $occurredOn, $version)
+    public function __construct($id, $streamId, $type, $data, $metadata, $occurredOn, $version)
     {
         $this->id = $id;
         $this->streamId = $streamId;
         $this->type = $type;
-        $this->body = $body;
+        $this->data = $data;
         $this->metadata = $metadata;
         $this->occurredOn = $occurredOn;
         $this->version = $version;
@@ -98,17 +98,17 @@ class StoredEvent implements Event, Versionable
     /**
      * @return string
      */
-    public function body()
+    public function data()
     {
-        return $this->body;
+        return $this->data;
     }
 
     /**
-     * @param string $body
+     * @param string $data
      */
-    public function setBody($body)
+    public function setData($data)
     {
-        $this->body = $body;
+        $this->data = $data;
     }
 
     /**

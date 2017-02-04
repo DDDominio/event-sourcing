@@ -2,18 +2,18 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-use DDDominio\Common\Event;
+use DDDominio\Common\EventInterface;
 
 interface EventStreamInterface extends \IteratorAggregate
 {
     /**
-     * @param Event[] $events
+     * @param EventInterface[] $events
      * @return EventStreamInterface
      */
     public function append($events);
 
     /**
-     * @return Event[]
+     * @return EventInterface[]
      */
     public function events();
 

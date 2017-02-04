@@ -3,7 +3,7 @@
 namespace DDDominio\Tests\EventSourcing\Snapshotting;
 
 use DDDominio\EventSourcing\Snapshotting\ReflectionSnapshotTranslator;
-use DDDominio\EventSourcing\Snapshotting\Snapshot;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use DDDominio\EventSourcing\Snapshotting\Snapshotter;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 
@@ -14,7 +14,7 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
      */
     public function buildAnSnapshotFromAggregateCooperatesWithSnapshotStrategy()
     {
-        $snapshotStub = $this->createMock(Snapshot::class);
+        $snapshotStub = $this->createMock(SnapshotInterface::class);
         $aggregate = $this->createMock(DummyEventSourcedAggregate::class);
         $snapshotStrategyMock = $this->makeSnapshotStrategyMock();
         $snapshotStrategyMock->expects($this->once())
@@ -25,7 +25,7 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
 
         $snapshot = $snapshotter->takeSnapshot($aggregate);
 
-        $this->assertInstanceOf(Snapshot::class, $snapshot);
+        $this->assertInstanceOf(SnapshotInterface::class, $snapshot);
     }
 
     /**
@@ -33,7 +33,7 @@ class SnapshotterTest extends \PHPUnit_Framework_TestCase
      */
     public function buildAnAggregateFromSnapshotCooperatesWithSnapshotStrategyAndSnapshot()
     {
-        $snapshot = $this->getMockBuilder(Snapshot::class)
+        $snapshot = $this->getMockBuilder(SnapshotInterface::class)
             ->setMethods(['aggregateClass', 'aggregateId', 'version'])
             ->getMock();
         $snapshot

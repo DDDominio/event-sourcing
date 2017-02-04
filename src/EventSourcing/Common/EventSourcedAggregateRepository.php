@@ -3,8 +3,8 @@
 namespace DDDominio\EventSourcing\Common;
 
 use DDDominio\EventSourcing\Common\Annotation\AggregateId;
-use DDDominio\EventSourcing\EventStore\EventStore;
-use DDDominio\EventSourcing\Snapshotting\SnapshotStore;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 use Doctrine\Common\Annotations\AnnotationReader;
 
 class EventSourcedAggregateRepository
@@ -15,12 +15,12 @@ class EventSourcedAggregateRepository
     private $aggregateClass;
 
     /**
-     * @var EventStore
+     * @var EventStoreInterface
      */
     private $eventStore;
 
     /**
-     * @var SnapshotStore
+     * @var SnapshotStoreInterface
      */
     private $snapshotStore;
 
@@ -31,14 +31,14 @@ class EventSourcedAggregateRepository
 
     /**
      * @param string $aggregateClass
-     * @param EventStore $eventStore
-     * @param SnapshotStore $snapshotStore
+     * @param EventStoreInterface $eventStore
+     * @param SnapshotStoreInterface $snapshotStore
      * @param AggregateReconstructor $aggregateReconstructor
      */
     public function __construct(
         $aggregateClass,
-        EventStore $eventStore,
-        SnapshotStore $snapshotStore,
+        EventStoreInterface $eventStore,
+        SnapshotStoreInterface $snapshotStore,
         $aggregateReconstructor
     ) {
         $this->aggregateClass = $aggregateClass;
