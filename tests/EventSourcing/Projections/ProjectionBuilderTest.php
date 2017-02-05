@@ -5,13 +5,13 @@ namespace DDDominio\Tests\EventSourcing\Projections;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
+use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
 use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Projection\ProjectionBuilder;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
-use DDDominio\EventSourcing\Serialization\Serializer;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -22,7 +22,7 @@ use JMS\Serializer\SerializerBuilder;
 class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -33,9 +33,7 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        AnnotationRegistry::registerAutoloadNamespace(
-            'JMS\Serializer\Annotation', __DIR__ . '/../../../vendor/jms/serializer/src'
-        );
+        AnnotationRegistry::registerLoader('class_exists');
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()->build()
         );
@@ -64,8 +62,8 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 
         $projectedStream = $eventStore->readFullStream('longNamesStream');
         $this->assertCount(2, $projectedStream);
-        $this->assertEquals('name with more than 20 characters', $projectedStream->events()[0]->name());
-        $this->assertEquals('another name with more than 20 characters', $projectedStream->events()[1]->name());
+        $this->assertEquals('name with more than 20 characters', $projectedStream->events()[0]->data()->name());
+        $this->assertEquals('another name with more than 20 characters', $projectedStream->events()[1]->data()->name());
     }
 
     /**
@@ -78,8 +76,9 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
             return new StoredEvent(
                 'id',
                 'streamId',
-                get_class($domainEvent),
-                $this->serializer->serialize($domainEvent),
+                get_class($domainEvent->data()),
+                $this->serializer->serialize($domainEvent->data()),
+                $this->serializer->serialize($domainEvent->metadata()),
                 $domainEvent->occurredOn(),
                 Version::fromString('1.0')
             );
@@ -92,11 +91,11 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
     protected function makeEventStore()
     {
         $domainEvents = [
-            new NameChanged('short name', new \DateTimeImmutable()),
-            new DescriptionChanged('description', new \DateTimeImmutable()),
-            new NameChanged('name with more than 20 characters', new \DateTimeImmutable()),
-            new NameChanged('name', new \DateTimeImmutable()),
-            new NameChanged('another name with more than 20 characters', new \DateTimeImmutable()),
+            DomainEvent::record(new NameChanged('short name')),
+            DomainEvent::record(new DescriptionChanged('description')),
+            DomainEvent::record(new NameChanged('name with more than 20 characters')),
+            DomainEvent::record(new NameChanged('name')),
+            DomainEvent::record(new NameChanged('another name with more than 20 characters'))
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);

@@ -2,10 +2,14 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
+use JMS\Serializer\Annotation as Serializer;
+
 class DescriptionChanged
 {
     /**
      * @var string
+     *
+     * @Serializer\Type("string")
      */
     private $description;
 

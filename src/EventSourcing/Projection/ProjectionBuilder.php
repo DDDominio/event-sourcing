@@ -2,13 +2,14 @@
 
 namespace DDDominio\EventSourcing\Projection;
 
-use DDDominio\Common\Event;
-use DDDominio\EventSourcing\EventStore\EventStore;
+use DDDominio\Common\EventInterface;
+use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 
 class ProjectionBuilder
 {
     /**
-     * @var EventStore
+     * @var EventStoreInterface
      */
     private $eventStore;
 
@@ -23,14 +24,14 @@ class ProjectionBuilder
     private $eventHandlers;
 
     /**
-     * @var Event[]
+     * @var EventInterface[]
      */
     private $emittedEvents;
 
     /**
-     * @param EventStore $eventStore
+     * @param EventStoreInterface $eventStore
      */
-    public function __construct(EventStore $eventStore)
+    public function __construct(EventStoreInterface $eventStore)
     {
         $this->eventStore = $eventStore;
     }
@@ -63,18 +64,19 @@ class ProjectionBuilder
     {
         $stream = $this->eventStore->readFullStream($this->from);
         foreach ($stream as $event) {
-            if (isset($this->eventHandlers[get_class($event)])) {
-                $this->eventHandlers[get_class($event)]->call($this, $event);
+            /** @var EventInterface $event */
+            if (isset($this->eventHandlers[get_class($event->data())])) {
+                $this->eventHandlers[get_class($event->data())]->call($this, $event->data());
             }
         }
         $this->eventStore->appendToStream($streamId, $this->emittedEvents);
     }
 
     /**
-     * @param Event $event
+     * @param EventInterface $event
      */
     private function emit($event)
     {
-        $this->emittedEvents[] = $event;
+        $this->emittedEvents[] = DomainEvent::record($event);
     }
 }
