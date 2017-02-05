@@ -1,9 +1,9 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\EventStore;
+namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\EventStore\DoctrineEventStore;
+use DDDominio\EventSourcing\EventStore\Vendor\DoctrineDbalEventStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
@@ -22,7 +22,7 @@ use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 use DDDominio\Tests\EventSourcing\TestData\VersionedEvent;
 use DDDominio\Tests\EventSourcing\TestData\VersionedEventUpgrade10_20;
 
-class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
+class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
 {
     const TEST_DB_PATH = __DIR__ . '/../test.db';
 
@@ -55,7 +55,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
         $this->connection->exec(
-            file_get_contents(__DIR__ . '/../TestData/dbal_event_store_schema.sql')
+            file_get_contents(__DIR__ . '/../../TestData/dbal_event_store_schema.sql')
         );
 
         AnnotationRegistry::registerLoader('class_exists');
@@ -63,11 +63,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
-                    __DIR__ . '/../TestData/Serializer',
+                    __DIR__ . '/../../TestData/Serializer',
                     'DDDominio\Tests\EventSourcing\TestData'
                 )
                 ->addMetadataDir(
-                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    __DIR__ . '/../../../../src/EventSourcing/Serialization/JmsMapping',
                     'DDDominio\EventSourcing\Common'
                 )
                 ->build()
@@ -97,7 +97,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -118,7 +118,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToAnExistentStream()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -143,7 +143,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $domainEvent = DomainEvent::record(
             new NameChanged('name')
         );
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -159,7 +159,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -177,7 +177,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $event = DomainEvent::record(
             new NameChanged('name')
         );
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -194,7 +194,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEmptyStream()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -211,7 +211,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForward()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -237,7 +237,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardWithEventCount()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -262,7 +262,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -300,7 +300,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -333,7 +333,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
@@ -366,7 +366,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
-        $eventStore = new DoctrineEventStore(
+        $eventStore = new DoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
             $this->eventUpgrader
