@@ -1,9 +1,9 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\EventStore;
+namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\EventStore\DoctrineEventStore;
+use DDDominio\EventSourcing\EventStore\Vendor\DoctrineEventStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
@@ -55,7 +55,7 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
         $this->connection->exec(
-            file_get_contents(__DIR__ . '/../TestData/dbal_event_store_schema.sql')
+            file_get_contents(__DIR__ . '/../../TestData/dbal_event_store_schema.sql')
         );
 
         AnnotationRegistry::registerLoader('class_exists');
@@ -63,11 +63,11 @@ class DoctrineEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
-                    __DIR__ . '/../TestData/Serializer',
+                    __DIR__ . '/../../TestData/Serializer',
                     'DDDominio\Tests\EventSourcing\TestData'
                 )
                 ->addMetadataDir(
-                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    __DIR__ . '/../../../../src/EventSourcing/Serialization/JmsMapping',
                     'DDDominio\EventSourcing\Common'
                 )
                 ->build()

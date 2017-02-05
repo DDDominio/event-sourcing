@@ -1,9 +1,9 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\EventStore;
+namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\EventStore\MySqlJsonEventStore;
+use DDDominio\EventSourcing\EventStore\Vendor\MySqlJsonEventStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
@@ -55,11 +55,11 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
-                    __DIR__ . '/../TestData/Serializer',
+                    __DIR__ . '/../../TestData/Serializer',
                     'DDDominio\Tests\EventSourcing\TestData'
                 )
                 ->addMetadataDir(
-                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    __DIR__ . '/../../../../src/EventSourcing/Serialization/JmsMapping',
                     'DDDominio\EventSourcing\Common'
                 )
                 ->build()

@@ -1,32 +1,37 @@
 <?php
 
-namespace DDDominio\EventSourcing\EventStore;
+namespace DDDominio\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
-use Doctrine\DBAL\Connection;
+use DDDominio\EventSourcing\EventStore\AbstractEventStore;
+use DDDominio\EventSourcing\EventStore\ConcurrencyException;
+use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
 
-class DoctrineEventStore extends AbstractEventStore
+class MySqlJsonEventStore extends AbstractEventStore
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
 
     /**
-     * @var Connection
+     * @var \PDO
      */
     private $connection;
 
     /**
-     * @param Connection $connection
+     * @param \PDO $connection
      * @param SerializerInterface $serializer
      * @param EventUpgrader $eventUpgrader
      */
-    public function __construct($connection, $serializer, $eventUpgrader)
-    {
-        parent::__construct($serializer, $eventUpgrader);
+    public function __construct(
+        \PDO $connection,
+        SerializerInterface $serializer,
+        $eventUpgrader
+    ) {
         $this->connection = $connection;
+        parent::__construct($serializer, $eventUpgrader);
     }
 
     /**
@@ -53,15 +58,15 @@ class DoctrineEventStore extends AbstractEventStore
         $stmt->execute();
         $results = $stmt->fetchAll();
 
-        $storedEvents = array_map(function($result) {
+        $storedEvents = array_map(function($event) {
             return new StoredEvent(
-                $result['id'],
-                $result['stream_id'],
-                $result['type'],
-                $result['event'],
-                $result['metadata'],
-                new \DateTimeImmutable($result['occurred_on']),
-                Version::fromString($result['version'])
+                $event['id'],
+                $event['stream_id'],
+                $event['type'],
+                $event['event'],
+                $event['metadata'],
+                new \DateTimeImmutable($event['occurred_on']),
+                Version::fromString($event['version'])
             );
         }, $results);
 
@@ -83,19 +88,88 @@ class DoctrineEventStore extends AbstractEventStore
         $stmt->execute();
         $results = $stmt->fetchAll();
 
-        $storedEvents = array_map(function($result) {
+        $storedEvents = array_map(function($event) {
             return new StoredEvent(
-                $result['id'],
-                $result['stream_id'],
-                $result['type'],
-                $result['event'],
-                $result['metadata'],
-                new \DateTimeImmutable($result['occurred_on']),
-                Version::fromString($result['version'])
+                $event['id'],
+                $event['stream_id'],
+                $event['type'],
+                $event['event'],
+                $event['metadata'],
+                new \DateTimeImmutable($event['occurred_on']),
+                Version::fromString($event['version'])
             );
         }, $results);
 
         return $this->domainEventStreamFromStoredEvents($storedEvents);
+    }
+
+    /**
+     * @param string $streamId
+     * @param StoredEvent[] $storedEvents
+     * @param int $expectedVersion
+     * @throws \Exception
+     */
+    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion)
+    {
+        $this->connection->beginTransaction();
+        try {
+            if (!$this->streamExists($streamId)) {
+                $stmt = $this->connection
+                    ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+                $stmt->bindValue(':streamId', $streamId);
+                $stmt->execute();
+            }
+            foreach ($storedEvents as $storedEvent) {
+                $stmt = $this->connection->prepare(
+                    'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
+                );
+                $stmt->bindValue(':streamId', $streamId);
+                $stmt->bindValue(':type', $storedEvent->type());
+                $stmt->bindValue(':event', $storedEvent->data());
+                $stmt->bindValue(':metadata', $storedEvent->metadata());
+                $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
+                $stmt->bindValue(':version', $storedEvent->version());
+                $stmt->execute();
+            }
+            $streamFinalVersion = $this->streamVersion($streamId);
+            if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
+                throw ConcurrencyException::fromVersions(
+                    $this->streamVersion($streamId),
+                    $expectedVersion
+                );
+            }
+            $this->connection->commit();
+        } catch (\Exception $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $streamId
+     * @return bool
+     */
+    protected function streamExists($streamId)
+    {
+        $stmt = $this->connection
+            ->prepare('SELECT COUNT(*) FROM streams WHERE id = :streamId');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        return boolval($stmt->fetchColumn());
+    }
+
+    /**
+     * @param string $streamId
+     * @return int
+     */
+    protected function streamVersion($streamId)
+    {
+        $stmt = $this->connection
+            ->prepare('SELECT COUNT(*) FROM events WHERE stream_id = :streamId');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        return intval($stmt->fetchColumn());
     }
 
     /**
@@ -129,68 +203,5 @@ class DoctrineEventStore extends AbstractEventStore
         }, $results);
 
         return new EventStream($storedEvents);
-    }
-
-    /**
-     * @param string $streamId
-     * @param StoredEvent[] $storedEvents
-     * @param int $expectedVersion
-     */
-    protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion)
-    {
-        $this->connection->transactional(function() use ($streamId, $storedEvents, $expectedVersion) {
-            if (!$this->streamExists($streamId)) {
-                $stmt = $this->connection
-                    ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
-                $stmt->bindValue(':streamId', $streamId);
-                $stmt->execute();
-            }
-            foreach ($storedEvents as $storedEvent) {
-                $stmt = $this->connection->prepare(
-                    'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
-                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
-                );
-                $stmt->bindValue(':streamId', $streamId);
-                $stmt->bindValue(':type', $storedEvent->type());
-                $stmt->bindValue(':event', $storedEvent->data());
-                $stmt->bindValue(':metadata', $storedEvent->metadata());
-                $stmt->bindValue(':occurredOn', $storedEvent->occurredOn()->format('Y-m-d H:i:s'));
-                $stmt->bindValue(':version', $storedEvent->version());
-                $stmt->execute();
-            }
-            $streamFinalVersion = $this->streamVersion($streamId);
-            if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
-                throw ConcurrencyException::fromVersions(
-                    $this->streamVersion($streamId),
-                    $expectedVersion
-                );
-            }
-        });
-    }
-
-    /**
-     * @param string $streamId
-     * @return int
-     */
-    protected function streamVersion($streamId)
-    {
-        $stmt = $this->connection
-            ->prepare('SELECT COUNT(*) FROM events WHERE stream_id = :streamId');
-        $stmt->bindValue(':streamId', $streamId);
-        $stmt->execute();
-        return intval($stmt->fetchColumn());
-    }
-
-    /**
-     * @param string $streamId
-     * @return bool
-     */
-    protected function streamExists($streamId)
-    {
-        $stmt = $this->connection
-            ->prepare('SELECT COUNT(*) FROM streams WHERE id = :streamId');
-        $stmt->bindValue(':streamId', $streamId);
-        $stmt->execute();
-        return boolval($stmt->fetchColumn());
     }
 }
