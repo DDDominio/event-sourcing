@@ -2,7 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\Snapshotting\Vendor;
 
-use DDDominio\EventSourcing\Snapshotting\Vendor\DoctrineSnapshotStore;
+use DDDominio\EventSourcing\Snapshotting\Vendor\DoctrineDbalSnapshotStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
@@ -87,7 +87,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             10
         );
-        $snapshotStore = new DoctrineSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
@@ -114,7 +114,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             3
         );
-        $snapshotStore = new DoctrineSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
@@ -137,7 +137,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForEventVersion()
     {
-        $snapshotStore = new DoctrineSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
@@ -158,7 +158,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForAnotherEventVersion()
     {
-        $snapshotStore = new DoctrineSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );

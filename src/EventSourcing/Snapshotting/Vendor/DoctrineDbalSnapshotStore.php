@@ -7,7 +7,7 @@ use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 use Doctrine\DBAL\Driver\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 
-class DoctrineSnapshotStore implements SnapshotStoreInterface
+class DoctrineDbalSnapshotStore implements SnapshotStoreInterface
 {
     /**
      * @var Connection
