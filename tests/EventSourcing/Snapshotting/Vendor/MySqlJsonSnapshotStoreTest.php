@@ -1,11 +1,11 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting\Vendor;
 
+use DDDominio\EventSourcing\Snapshotting\Vendor\MySqlJsonSnapshotStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
-use DDDominio\EventSourcing\Snapshotting\MySqlJsonSnapshotStore;
 use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\SerializerBuilder;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
@@ -42,11 +42,11 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
-                    __DIR__ . '/../TestData/Serializer',
+                    __DIR__ . '/../../TestData/Serializer',
                     'DDDominio\Tests\EventSourcing\TestData'
                 )
                 ->addMetadataDir(
-                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    __DIR__ . '/../../../../src/EventSourcing/Serialization/JmsMapping',
                     'DDDominio\EventSourcing\Common'
                 )
                 ->build()

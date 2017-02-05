@@ -1,7 +1,9 @@
 <?php
 
-namespace DDDominio\EventSourcing\Snapshotting;
+namespace DDDominio\EventSourcing\Snapshotting\Vendor;
 
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 use Doctrine\DBAL\Driver\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 

@@ -1,14 +1,14 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting\Vendor;
 
+use DDDominio\EventSourcing\Snapshotting\Vendor\DoctrineSnapshotStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DriverManager;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
-use DDDominio\EventSourcing\Snapshotting\DoctrineSnapshotStore;
 use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\SerializerBuilder;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
@@ -42,18 +42,18 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
         $this->connection->exec(
-            file_get_contents(__DIR__ . '/../TestData/dbal_event_store_schema.sql')
+            file_get_contents(__DIR__ . '/../../TestData/dbal_event_store_schema.sql')
         );
 
         AnnotationRegistry::registerLoader('class_exists');
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
-                    __DIR__ . '/../TestData/Serializer',
+                    __DIR__ . '/../../TestData/Serializer',
                     'DDDominio\Tests\EventSourcing\TestData'
                 )
                 ->addMetadataDir(
-                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    __DIR__ . '/../../../../src/EventSourcing/Serialization/JmsMapping',
                     'DDDominio\EventSourcing\Common'
                 )
                 ->build()
