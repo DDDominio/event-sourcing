@@ -12,7 +12,7 @@ use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
 
-class DoctrineEventStore extends AbstractEventStore
+class DoctrineDbalEventStore extends AbstractEventStore
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
 
