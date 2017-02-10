@@ -15,10 +15,7 @@ class DummyEventSourcedAggregateRepository extends EventSourcedAggregateReposito
         AggregateReconstructor $aggregateReconstructor
     ) {
         parent::__construct(
-            DummyEventSourcedAggregate::class,
-            $eventStore,
-            $snapshotStore,
-            $aggregateReconstructor
+            $eventStore, $snapshotStore, $aggregateReconstructor, DummyEventSourcedAggregate::class
         );
     }
 }

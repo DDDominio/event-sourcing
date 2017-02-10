@@ -1,25 +1,25 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Snapshotting;
+namespace DDDominio\Tests\EventSourcing\Snapshotting\Vendor;
 
+use DDDominio\EventSourcing\Snapshotting\Vendor\DoctrineDbalSnapshotStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\DriverManager;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
-use DDDominio\EventSourcing\Snapshotting\MySqlJsonSnapshotStore;
 use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\SerializerBuilder;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 
-class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
+class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {
-    const DB_HOST = 'localhost';
-    const DB_USER = 'event_sourcing';
-    const DB_PASS = 'event_sourcing123';
-    const DB_NAME = 'json_event_store';
+    const TEST_DB_PATH = __DIR__ . '/../test.db';
 
     /**
-     * @var \PDO
+     * @var Connection
      */
     private $connection;
 
@@ -28,29 +28,46 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     private $serializer;
 
+    /**
+     * {@inheritdoc}
+     */
     public function setUp()
     {
-        $this->connection = new \PDO(
-            'mysql:host=' . self::DB_HOST . ';dbname=' . self::DB_NAME,
-            self::DB_USER,
-            self::DB_PASS
+        touch(self::TEST_DB_PATH);
+        $connectionParams = array(
+            'path' => self::TEST_DB_PATH,
+            'host' => 'localhost',
+            'driver' => 'pdo_sqlite',
         );
-        $this->connection->query('TRUNCATE snapshots')->execute();
+        $config = new Configuration();
+        $this->connection = DriverManager::getConnection($connectionParams, $config);
+        $this->connection->exec(
+            file_get_contents(__DIR__ . '/../../TestData/dbal_event_store_schema.sql')
+        );
 
         AnnotationRegistry::registerLoader('class_exists');
-
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
-                    __DIR__ . '/../TestData/Serializer',
+                    __DIR__ . '/../../TestData/Serializer',
                     'DDDominio\Tests\EventSourcing\TestData'
                 )
                 ->addMetadataDir(
-                    __DIR__ . '/../../../src/EventSourcing/Serialization/JmsMapping',
+                    __DIR__ . '/../../../../src/EventSourcing/Serialization/JmsMapping',
                     'DDDominio\EventSourcing\Common'
                 )
                 ->build()
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function tearDown()
+    {
+        if (file_exists(self::TEST_DB_PATH)) {
+            unlink(self::TEST_DB_PATH);
+        }
     }
 
     /**
@@ -70,14 +87,14 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             10
         );
-        $eventStore = new MySqlJsonSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
-        $eventStore->addSnapshot($snapshot);
-        $eventStore->addSnapshot($lastSnapshot);
+        $snapshotStore->addSnapshot($snapshot);
+        $snapshotStore->addSnapshot($lastSnapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
+        $retrievedSnapshot = $snapshotStore->findLastSnapshot(
             DummyEventSourcedAggregate::class,
             'id'
         );
@@ -97,18 +114,22 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             3
         );
-        $eventStore = new MySqlJsonSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
 
-        $eventStore->addSnapshot($snapshot);
+        $snapshotStore->addSnapshot($snapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
+        $retrievedSnapshot = $snapshotStore->findLastSnapshot(
             DummyEventSourcedAggregate::class,
             'id'
         );
         $this->assertInstanceOf(SnapshotInterface::class, $retrievedSnapshot);
+        $this->assertEquals('id', $retrievedSnapshot->id());
+        $this->assertEquals('name', $retrievedSnapshot->name());
+        $this->assertEquals('description', $retrievedSnapshot->description());
+        $this->assertEquals(3, $retrievedSnapshot->version());
     }
 
     /**
@@ -116,18 +137,18 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForEventVersion()
     {
-        $eventStore = new MySqlJsonSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
-        $eventStore->addSnapshot(
+        $snapshotStore->addSnapshot(
             new DummySnapshot('id', 'new name', 'description', 2)
         );
-        $eventStore->addSnapshot(
+        $snapshotStore->addSnapshot(
             new DummySnapshot('id', 'another name', 'new description', 4)
         );
 
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
+        $snapshot = $snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
 
         $this->assertEquals(2, $snapshot->version());
     }
@@ -137,18 +158,18 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForAnotherEventVersion()
     {
-        $eventStore = new MySqlJsonSnapshotStore(
+        $snapshotStore = new DoctrineDbalSnapshotStore(
             $this->connection,
             $this->serializer
         );
-        $eventStore->addSnapshot(
+        $snapshotStore->addSnapshot(
             new DummySnapshot('id', 'new name', 'description', 2)
         );
-        $eventStore->addSnapshot(
+        $snapshotStore->addSnapshot(
             new DummySnapshot('id', 'another name', 'new description', 4)
         );
 
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
+        $snapshot = $snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
     }

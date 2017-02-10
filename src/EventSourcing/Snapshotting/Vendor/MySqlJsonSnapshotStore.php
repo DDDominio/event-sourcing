@@ -1,14 +1,15 @@
 <?php
 
-namespace DDDominio\EventSourcing\Snapshotting;
+namespace DDDominio\EventSourcing\Snapshotting\Vendor;
 
-use Doctrine\DBAL\Driver\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
+use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
+use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 
-class DoctrineSnapshotStore implements SnapshotStoreInterface
+class MySqlJsonSnapshotStore implements SnapshotStoreInterface
 {
     /**
-     * @var Connection
+     * @var \PDO
      */
     private $connection;
 
@@ -18,11 +19,13 @@ class DoctrineSnapshotStore implements SnapshotStoreInterface
     private $serializer;
 
     /**
-     * @param Connection $connection
+     * @param \PDO $connection
      * @param SerializerInterface $serializer
      */
-    public function __construct(Connection $connection, SerializerInterface $serializer)
-    {
+    public function __construct(
+        \PDO $connection,
+        SerializerInterface $serializer
+    ) {
         $this->connection = $connection;
         $this->serializer = $serializer;
     }

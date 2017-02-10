@@ -10,11 +10,6 @@ use Doctrine\Common\Annotations\AnnotationReader;
 class EventSourcedAggregateRepository
 {
     /**
-     * @var string
-     */
-    private $aggregateClass;
-
-    /**
      * @var EventStoreInterface
      */
     private $eventStore;
@@ -30,21 +25,23 @@ class EventSourcedAggregateRepository
     private $aggregateReconstructor;
 
     /**
-     * @param string $aggregateClass
+     * @var string
+     */
+    private $aggregateClass;
+
+    /**
      * @param EventStoreInterface $eventStore
      * @param SnapshotStoreInterface $snapshotStore
      * @param AggregateReconstructor $aggregateReconstructor
+     * @param string $aggregateClass
      */
     public function __construct(
-        $aggregateClass,
-        EventStoreInterface $eventStore,
-        SnapshotStoreInterface $snapshotStore,
-        $aggregateReconstructor
+        EventStoreInterface $eventStore, SnapshotStoreInterface $snapshotStore, $aggregateReconstructor, $aggregateClass
     ) {
-        $this->aggregateClass = $aggregateClass;
         $this->eventStore = $eventStore;
         $this->snapshotStore = $snapshotStore;
         $this->aggregateReconstructor = $aggregateReconstructor;
+        $this->aggregateClass = $aggregateClass;
     }
 
     /**
