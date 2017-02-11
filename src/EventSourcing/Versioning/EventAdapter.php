@@ -51,7 +51,7 @@ class EventAdapter
      */
     public function enrich($storedEvent, $pathExpression, \Closure $closure)
     {
-        $value = $closure->call($this, json_decode($storedEvent->data()));
+        $value = $closure(json_decode($storedEvent->data()));
         $data = $this->jsonTransformer->addKey(
             $storedEvent->data(),
             $pathExpression,
@@ -80,7 +80,7 @@ class EventAdapter
      */
     public function changeValue($storedEvent, $pathExpression, \Closure $closure)
     {
-        $value = $closure->call($this, json_decode($storedEvent->data()));
+        $value = $closure(json_decode($storedEvent->data()));
         $data = $this->jsonTransformer->addKey(
             $storedEvent->data(),
             $pathExpression,

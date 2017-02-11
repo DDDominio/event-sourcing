@@ -46,17 +46,8 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        touch(self::TEST_DB_PATH);
-        $connectionParams = array(
-            'path' => self::TEST_DB_PATH,
-            'host' => 'localhost',
-            'driver' => 'pdo_sqlite',
-        );
-        $config = new Configuration();
-        $this->connection = DriverManager::getConnection($connectionParams, $config);
-        $this->connection->exec(
-            file_get_contents(__DIR__ . '/../../TestData/dbal_event_store_schema.sql')
-        );
+        $this->destroyTestDatabaseIfExists();
+        $this->createTestDatabase();
 
         AnnotationRegistry::registerLoader('class_exists');
 
@@ -86,6 +77,26 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      * {@inheritdoc}
      */
     public function tearDown()
+    {
+        $this->destroyTestDatabaseIfExists();
+    }
+
+    private function createTestDatabase()
+    {
+        touch(self::TEST_DB_PATH);
+        $connectionParams = array(
+            'path' => self::TEST_DB_PATH,
+            'host' => 'localhost',
+            'driver' => 'pdo_sqlite',
+        );
+        $config = new Configuration();
+        $this->connection = DriverManager::getConnection($connectionParams, $config);
+        $this->connection->exec(
+            file_get_contents(__DIR__ . '/../../TestData/doctrine_dbal_event_store_schema.sql')
+        );
+    }
+
+    private function destroyTestDatabaseIfExists()
     {
         if (file_exists(self::TEST_DB_PATH)) {
             unlink(self::TEST_DB_PATH);

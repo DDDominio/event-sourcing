@@ -13,10 +13,10 @@ use DDDominio\Tests\EventSourcing\TestData\DummySnapshot;
 
 class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 {
-    const DB_HOST = 'localhost';
-    const DB_USER = 'event_sourcing';
-    const DB_PASS = 'event_sourcing123';
-    const DB_NAME = 'json_event_store';
+    const MYSQL_DB_HOST = 'localhost';
+    const MYSQL_DB_USER = 'event_sourcing';
+    const MYSQL_DB_PASS = 'event_sourcing123';
+    const MYSQL_DB_NAME = 'json_snapshot_store';
 
     /**
      * @var \PDO
@@ -31,11 +31,16 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->connection = new \PDO(
-            'mysql:host=' . self::DB_HOST . ';dbname=' . self::DB_NAME,
-            self::DB_USER,
-            self::DB_PASS
+            'mysql:host=' . self::MYSQL_DB_HOST,
+            self::MYSQL_DB_USER,
+            self::MYSQL_DB_PASS
         );
-        $this->connection->query('TRUNCATE snapshots')->execute();
+        $this->connection->query('DROP SCHEMA IF EXISTS '.self::MYSQL_DB_NAME);
+        $this->connection->query('CREATE SCHEMA '.self::MYSQL_DB_NAME);
+        $this->connection->query('USE '.self::MYSQL_DB_NAME);
+        $this->connection->exec(
+            file_get_contents(__DIR__ . '/../../TestData/mysql_json_snapshot_store_schema.sql')
+        );
 
         AnnotationRegistry::registerLoader('class_exists');
 
@@ -51,6 +56,11 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
                 )
                 ->build()
         );
+    }
+
+    protected function tearDown()
+    {
+        $this->connection->query('DROP SCHEMA '.self::MYSQL_DB_NAME);
     }
 
     /**
