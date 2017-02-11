@@ -169,26 +169,26 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
      * @param StoredEvent[] $storedEvents
      * @param int $expectedVersion
      */
-    protected abstract function appendStoredEvents($streamId, $storedEvents, $expectedVersion);
+    abstract protected function appendStoredEvents($streamId, $storedEvents, $expectedVersion);
 
     /**
      * @param string $streamId
      * @return bool
      */
-    protected abstract function streamExists($streamId);
+    abstract protected function streamExists($streamId);
 
     /**
      * @param string $streamId
      * @return int
      */
-    protected abstract function streamVersion($streamId);
+    abstract protected function streamVersion($streamId);
 
     /**
      * @param string $type
      * @param Version $version
      * @return EventStreamInterface
      */
-    protected abstract function readStoredEventsOfTypeAndVersion($type, $version);
+    abstract protected function readStoredEventsOfTypeAndVersion($type, $version);
 
     /**
      * @param DomainEvent[] $events

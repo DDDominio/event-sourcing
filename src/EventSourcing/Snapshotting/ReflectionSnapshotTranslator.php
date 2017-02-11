@@ -9,17 +9,17 @@ abstract class ReflectionSnapshotTranslator implements SnapshotTranslatorInterfa
     /**
      * @return string
      */
-    protected abstract function aggregateClass();
+    abstract protected function aggregateClass();
 
     /**
      * @return string
      */
-    protected abstract function snapshotClass();
+    abstract protected function snapshotClass();
 
     /**
      * @return array
      */
-    protected abstract function aggregateToSnapshotPropertyDictionary();
+    abstract protected function aggregateToSnapshotPropertyDictionary();
 
     /**
      * @param EventSourcedAggregateRoot $aggregate

@@ -22,26 +22,26 @@ abstract class Upgrade
     /**
      * @param StoredEvent $event
      */
-    public abstract function upgrade(StoredEvent $event);
+    abstract public function upgrade(StoredEvent $event);
 
     /**
      * @param StoredEvent $event
      */
-    public abstract function downgrade(StoredEvent $event);
+    abstract public function downgrade(StoredEvent $event);
 
     /**
      * @return string
      */
-    public abstract function eventClass();
+    abstract public function eventClass();
 
     /**
      * @return Version
      */
-    public abstract function from();
+    abstract public function from();
 
 
     /**
      * @return Version
      */
-    public abstract function to();
+    abstract public function to();
 }
