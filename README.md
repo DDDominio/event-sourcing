@@ -4,8 +4,6 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/DDDominio/event-sourcing/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/DDDominio/event-sourcing/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/DDDominio/event-sourcing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/DDDominio/event-sourcing/?branch=master)
 
-This library is under development.
-
 ## Installation
 
     composer require dddominio/event-sourcing ^1.0@dev
@@ -13,11 +11,11 @@ This library is under development.
 ## Features
 
 - Aggregates Event Sourcing
-- Snapshotting  (In progress)
-- Events versioning  (In progress)
-- Projections (In progress)
+- Snapshotting
+- Events versioning
+- Projections
 
 ## Event stores
 
-- Doctrine DBAL (In progress)
-- MySQL JSON (In progress)
+- Doctrine DBAL
+- MySQL JSON
