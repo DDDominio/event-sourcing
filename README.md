@@ -1,5 +1,7 @@
 # PHP Event Sourcing library
 
+[![Build Status](https://travis-ci.org/DDDominio/event-sourcing.svg?branch=master)](https://travis-ci.org/DDDominio/event-sourcing)
+
 This library is under development.
 
 ## Installation
