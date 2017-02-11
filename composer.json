@@ -10,12 +10,6 @@
       "email": "santaka87@gmail.com"
     }
   ],
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://github.com/DDDominio/common"
-    }
-  ],
   "require": {
     "php": "^5.6 || ^7.0",
     "dddominio/common": "^1.0@dev",
