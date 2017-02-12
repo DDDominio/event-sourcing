@@ -1,6 +1,6 @@
 <?php
 
-namespace DDDominio\EventSourcing\Projection;
+namespace DDDominio\EventSourcing\EventStore\Projection;
 
 use DDDominio\Common\EventInterface;
 use DDDominio\EventSourcing\Common\DomainEvent;

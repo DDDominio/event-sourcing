@@ -1,6 +1,6 @@
 <?php
 
-namespace DDDominio\Tests\EventSourcing\Projections;
+namespace DDDominio\Tests\EventSourcing\EventStore\Projections;
 
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
@@ -10,7 +10,7 @@ use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
 use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\Projection\ProjectionBuilder;
+use DDDominio\EventSourcing\EventStore\Projection\ProjectionBuilder;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
