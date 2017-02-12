@@ -14,6 +14,11 @@ class ProjectionBuilder
     private $eventStore;
 
     /**
+     * @var callable
+     */
+    private $stateInitializer;
+
+    /**
      * @var string
      */
     private $from;
@@ -24,7 +29,7 @@ class ProjectionBuilder
     private $eventHandlers;
 
     /**
-     * @var EventInterface[]
+     * @var array
      */
     private $emittedEvents;
 
@@ -34,6 +39,20 @@ class ProjectionBuilder
     public function __construct(EventStoreInterface $eventStore)
     {
         $this->eventStore = $eventStore;
+        $this->emittedEvents = [];
+        $this->stateInitializer = function() {
+            return new \stdClass();
+        };
+    }
+
+    /**
+     * @param callable $stateInitializer
+     * @return $this
+     */
+    public function init(callable $stateInitializer)
+    {
+        $this->stateInitializer = $stateInitializer;
+        return $this;
     }
 
     /**
@@ -43,6 +62,15 @@ class ProjectionBuilder
     public function from($streamId)
     {
         $this->from = $streamId;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function fromAll()
+    {
+        $this->from('');
         return $this;
     }
 
@@ -58,25 +86,42 @@ class ProjectionBuilder
     }
 
     /**
-     * @param string $streamId
+     * @return \stdClass
      */
-    public function execute($streamId)
+    public function execute()
     {
-        $stream = $this->eventStore->readFullStream($this->from);
+        $state = new \stdClass();
+        $stateInitializer = $this->stateInitializer;
+        $stateInitializer($state);
+        $stream = $this->executeEventsQuery();
         foreach ($stream as $event) {
             /** @var EventInterface $event */
             if (isset($this->eventHandlers[get_class($event->data())])) {
-                $this->eventHandlers[get_class($event->data())]->call($this, $event->data());
+                $this->eventHandlers[get_class($event->data())]->call($this, $event->data(), $state);
             }
         }
-        $this->eventStore->appendToStream($streamId, $this->emittedEvents);
+        foreach ($this->emittedEvents as $streamId => $events) {
+            $this->eventStore->appendToStream($streamId, $events);
+        }
+        return $state;
     }
 
     /**
+     * @param string $streamId
      * @param EventInterface $event
      */
-    private function emit($event)
+    private function emit($streamId, $event)
     {
-        $this->emittedEvents[] = DomainEvent::record($event);
+        $this->emittedEvents[$streamId][] = DomainEvent::record($event);
+    }
+
+    /**
+     * @return \DDDominio\EventSourcing\Common\EventStreamInterface
+     */
+    private function executeEventsQuery()
+    {
+        return empty($this->from) ?
+            $stream = $this->eventStore->readAllEvents() :
+            $stream = $this->eventStore->readFullStream($this->from);
     }
 }

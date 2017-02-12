@@ -38,4 +38,9 @@ interface EventStoreInterface
      * @param callable $callable
      */
     public function addEventListener($eventStoreEvent, callable $callable);
+
+    /**
+     * @return EventStreamInterface
+     */
+    public function readAllEvents();
 }

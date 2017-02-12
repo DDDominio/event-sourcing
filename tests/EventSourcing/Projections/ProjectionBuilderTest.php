@@ -46,24 +46,179 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function makeASimpleProjection()
+    public function makeASimpleProjectionOfASingleStream()
     {
-        $eventStore = $this->makeEventStore();
+        $eventStore = $this->makeEventStore([
+            'streamId' => [
+                new NameChanged('short name'),
+                new DescriptionChanged('description'),
+                new NameChanged('name with more than 20 characters'),
+                new NameChanged('name'),
+                new NameChanged('another name with more than 20 characters')
+            ]
+        ]);
 
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $projectionBuilder
             ->from('streamId')
             ->when(NameChanged::class, function(NameChanged $event) {
+                if (strlen($event->name()) < 10) {
+                    $this->emit('shortNamesStream', $event);
+                }
                 if (strlen($event->name()) > 20) {
-                    $this->emit($event);
+                    $this->emit('longNamesStream', $event);
                 }
             })
-            ->execute('longNamesStream');
+            ->execute();
 
-        $projectedStream = $eventStore->readFullStream('longNamesStream');
-        $this->assertCount(2, $projectedStream);
-        $this->assertEquals('name with more than 20 characters', $projectedStream->events()[0]->data()->name());
-        $this->assertEquals('another name with more than 20 characters', $projectedStream->events()[1]->data()->name());
+        $longNamesStream = $eventStore->readFullStream('longNamesStream');
+        $this->assertCount(2, $longNamesStream);
+        $this->assertEquals('name with more than 20 characters', $longNamesStream->events()[0]->data()->name());
+        $this->assertEquals('another name with more than 20 characters', $longNamesStream->events()[1]->data()->name());
+        $shortNamesStream = $eventStore->readFullStream('shortNamesStream');
+        $this->assertCount(1, $shortNamesStream);
+        $this->assertEquals('name', $shortNamesStream->events()[0]->data()->name());
+    }
+
+    /**
+     * @test
+     */
+    public function projectionUsingState()
+    {
+        $eventStore = $this->makeEventStore([
+            'streamId' => [
+                new NameChanged('short name'),
+                new DescriptionChanged('description'),
+                new NameChanged('name with more than 20 characters'),
+                new NameChanged('name'),
+                new NameChanged('another name with more than 20 characters')
+            ]
+        ]);
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $state = $projectionBuilder
+            ->from('streamId')
+            ->when(NameChanged::class, function(NameChanged $event, $state) {
+                if (strlen($event->name()) < 10) {
+                    if (!isset($state->shortNameCount)) {
+                        $state->shortNameCount = 0;
+                    }
+                    $state->shortNameCount++;
+                }
+            })
+            ->execute();
+
+        $this->assertEquals(1, $state->shortNameCount);
+    }
+
+    /**
+     * @test
+     */
+    public function initState()
+    {
+        $eventStore = $this->makeEventStore();
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $state = $projectionBuilder
+            ->from('streamId')
+            ->init(function ($state) {
+                $state->shortNameCount = 0;
+                return $state;
+            })
+            ->execute();
+
+        $this->assertEquals(0, $state->shortNameCount);
+    }
+
+    /**
+     * @test
+     */
+    public function initAndUseState()
+    {
+        $eventStore = $this->makeEventStore([
+            'streamId' => [
+                new NameChanged('short name'),
+                new DescriptionChanged('description'),
+                new NameChanged('name with more than 20 characters'),
+                new NameChanged('name'),
+                new NameChanged('another name with more than 20 characters')
+            ]
+        ]);
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $state = $projectionBuilder
+            ->from('streamId')
+            ->init(function ($state) {
+                $state->shortNameCount = 0;
+                return $state;
+            })
+            ->when(NameChanged::class, function(NameChanged $event, $state) {
+                if (strlen($event->name()) < 10) {
+                    $state->shortNameCount++;
+                }
+            })
+            ->execute();
+
+        $this->assertEquals(1, $state->shortNameCount);
+    }
+
+    /**
+     * @test
+     */
+    public function projectionFromAllStreams()
+    {
+        $eventStore = $this->makeEventStore([
+            'stream-1' => [
+                new NameChanged('medium name'),
+                new NameChanged('name with more than 20 characters'),
+            ],
+            'stream-2' => [
+                new NameChanged('name'),
+                new NameChanged('medium name'),
+                new NameChanged('name with more than 20 characters'),
+            ],
+            'stream-3' => [
+                new NameChanged('name'),
+                new NameChanged('name with more than 20 characters'),
+            ]
+        ]);
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $projectionBuilder
+            ->fromAll()
+            ->when(NameChanged::class, function(NameChanged $event) {
+                if (strlen($event->name()) < 10) {
+                    $this->emit('shortNamesStream', $event);
+                }
+            })
+            ->execute();
+
+        $shortNamesStream = $eventStore->readFullStream('shortNamesStream');
+        $this->assertCount(2, $shortNamesStream);
+    }
+
+    /**
+     * @param array $streams
+     * @return InMemoryEventStore
+     */
+    private function makeEventStore($streams = [])
+    {
+        $storedEventStreams = [];
+        foreach ($streams as $streamId => $eventsData) {
+            $domainEvents = [];
+            foreach ($eventsData as $eventData) {
+                $domainEvents[] = DomainEvent::record($eventData);
+            }
+            $storedEventStreams[$streamId] = new StoredEventStream(
+                $streamId,
+                $this->storedEventsFromDomainEvents($domainEvents)
+            );
+        }
+        return new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            $storedEventStreams
+        );
     }
 
     /**
@@ -83,26 +238,5 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
                 Version::fromString('1.0')
             );
         }, $domainEvents);
-    }
-
-    /**
-     * @return InMemoryEventStore
-     */
-    protected function makeEventStore()
-    {
-        $domainEvents = [
-            DomainEvent::record(new NameChanged('short name')),
-            DomainEvent::record(new DescriptionChanged('description')),
-            DomainEvent::record(new NameChanged('name with more than 20 characters')),
-            DomainEvent::record(new NameChanged('name')),
-            DomainEvent::record(new NameChanged('another name with more than 20 characters'))
-        ];
-        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
-        return new InMemoryEventStore(
-            $this->serializer,
-            $this->eventUpgrader,
-            ['streamId' => $storedEventStream]
-        );
     }
 }

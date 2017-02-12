@@ -81,6 +81,19 @@ class InMemoryEventStore extends AbstractEventStore
     }
 
     /**
+     * @return EventStreamInterface
+     */
+    public function readAllEvents()
+    {
+        $allEventsStream = EventStream::buildEmpty();
+        foreach ($this->streams as $stream) {
+            $streamEvents = $this->domainEventStreamFromStoredEvents($stream->events());
+            $allEventsStream = $allEventsStream->append($streamEvents->events());
+        }
+        return $allEventsStream;
+    }
+
+    /**
      * @param string $streamId
      * @return int
      */
