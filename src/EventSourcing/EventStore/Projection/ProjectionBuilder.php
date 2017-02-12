@@ -4,6 +4,7 @@ namespace DDDominio\EventSourcing\EventStore\Projection;
 
 use DDDominio\Common\EventInterface;
 use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 
 class ProjectionBuilder
@@ -22,6 +23,11 @@ class ProjectionBuilder
      * @var string
      */
     private $from;
+
+    /**
+     * @var bool
+     */
+    private $forEachStream;
 
     /**
      * @var array
@@ -43,6 +49,7 @@ class ProjectionBuilder
         $this->stateInitializer = function() {
             return new \stdClass();
         };
+        $this->forEachStream = false;
     }
 
     /**
@@ -75,6 +82,15 @@ class ProjectionBuilder
     }
 
     /**
+     * @return $this
+     */
+    public function forEachStream()
+    {
+        $this->forEachStream = true;
+        return $this;
+    }
+
+    /**
      * @param string $eventClass
      * @param callable $eventHandler
      * @return $this
@@ -91,14 +107,14 @@ class ProjectionBuilder
     public function execute()
     {
         $state = new \stdClass();
-        $stateInitializer = $this->stateInitializer;
-        $stateInitializer($state);
-        $stream = $this->executeEventsQuery();
-        foreach ($stream as $event) {
-            /** @var EventInterface $event */
-            if (isset($this->eventHandlers[get_class($event->data())])) {
-                $this->eventHandlers[get_class($event->data())]->call($this, $event->data(), $state);
+        if ($this->forEachStream) {
+            $streams = $this->eventStore->readAllStreams();
+            foreach ($streams as $stream) {
+                $state = $this->runStreamProjection($stream);
             }
+        } else {
+            $stream = $this->executeStreamEventsQuery();
+            $state = $this->runStreamProjection($stream);
         }
         foreach ($this->emittedEvents as $streamId => $events) {
             $this->eventStore->appendToStream($streamId, $events);
@@ -118,10 +134,28 @@ class ProjectionBuilder
     /**
      * @return \DDDominio\EventSourcing\Common\EventStreamInterface
      */
-    private function executeEventsQuery()
+    private function executeStreamEventsQuery()
     {
         return empty($this->from) ?
             $stream = $this->eventStore->readAllEvents() :
             $stream = $this->eventStore->readFullStream($this->from);
+    }
+
+    /**
+     * @param EventStreamInterface $stream
+     * @return \stdClass
+     */
+    private function runStreamProjection($stream)
+    {
+        $state = new \stdClass();
+        $stateInitializer = $this->stateInitializer;
+        $stateInitializer($state);
+        foreach ($stream as $event) {
+            /** @var EventInterface $event */
+            if (isset($this->eventHandlers[get_class($event->data())])) {
+                $this->eventHandlers[get_class($event->data())]->call($this, $event->data(), $state);
+            }
+        }
+        return $state;
     }
 }

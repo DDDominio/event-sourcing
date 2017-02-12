@@ -198,6 +198,54 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @test
+     */
+    public function projectionForEachStream()
+    {
+        $eventStore = $this->makeEventStore([
+            'stream-1' => [
+                new NameChanged('name1'),
+                new NameChanged('name with more than 20 characters'),
+                new NameChanged('name1'),
+            ],
+            'stream-2' => [
+                new NameChanged('name2'),
+                new NameChanged('name2'),
+                new NameChanged('name with more than 20 characters'),
+            ],
+            'stream-3' => [
+                new NameChanged('name with more than 20 characters'),
+                new NameChanged('name3'),
+                new NameChanged('name3'),
+                new NameChanged('name3'),
+            ]
+        ]);
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $projectionBuilder
+            ->fromAll()
+            ->forEachStream()
+            ->init(function($state) {
+                $state->isPreviousEventShort = false;
+            })
+            ->when(NameChanged::class, function(NameChanged $event, $state) {
+                if (strlen($event->name()) < 10) {
+                    if ($state->isPreviousEventShort) {
+                        $this->emit('twoSortNameInARow', $event);
+                    }
+                }
+                $state->isPreviousEventShort = strlen($event->name()) < 10;
+            })
+            ->execute();
+
+        $shortNamesStream = $eventStore->readFullStream('twoSortNameInARow');
+        $this->assertCount(3, $shortNamesStream);
+        $this->assertEquals('name2', $shortNamesStream->events()[0]->data()->name());
+        $this->assertEquals('name3', $shortNamesStream->events()[1]->data()->name());
+        $this->assertEquals('name3', $shortNamesStream->events()[1]->data()->name());
+    }
+
+    /**
      * @param array $streams
      * @return InMemoryEventStore
      */
