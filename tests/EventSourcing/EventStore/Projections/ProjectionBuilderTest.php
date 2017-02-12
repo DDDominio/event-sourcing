@@ -3,6 +3,7 @@
 namespace DDDominio\Tests\EventSourcing\EventStore\Projections;
 
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
+use DDDominio\EventSourcing\EventStore\Projection\Projector;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
@@ -61,12 +62,12 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $projectionBuilder
             ->from('streamId')
-            ->when(NameChanged::class, function(NameChanged $event) {
+            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
                 if (strlen($event->name()) < 10) {
-                    $this->emit('shortNamesStream', $event);
+                    $projector->emit('shortNamesStream', $event);
                 }
                 if (strlen($event->name()) > 20) {
-                    $this->emit('longNamesStream', $event);
+                    $projector->emit('longNamesStream', $event);
                 }
             })
             ->execute();
@@ -186,9 +187,9 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $projectionBuilder
             ->fromAll()
-            ->when(NameChanged::class, function(NameChanged $event) {
+            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
                 if (strlen($event->name()) < 10) {
-                    $this->emit('shortNamesStream', $event);
+                    $projector->emit('shortNamesStream', $event);
                 }
             })
             ->execute();
@@ -228,10 +229,10 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
             ->init(function($state) {
                 $state->isPreviousEventShort = false;
             })
-            ->when(NameChanged::class, function(NameChanged $event, $state) {
+            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
                 if (strlen($event->name()) < 10) {
                     if ($state->isPreviousEventShort) {
-                        $this->emit('twoSortNameInARow', $event);
+                        $projector->emit('twoSortNameInARow', $event);
                     }
                 }
                 $state->isPreviousEventShort = strlen($event->name()) < 10;

@@ -3,7 +3,6 @@
 namespace DDDominio\EventSourcing\EventStore\Projection;
 
 use DDDominio\Common\EventInterface;
-use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 
@@ -35,9 +34,9 @@ class ProjectionBuilder
     private $eventHandlers;
 
     /**
-     * @var array
+     * @var Projector
      */
-    private $emittedEvents;
+    private $projector;
 
     /**
      * @param EventStoreInterface $eventStore
@@ -45,11 +44,11 @@ class ProjectionBuilder
     public function __construct(EventStoreInterface $eventStore)
     {
         $this->eventStore = $eventStore;
-        $this->emittedEvents = [];
         $this->stateInitializer = function() {
             return new \stdClass();
         };
         $this->forEachStream = false;
+        $this->projector = new Projector();
     }
 
     /**
@@ -116,19 +115,10 @@ class ProjectionBuilder
             $stream = $this->executeStreamEventsQuery();
             $state = $this->runStreamProjection($stream);
         }
-        foreach ($this->emittedEvents as $streamId => $events) {
+        foreach ($this->projector->emittedEventsByStream() as $streamId => $events) {
             $this->eventStore->appendToStream($streamId, $events);
         }
         return $state;
-    }
-
-    /**
-     * @param string $streamId
-     * @param EventInterface $event
-     */
-    private function emit($streamId, $event)
-    {
-        $this->emittedEvents[$streamId][] = DomainEvent::record($event);
     }
 
     /**
@@ -153,7 +143,7 @@ class ProjectionBuilder
         foreach ($stream as $event) {
             /** @var EventInterface $event */
             if (isset($this->eventHandlers[get_class($event->data())])) {
-                $this->eventHandlers[get_class($event->data())]->call($this, $event->data(), $state);
+                $this->eventHandlers[get_class($event->data())]($event->data(), $state, $this->projector);
             }
         }
         return $state;
