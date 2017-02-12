@@ -84,6 +84,27 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function projectionOfNonExistingStream()
+    {
+        $eventStore = $this->makeEventStore();
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $projectionBuilder
+            ->from('streamId')
+            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
+                if (strlen($event->name()) < 10) {
+                    $projector->emit('shortNamesStream', $event);
+                }
+            })
+            ->execute();
+
+        $shortNamesStream = $eventStore->readFullStream('shortNamesStream');
+        $this->assertCount(0, $shortNamesStream);
+    }
+
+    /**
+     * @test
+     */
     public function projectionUsingState()
     {
         $eventStore = $this->makeEventStore([
