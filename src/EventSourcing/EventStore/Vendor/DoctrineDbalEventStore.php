@@ -102,6 +102,22 @@ class DoctrineDbalEventStore extends AbstractEventStore
     }
 
     /**
+     * @return EventStreamInterface[]
+     */
+    public function readAllStreams()
+    {
+        // TODO: Implement readAllStreams() method.
+    }
+
+    /**
+     * @return EventStreamInterface
+     */
+    public function readAllEvents()
+    {
+        // TODO: Implement readAllEvents() method.
+    }
+
+    /**
      * @param string $type
      * @param Version $version
      * @return EventStreamInterface
@@ -183,7 +199,6 @@ class DoctrineDbalEventStore extends AbstractEventStore
         $stmt->execute();
         return intval($stmt->fetchColumn());
     }
-
     /**
      * @param string $streamId
      * @return bool

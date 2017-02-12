@@ -104,6 +104,22 @@ class MySqlJsonEventStore extends AbstractEventStore
     }
 
     /**
+     * @return EventStreamInterface[]
+     */
+    public function readAllStreams()
+    {
+        // TODO: Implement readAllStreams() method.
+    }
+
+    /**
+     * @return EventStreamInterface
+     */
+    public function readAllEvents()
+    {
+        // TODO: Implement readAllEvents() method.
+    }
+
+    /**
      * @param string $streamId
      * @param StoredEvent[] $storedEvents
      * @param int $expectedVersion
@@ -171,7 +187,6 @@ class MySqlJsonEventStore extends AbstractEventStore
         $stmt->execute();
         return intval($stmt->fetchColumn());
     }
-
     /**
      * @param string $type
      * @param Version $version
