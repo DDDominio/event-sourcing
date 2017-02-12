@@ -152,6 +152,7 @@ class ProjectionBuilder
      */
     private function initState()
     {
-        return ($this->stateInitializer)(new \stdClass());
+        $stateInitializer = $this->stateInitializer;
+        return $stateInitializer(new \stdClass());
     }
 }
