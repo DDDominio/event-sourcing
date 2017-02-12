@@ -134,6 +134,26 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function initStateWithForeachStream()
+    {
+        $eventStore = $this->makeEventStore();
+
+        $projectionBuilder = new ProjectionBuilder($eventStore);
+        $state = $projectionBuilder
+            ->from('streamId')
+            ->forEachStream()
+            ->init(function ($state) {
+                $state->shortNameCount = 10;
+                return $state;
+            })
+            ->execute();
+
+        $this->assertEquals(10, $state->shortNameCount);
+    }
+
+    /**
+     * @test
+     */
     public function initAndUseState()
     {
         $eventStore = $this->makeEventStore([
@@ -228,6 +248,7 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
             ->forEachStream()
             ->init(function($state) {
                 $state->isPreviousEventShort = false;
+                return $state;
             })
             ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
                 if (strlen($event->name()) < 10) {

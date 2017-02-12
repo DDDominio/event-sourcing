@@ -105,7 +105,7 @@ class ProjectionBuilder
      */
     public function execute()
     {
-        $state = new \stdClass();
+        $state = $this->initState();
         if ($this->forEachStream) {
             $streams = $this->eventStore->readAllStreams();
             foreach ($streams as $stream) {
@@ -137,9 +137,7 @@ class ProjectionBuilder
      */
     private function runStreamProjection($stream)
     {
-        $state = new \stdClass();
-        $stateInitializer = $this->stateInitializer;
-        $stateInitializer($state);
+        $state = $this->initState();
         foreach ($stream as $event) {
             /** @var EventInterface $event */
             if (isset($this->eventHandlers[get_class($event->data())])) {
@@ -147,5 +145,13 @@ class ProjectionBuilder
             }
         }
         return $state;
+    }
+
+    /**
+     * @return \stdClass
+     */
+    private function initState()
+    {
+        return ($this->stateInitializer)(new \stdClass());
     }
 }
