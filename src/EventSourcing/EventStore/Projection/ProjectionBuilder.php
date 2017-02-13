@@ -141,7 +141,7 @@ class ProjectionBuilder
         foreach ($stream as $event) {
             /** @var EventInterface $event */
             if (isset($this->eventHandlers[get_class($event->data())])) {
-                $this->eventHandlers[get_class($event->data())]($event->data(), $state, $this->projector);
+                $this->eventHandlers[get_class($event->data())]($event, $state, $this->projector);
             }
         }
         return $state;

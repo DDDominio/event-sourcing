@@ -62,12 +62,12 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $projectionBuilder
             ->from('streamId')
-            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
-                if (strlen($event->name()) < 10) {
-                    $projector->emit('shortNamesStream', $event);
+            ->when(NameChanged::class, function(DomainEvent $event, $state, Projector $projector) {
+                if (strlen($event->data()->name()) < 10) {
+                    $projector->emit('shortNamesStream', $event->data());
                 }
-                if (strlen($event->name()) > 20) {
-                    $projector->emit('longNamesStream', $event);
+                if (strlen($event->data()->name()) > 20) {
+                    $projector->emit('longNamesStream', $event->data());
                 }
             })
             ->execute();
@@ -91,9 +91,9 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $projectionBuilder
             ->from('streamId')
-            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
-                if (strlen($event->name()) < 10) {
-                    $projector->emit('shortNamesStream', $event);
+            ->when(NameChanged::class, function(DomainEvent $event, $state, Projector $projector) {
+                if (strlen($event->data()->name()) < 10) {
+                    $projector->emit('shortNamesStream', $event->data());
                 }
             })
             ->execute();
@@ -120,8 +120,8 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $state = $projectionBuilder
             ->from('streamId')
-            ->when(NameChanged::class, function(NameChanged $event, $state) {
-                if (strlen($event->name()) < 10) {
+            ->when(NameChanged::class, function(DomainEvent $event, $state) {
+                if (strlen($event->data()->name()) < 10) {
                     if (!isset($state->shortNameCount)) {
                         $state->shortNameCount = 0;
                     }
@@ -194,8 +194,8 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
                 $state->shortNameCount = 0;
                 return $state;
             })
-            ->when(NameChanged::class, function(NameChanged $event, $state) {
-                if (strlen($event->name()) < 10) {
+            ->when(NameChanged::class, function(DomainEvent $event, $state) {
+                if (strlen($event->data()->name()) < 10) {
                     $state->shortNameCount++;
                 }
             })
@@ -228,9 +228,9 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         $projectionBuilder = new ProjectionBuilder($eventStore);
         $projectionBuilder
             ->fromAll()
-            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
-                if (strlen($event->name()) < 10) {
-                    $projector->emit('shortNamesStream', $event);
+            ->when(NameChanged::class, function(DomainEvent $event, $state, Projector $projector) {
+                if (strlen($event->data()->name()) < 10) {
+                    $projector->emit('shortNamesStream', $event->data());
                 }
             })
             ->execute();
@@ -271,13 +271,13 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
                 $state->isPreviousEventShort = false;
                 return $state;
             })
-            ->when(NameChanged::class, function(NameChanged $event, $state, Projector $projector) {
-                if (strlen($event->name()) < 10) {
+            ->when(NameChanged::class, function(DomainEvent $event, $state, Projector $projector) {
+                if (strlen($event->data()->name()) < 10) {
                     if ($state->isPreviousEventShort) {
-                        $projector->emit('twoSortNameInARow', $event);
+                        $projector->emit('twoSortNameInARow', $event->data());
                     }
                 }
-                $state->isPreviousEventShort = strlen($event->name()) < 10;
+                $state->isPreviousEventShort = strlen($event->data()->name()) < 10;
             })
             ->execute();
 
