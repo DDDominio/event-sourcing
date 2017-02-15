@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a2b3492992aad56236d929d435ef503",
+    "content-hash": "1df1aaeb41d95f4a9f47452c8ba23e77",
     "packages": [
         {
             "name": "dddominio/common",
@@ -662,16 +662,16 @@
         },
         {
             "name": "jms/serializer",
-            "version": "1.5.0-RC1",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/schmittjoh/serializer.git",
-                "reference": "30d0b79fa6c6839eb8ab73b1b7a7a7bcea35b34a"
+                "reference": "9dc44f2924a90bf526a2e1c4bb1ce9d772a00a45"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/serializer/zipball/30d0b79fa6c6839eb8ab73b1b7a7a7bcea35b34a",
-                "reference": "30d0b79fa6c6839eb8ab73b1b7a7a7bcea35b34a",
+                "url": "https://api.github.com/repos/schmittjoh/serializer/zipball/9dc44f2924a90bf526a2e1c4bb1ce9d772a00a45",
+                "reference": "9dc44f2924a90bf526a2e1c4bb1ce9d772a00a45",
                 "shasum": ""
             },
             "require": {
@@ -707,7 +707,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.4-dev"
+                    "dev-master": "1.5-dev"
                 }
             },
             "autoload": {
@@ -734,7 +734,7 @@
                 "serialization",
                 "xml"
             ],
-            "time": "2017-01-19T14:33:19+00:00"
+            "time": "2017-02-14T14:35:22+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -2224,8 +2224,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "dddominio/common": 20,
-        "jms/serializer": 20
+        "dddominio/common": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
