@@ -7,6 +7,7 @@ use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
+use DDDominio\Tests\EventSourcing\TestData\RecorderEventListener;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
@@ -358,6 +359,26 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $appendedEvents);
         $this->assertInstanceOf(NameChanged::class, $appendedEvents[0]);
         $this->assertEquals('name', $appendedEvents[0]->name());
+    }
+
+    /**
+     * @test
+     */
+    public function addPostAppendEventListenerUsingEventStoreListenerInterface()
+    {
+        $eventListener = new RecorderEventListener();
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader
+        );
+        $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $eventListener);
+        $events = [DomainEvent::record(new NameChanged('name'))];
+
+        $eventStore->appendToStream('streamId', $events);
+
+        $this->assertCount(1, $eventListener->recordedEvents());
+        $this->assertInstanceOf(NameChanged::class, $eventListener->recordedEvents()[0]);
+        $this->assertEquals('name', $eventListener->recordedEvents()[0]->name());
     }
 
     /**

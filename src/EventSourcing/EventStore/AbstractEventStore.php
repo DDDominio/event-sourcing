@@ -24,7 +24,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
     private $eventUpgrader;
 
     /**
-     * @var callable[]
+     * @var EventStoreListenerInterface[]|callable[]
      */
     private $eventListeners;
 
@@ -157,11 +157,11 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
 
     /**
      * @param $eventStoreEvent
-     * @param callable $callable
+     * @param EventStoreListenerInterface|callable $eventStoreListener
      */
-    public function addEventListener($eventStoreEvent, callable $callable)
+    public function addEventListener($eventStoreEvent, $eventStoreListener)
     {
-        $this->eventListeners[$eventStoreEvent][] = $callable;
+        $this->eventListeners[$eventStoreEvent][] = $eventStoreListener;
     }
 
     /**
@@ -198,7 +198,11 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
     {
         if (isset($this->eventListeners[$eventStoreEvent])) {
             foreach ($this->eventListeners[$eventStoreEvent] as $eventListener) {
-                $eventListener($events);
+                if ($eventListener instanceof EventStoreListenerInterface) {
+                    $eventListener->handle($events);
+                } else {
+                    $eventListener($events);
+                }
             }
         }
     }

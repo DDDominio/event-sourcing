@@ -35,9 +35,9 @@ interface EventStoreInterface
 
     /**
      * @param $eventStoreEvent
-     * @param callable $callable
+     * @param EventStoreListenerInterface|callable $eventStoreListener
      */
-    public function addEventListener($eventStoreEvent, callable $callable);
+    public function addEventListener($eventStoreEvent, $eventStoreListener);
 
     /**
      * @return EventStreamInterface[]
