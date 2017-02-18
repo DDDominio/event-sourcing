@@ -2,19 +2,19 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRootInterface;
 
 interface SnapshotTranslatorInterface
 {
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param EventSourcedAggregateRootInterface $aggregate
      * @return SnapshotInterface
      */
     public function buildSnapshotFromAggregate($aggregate);
 
     /**
      * @param SnapshotInterface $snapshot
-     * @return EventSourcedAggregateRoot
+     * @return EventSourcedAggregateRootInterface
      */
     public function buildAggregateFromSnapshot($snapshot);
 }

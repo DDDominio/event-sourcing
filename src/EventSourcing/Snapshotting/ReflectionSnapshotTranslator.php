@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRootInterface;
 
 abstract class ReflectionSnapshotTranslator implements SnapshotTranslatorInterface
 {
@@ -22,7 +22,7 @@ abstract class ReflectionSnapshotTranslator implements SnapshotTranslatorInterfa
     abstract protected function aggregateToSnapshotPropertyDictionary();
 
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param EventSourcedAggregateRootInterface $aggregate
      * @return object
      */
     public function buildSnapshotFromAggregate($aggregate)
@@ -53,13 +53,31 @@ abstract class ReflectionSnapshotTranslator implements SnapshotTranslatorInterfa
         $reflectedClass = new \ReflectionClass($aggregateClass);
 
         $dictionary = $this->aggregateToSnapshotPropertyDictionary();
+        unset($dictionary['version']);
+        $this->setPropertyValue('version', $snapshot->version(), $aggregate, $reflectedClass->getParentClass());
 
         foreach ($dictionary as $aggregateProperty => $snapshotProperty) {
-            $nameProperty = $reflectedClass->getProperty($aggregateProperty);
-            $nameProperty->setAccessible(true);
-            $nameProperty->setValue($aggregate, $snapshot->$snapshotProperty());
+            $this->setPropertyValue(
+                $aggregateProperty,
+                $snapshot->$snapshotProperty(),
+                $aggregate,
+                $reflectedClass
+            );
         }
 
         return $aggregate;
+    }
+
+    /**
+     * @param string $propertyName
+     * @param string $propertyValue
+     * @param object $aggregate
+     * @param \ReflectionClass $reflectedClass
+     */
+    private function setPropertyValue($propertyName, $propertyValue, $aggregate, $reflectedClass)
+    {
+        $nameProperty = $reflectedClass->getProperty($propertyName);
+        $nameProperty->setAccessible(true);
+        $nameProperty->setValue($aggregate, $propertyValue);
     }
 }

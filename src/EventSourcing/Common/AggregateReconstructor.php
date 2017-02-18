@@ -32,7 +32,7 @@ class AggregateReconstructor
      * @param string $class
      * @param EventStreamInterface $eventStream
      * @param SnapshotInterface $snapshot
-     * @return EventSourcedAggregateRoot
+     * @return EventSourcedAggregateRootInterface
      */
     public function reconstitute($class, $eventStream, $snapshot = null)
     {
@@ -74,16 +74,16 @@ class AggregateReconstructor
     {
         $reflectedClass = new \ReflectionClass($class);
 
-        $traitNames = $reflectedClass->getTraitNames();
+        $parentClass = $reflectedClass->getParentClass();
 
-        if (!in_array(EventSourcedAggregateRoot::class, $traitNames)) {
+        if (EventSourcedAggregateRoot::class !== $parentClass->getName()) {
             throw new \InvalidArgumentException();
         }
     }
 
     /**
      * @param string $class
-     * @return EventSourcedAggregateRoot
+     * @return EventSourcedAggregateRootInterface
      */
     private function buildEmptyAggregate($class)
     {

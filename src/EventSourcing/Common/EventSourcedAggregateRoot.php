@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Common;
 
-trait EventSourcedAggregateRoot
+abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInterface
 {
     /**
      * @var DomainEvent[]

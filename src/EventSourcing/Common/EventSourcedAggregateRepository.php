@@ -45,7 +45,7 @@ class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param EventSourcedAggregateRootInterface $aggregate
      */
     public function add($aggregate)
     {
@@ -57,7 +57,7 @@ class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param EventSourcedAggregateRootInterface $aggregate
      */
     public function save($aggregate)
     {
@@ -71,7 +71,7 @@ class EventSourcedAggregateRepository
 
     /**
      * @param string $id
-     * @return EventSourcedAggregateRoot
+     * @return EventSourcedAggregateRootInterface
      */
     public function findById($id)
     {
@@ -96,7 +96,7 @@ class EventSourcedAggregateRepository
     /**
      * @param string $id
      * @param int $version
-     * @return EventSourcedAggregateRoot
+     * @return EventSourcedAggregateRootInterface
      */
     public function findByIdAndVersion($id, $version)
     {
@@ -127,7 +127,7 @@ class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param EventSourcedAggregateRootInterface $aggregate
      * @return string
      */
     private function streamIdFromAggregate($aggregate)
@@ -145,7 +145,7 @@ class EventSourcedAggregateRepository
     }
 
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param object $aggregate
      * @return string
      * @throws \Exception
      */

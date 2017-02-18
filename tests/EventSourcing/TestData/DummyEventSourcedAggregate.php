@@ -5,39 +5,37 @@ namespace DDDominio\Tests\EventSourcing\TestData;
 use DDDominio\EventSourcing\Common\Annotation\AggregateId;
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 
-class DummyEventSourcedAggregate
+class DummyEventSourcedAggregate extends EventSourcedAggregateRoot
 {
-    use EventSourcedAggregateRoot;
+    /**
+     * @var string
+     */
+    protected $id;
 
     /**
      * @var string
      */
-    private $id;
+    protected $name;
 
     /**
      * @var string
      */
-    private $name;
-
-    /**
-     * @var string
-     */
-    private $description;
+    protected $description;
 
     /**
      * @var DummyEntity[]
      */
-    private $entityCollection;
+    protected $entityCollection;
 
     /**
      * @var DummyEntity
      */
-    private $entityMember;
+    protected $entityMember;
 
     /**
      * @var \DateTimeImmutable
      */
-    private $nameChangedAt;
+    protected $nameChangedAt;
 
     /**
      * @param $id
@@ -53,7 +51,7 @@ class DummyEventSourcedAggregate
     /**
      * @param DummyCreated $event
      */
-    private function whenDummyCreated(DummyCreated $event)
+    protected function whenDummyCreated(DummyCreated $event)
     {
         $this->id = $event->id();
         $this->name = $event->name();
@@ -99,7 +97,7 @@ class DummyEventSourcedAggregate
     /**
      * @param string $name
      */
-    private function assertValidName($name)
+    protected function assertValidName($name)
     {
         if (strlen($name) < 2) {
             throw new \InvalidArgumentException('name should contain at least 2 characters.');
@@ -110,7 +108,7 @@ class DummyEventSourcedAggregate
      * @param NameChanged $event
      * @param \DateTimeImmutable $occurredOn
      */
-    private function whenNameChanged(NameChanged $event, \DateTimeImmutable $occurredOn)
+    protected function whenNameChanged(NameChanged $event, \DateTimeImmutable $occurredOn)
     {
         $this->name = $event->name();
         $this->nameChangedAt = $occurredOn;
@@ -135,7 +133,7 @@ class DummyEventSourcedAggregate
     /**
      * @param DescriptionChanged $event
      */
-    private function whenDescriptionChanged(DescriptionChanged $event)
+    protected function whenDescriptionChanged(DescriptionChanged $event)
     {
         $this->description = $event->description();
     }

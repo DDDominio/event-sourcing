@@ -2,7 +2,7 @@
 
 namespace DDDominio\EventSourcing\Snapshotting;
 
-use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRootInterface;
 
 class Snapshotter
 {
@@ -18,7 +18,7 @@ class Snapshotter
     }
 
     /**
-     * @param EventSourcedAggregateRoot $aggregate
+     * @param EventSourcedAggregateRootInterface $aggregate
      * @return SnapshotInterface
      */
     public function takeSnapshot($aggregate)
@@ -28,7 +28,7 @@ class Snapshotter
 
     /**
      * @param SnapshotInterface $snapshot
-     * @return EventSourcedAggregateRoot
+     * @return EventSourcedAggregateRootInterface
      */
     public function translateSnapshot($snapshot)
     {

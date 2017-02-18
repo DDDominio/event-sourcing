@@ -297,7 +297,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         }
         $aggregate = $this->getMockBuilder(EventSourcedAggregateRoot::class)
             ->setMethods($methods)
-            ->getMockForTrait();
+            ->getMock();
         $aggregate
             ->method('id')
             ->willReturn($id);
