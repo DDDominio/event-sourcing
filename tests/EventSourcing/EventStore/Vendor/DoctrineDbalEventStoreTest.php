@@ -27,6 +27,11 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     const TEST_DB_PATH = __DIR__ . '/../test.db';
 
     /**
+     * @var DoctrineDbalEventStore
+     */
+    private $eventStore;
+
+    /**
      * @var Connection
      */
     private $connection;
@@ -46,9 +51,6 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->destroyTestDatabaseIfExists();
-        $this->createTestDatabase();
-
         AnnotationRegistry::registerLoader('class_exists');
 
         $this->serializer = new JsonSerializer(
@@ -71,6 +73,9 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->eventUpgrader->registerUpgrade(
             new VersionedEventUpgrade10_20($eventAdapter)
         );
+
+        $this->destroyEventStore();
+        $this->initializeEventStore();
     }
 
     /**
@@ -78,10 +83,10 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function tearDown()
     {
-        $this->destroyTestDatabaseIfExists();
+        $this->destroyEventStore();
     }
 
-    private function createTestDatabase()
+    private function initializeEventStore()
     {
         touch(self::TEST_DB_PATH);
         $connectionParams = array(
@@ -91,12 +96,15 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
-        $this->connection->exec(
-            file_get_contents(__DIR__ . '/../../TestData/doctrine_dbal_event_store_schema.sql')
+        $this->eventStore = new DoctrineDbalEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
         );
+        $this->eventStore->initialize();
     }
 
-    private function destroyTestDatabaseIfExists()
+    private function destroyEventStore()
     {
         if (file_exists(self::TEST_DB_PATH)) {
             unlink(self::TEST_DB_PATH);
@@ -108,18 +116,13 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
         $domainEvent = DomainEvent::record(
             new NameChanged('name')
         );
 
-        $eventStore->appendToStream('streamId', [$domainEvent]);
+        $this->eventStore->appendToStream('streamId', [$domainEvent]);
 
-        $stream = $eventStore->readFullStream('streamId');
+        $stream = $this->eventStore->readFullStream('streamId');
         $this->assertInstanceOf(EventStream::class, $stream);
         $this->assertCount(1, $stream);
     }
@@ -129,18 +132,13 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToAnExistentStream()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
         $domainEvent = DomainEvent::record(
             new NameChanged('name')
         );
 
-        $eventStore->appendToStream('streamId', [$domainEvent]);
-        $eventStore->appendToStream('streamId', [$domainEvent], 1);
-        $stream = $eventStore->readFullStream('streamId');
+        $this->eventStore->appendToStream('streamId', [$domainEvent]);
+        $this->eventStore->appendToStream('streamId', [$domainEvent], 1);
+        $stream = $this->eventStore->readFullStream('streamId');
 
         $this->assertCount(2, $stream);
     }
@@ -154,14 +152,9 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $domainEvent = DomainEvent::record(
             new NameChanged('name')
         );
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', [$domainEvent]);
+        $this->eventStore->appendToStream('streamId', [$domainEvent]);
 
-        $eventStore->appendToStream('streamId', [$domainEvent]);
+        $this->eventStore->appendToStream('streamId', [$domainEvent]);
     }
 
     /**
@@ -170,14 +163,9 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
         $domainEvent = DomainEvent::record(new NameChanged('name'));
 
-        $eventStore->appendToStream('newStreamId', [$domainEvent], 10);
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent], 10);
     }
 
     /**
@@ -188,14 +176,9 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $event = DomainEvent::record(
             new NameChanged('name')
         );
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', [$event]);
+        $this->eventStore->appendToStream('streamId', [$event]);
 
-        $stream = $eventStore->readFullStream('streamId');
+        $stream = $this->eventStore->readFullStream('streamId');
 
         $this->assertCount(1, $stream);
     }
@@ -205,13 +188,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEmptyStream()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-
-        $stream = $eventStore->readFullStream('NonExistentStreamId');
+        $stream = $this->eventStore->readFullStream('NonExistentStreamId');
 
         $this->assertTrue($stream->isEmpty());
         $this->assertCount(0, $stream);
@@ -222,19 +199,14 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForward()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', [
+        $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
             DomainEvent::record(new DescriptionChanged('new description')),
             DomainEvent::record(new NameChanged('another name')),
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $eventStore->readStreamEventsForward('streamId', 2);
+        $stream = $this->eventStore->readStreamEventsForward('streamId', 2);
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
@@ -248,19 +220,14 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardWithEventCount()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', [
+        $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
             DomainEvent::record(new DescriptionChanged('new description')),
             DomainEvent::record(new NameChanged('another name')),
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $eventStore->readStreamEventsForward('streamId', 2, 2);
+        $stream = $this->eventStore->readStreamEventsForward('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
@@ -273,19 +240,14 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
-        $eventStore->appendToStream('streamId', [
+        $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
             DomainEvent::record(new DescriptionChanged('new description')),
             DomainEvent::record(new NameChanged('another name')),
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $eventStore->readStreamEventsForward('streamId', 5);
+        $stream = $this->eventStore->readStreamEventsForward('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
     }
@@ -311,13 +273,8 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
 
-        $stream = $eventStore->readFullStream('streamId');
+        $stream = $this->eventStore->readFullStream('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());
@@ -344,13 +301,8 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
 
-        $stream = $eventStore->readStreamEventsForward('streamId');
+        $stream = $this->eventStore->readStreamEventsForward('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());
@@ -377,19 +329,14 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
-        $eventStore = new DoctrineDbalEventStore(
-            $this->connection,
-            $this->serializer,
-            $this->eventUpgrader
-        );
 
-        $eventStore->migrate(
+        $this->eventStore->migrate(
             VersionedEvent::class,
             Version::fromString('1.0'),
             Version::fromString('2.0')
         );
 
-        $stream = $eventStore->readFullStream('streamId');
+        $stream = $this->eventStore->readFullStream('streamId');
         $this->assertCount(1, $stream);
         $event = $stream->events()[0];
         $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));

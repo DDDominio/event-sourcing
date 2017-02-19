@@ -19,6 +19,11 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     const MYSQL_DB_NAME = 'json_snapshot_store';
 
     /**
+     * @var MySqlJsonSnapshotStore
+     */
+    private $snapshotStore;
+
+    /**
      * @var \PDO
      */
     private $connection;
@@ -35,12 +40,8 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             self::MYSQL_DB_USER,
             self::MYSQL_DB_PASS
         );
-        $this->connection->query('DROP SCHEMA IF EXISTS '.self::MYSQL_DB_NAME);
         $this->connection->query('CREATE SCHEMA '.self::MYSQL_DB_NAME);
         $this->connection->query('USE '.self::MYSQL_DB_NAME);
-        $this->connection->exec(
-            file_get_contents(__DIR__ . '/../../TestData/mysql_json_snapshot_store_schema.sql')
-        );
 
         AnnotationRegistry::registerLoader('class_exists');
 
@@ -56,12 +57,32 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
                 )
                 ->build()
         );
+
+        $this->destroySnapshotStore();
+        $this->initializeSnapshotStore();
     }
 
     protected function tearDown()
     {
-        $this->connection->query('DROP SCHEMA '.self::MYSQL_DB_NAME);
+        $this->destroySnapshotStore();
     }
+
+    private function initializeSnapshotStore()
+    {
+        $this->connection->query('CREATE SCHEMA '.self::MYSQL_DB_NAME);
+        $this->connection->query('USE '.self::MYSQL_DB_NAME);
+        $this->snapshotStore = new MySqlJsonSnapshotStore(
+            $this->connection,
+            $this->serializer
+        );
+        $this->snapshotStore->initialize();
+    }
+
+    private function destroySnapshotStore()
+    {
+        $this->connection->query('DROP SCHEMA IF EXISTS '.self::MYSQL_DB_NAME);
+    }
+
 
     /**
      * @test
@@ -80,14 +101,10 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             10
         );
-        $eventStore = new MySqlJsonSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
-        $eventStore->addSnapshot($snapshot);
-        $eventStore->addSnapshot($lastSnapshot);
+        $this->snapshotStore->addSnapshot($snapshot);
+        $this->snapshotStore->addSnapshot($lastSnapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
+        $retrievedSnapshot = $this->snapshotStore->findLastSnapshot(
             DummyEventSourcedAggregate::class,
             'id'
         );
@@ -107,14 +124,10 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             3
         );
-        $eventStore = new MySqlJsonSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
 
-        $eventStore->addSnapshot($snapshot);
+        $this->snapshotStore->addSnapshot($snapshot);
 
-        $retrievedSnapshot = $eventStore->findLastSnapshot(
+        $retrievedSnapshot = $this->snapshotStore->findLastSnapshot(
             DummyEventSourcedAggregate::class,
             'id'
         );
@@ -126,18 +139,14 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForEventVersion()
     {
-        $eventStore = new MySqlJsonSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
-        $eventStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'new name', 'description', 2)
         );
-        $eventStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'another name', 'new description', 4)
         );
 
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
+        $snapshot = $this->snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
 
         $this->assertEquals(2, $snapshot->version());
     }
@@ -147,18 +156,14 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForAnotherEventVersion()
     {
-        $eventStore = new MySqlJsonSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
-        $eventStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'new name', 'description', 2)
         );
-        $eventStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'another name', 'new description', 4)
         );
 
-        $snapshot = $eventStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
+        $snapshot = $this->snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
     }

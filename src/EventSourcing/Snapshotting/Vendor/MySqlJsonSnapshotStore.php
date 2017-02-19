@@ -2,12 +2,15 @@
 
 namespace DDDominio\EventSourcing\Snapshotting\Vendor;
 
+use DDDominio\EventSourcing\EventStore\InitializableInterface;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 
-class MySqlJsonSnapshotStore implements SnapshotStoreInterface
+class MySqlJsonSnapshotStore implements SnapshotStoreInterface, InitializableInterface
 {
+    const SNAPSHOTS_TABLE = 'snapshots';
+
     /**
      * @var \PDO
      */
@@ -77,5 +80,33 @@ class MySqlJsonSnapshotStore implements SnapshotStoreInterface
         $stmt->execute();
         $snapshot = $stmt->fetch();
         return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type']) : null;
+    }
+
+    public function initialize()
+    {
+        $this->connection->exec(
+            'CREATE TABLE `'.self::SNAPSHOTS_TABLE.'` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `aggregate_type` varchar(255) NOT NULL,
+                `aggregate_id` varchar(255) NOT NULL,
+                `type` varchar(255) NOT NULL,
+                `version` int(11) NOT NULL,
+                `snapshot` json NOT NULL,
+                PRIMARY KEY (`id`)
+            )'
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function initialized()
+    {
+        try {
+            $result = $this->connection->query('SELECT 1 FROM `'.self::SNAPSHOTS_TABLE.'` LIMIT 1');
+        } catch (\Exception $e) {
+            return false;
+        }
+        return $result !== false;
     }
 }

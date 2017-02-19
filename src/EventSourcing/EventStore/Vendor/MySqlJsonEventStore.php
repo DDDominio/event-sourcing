@@ -6,14 +6,17 @@ use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\AbstractEventStore;
 use DDDominio\EventSourcing\EventStore\ConcurrencyException;
+use DDDominio\EventSourcing\EventStore\InitializableInterface;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
 
-class MySqlJsonEventStore extends AbstractEventStore
+class MySqlJsonEventStore extends AbstractEventStore implements InitializableInterface
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
+    const STREAMS_TABLE = 'streams';
+    const EVENTS_TABLE = 'events';
 
     /**
      * @var \PDO
@@ -218,5 +221,52 @@ class MySqlJsonEventStore extends AbstractEventStore
         }, $results);
 
         return new EventStream($storedEvents);
+    }
+
+    public function initialize()
+    {
+        try {
+            $this->connection->beginTransaction();
+
+            $this->connection->exec(
+                'CREATE TABLE `'.self::STREAMS_TABLE.'` (
+                    `id` varchar(255) NOT NULL,
+                    PRIMARY KEY (`id`)
+                )'
+            );
+
+            $this->connection->exec(
+                'CREATE TABLE `'.self::EVENTS_TABLE.'` (
+                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                    `stream_id` varchar(255) NOT NULL,
+                    `type` varchar(255) NOT NULL,
+                    `event` json NOT NULL,
+                    `metadata` json NOT NULL,
+                    `occurred_on` datetime NOT NULL,
+                    `version` varchar(255) NOT NULL,
+                    PRIMARY KEY (`id`),
+                    KEY `stream_id` (`stream_id`),
+                    CONSTRAINT `events_ibfk_1` FOREIGN KEY (`stream_id`) REFERENCES `streams` (`id`)
+                )'
+            );
+
+            $this->connection->commit();
+        } catch (\Exception $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function initialized()
+    {
+        try {
+            $result = $this->connection->query('SELECT 1 FROM `'.self::STREAMS_TABLE.'` LIMIT 1');
+        } catch (\Exception $e) {
+            return false;
+        }
+        return $result !== false;
     }
 }

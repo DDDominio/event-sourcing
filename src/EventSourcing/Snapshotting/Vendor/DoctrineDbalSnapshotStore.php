@@ -2,13 +2,17 @@
 
 namespace DDDominio\EventSourcing\Snapshotting\Vendor;
 
+use DDDominio\EventSourcing\EventStore\InitializableInterface;
 use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
-use Doctrine\DBAL\Driver\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\Schema;
 
-class DoctrineDbalSnapshotStore implements SnapshotStoreInterface
+class DoctrineDbalSnapshotStore implements SnapshotStoreInterface, InitializableInterface
 {
+    const SNAPSHOTS_TABLE = 'snapshots';
+
     /**
      * @var Connection
      */
@@ -76,5 +80,39 @@ class DoctrineDbalSnapshotStore implements SnapshotStoreInterface
         $stmt->execute();
         $snapshot = $stmt->fetch();
         return $snapshot ? $this->serializer->deserialize($snapshot['snapshot'], $snapshot['type']) : null;
+    }
+
+    /**
+     * Initialize the Event Store
+     */
+    public function initialize()
+    {
+        $schema = new Schema();
+
+        $snapshotsTable = $schema->createTable(self::SNAPSHOTS_TABLE);
+        $snapshotsTable->addColumn('id', 'integer', ['autoincrement' => true]);
+        $snapshotsTable->addColumn('aggregate_type', 'string');
+        $snapshotsTable->addColumn('aggregate_id', 'string');
+        $snapshotsTable->addColumn('type', 'string');
+        $snapshotsTable->addColumn('version', 'integer');
+        $snapshotsTable->addColumn('snapshot', 'text');
+        $snapshotsTable->setPrimaryKey(['id']);
+
+        $queries = $schema->toSql($this->connection->getDatabasePlatform());
+        $this->connection->transactional(function(Connection $connection) use ($queries) {
+            foreach ($queries as $query) {
+                $connection->exec($query);
+            }
+        });
+    }
+
+    /**
+     * Check if the Event Store has been initialized
+     *
+     * @return bool
+     */
+    public function initialized()
+    {
+        return $this->connection->getSchemaManager()->tablesExist([self::SNAPSHOTS_TABLE]);
     }
 }

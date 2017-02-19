@@ -11,10 +11,14 @@ use Doctrine\DBAL\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
+use Doctrine\DBAL\Schema\Schema;
+use DDDominio\EventSourcing\EventStore\InitializableInterface;
 
-class DoctrineDbalEventStore extends AbstractEventStore
+class DoctrineDbalEventStore extends AbstractEventStore implements InitializableInterface
 {
     const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
+    const STREAMS_TABLE = 'streams';
+    const EVENTS_TABLE = 'events';
 
     /**
      * @var Connection
@@ -210,5 +214,45 @@ class DoctrineDbalEventStore extends AbstractEventStore
         $stmt->bindValue(':streamId', $streamId);
         $stmt->execute();
         return boolval($stmt->fetchColumn());
+    }
+
+    /**
+     * Initialize the Event Store
+     */
+    public function initialize()
+    {
+        $schema = new Schema();
+
+        $streamTable = $schema->createTable(self::STREAMS_TABLE);
+        $streamTable->addColumn('id', 'string');
+        $streamTable->setPrimaryKey(array("id"));
+
+        $eventsTable = $schema->createTable(self::EVENTS_TABLE);
+        $eventsTable->addColumn('id', 'integer', ['autoincrement' => true]);
+        $eventsTable->addColumn('stream_id', 'string');
+        $eventsTable->addColumn('type', 'string');
+        $eventsTable->addColumn('event', 'text');
+        $eventsTable->addColumn('metadata', 'text');
+        $eventsTable->addColumn('occurred_on', 'datetime');
+        $eventsTable->addColumn('version', 'string');
+        $eventsTable->setPrimaryKey(['id']);
+        $eventsTable->addForeignKeyConstraint($streamTable, ['stream_id'], ['id']);
+
+        $queries = $schema->toSql($this->connection->getDatabasePlatform());
+        $this->connection->transactional(function(Connection $connection) use ($queries) {
+            foreach ($queries as $query) {
+                $connection->exec($query);
+            }
+        });
+    }
+
+    /**
+     * Check if the Event Store has been initialized
+     *
+     * @return bool
+     */
+    public function initialized()
+    {
+        return $this->connection->getSchemaManager()->tablesExist([self::STREAMS_TABLE]);
     }
 }

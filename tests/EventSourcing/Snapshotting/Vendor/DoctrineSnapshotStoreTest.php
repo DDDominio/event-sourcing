@@ -19,6 +19,11 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
     const TEST_DB_PATH = __DIR__ . '/../test.db';
 
     /**
+     * @var DoctrineDbalSnapshotStore
+     */
+    private $snapshotStore;
+
+    /**
      * @var Connection
      */
     private $connection;
@@ -33,9 +38,6 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->destroyTestDatabaseIfExists();
-        $this->createTestDatabase();
-
         AnnotationRegistry::registerLoader('class_exists');
         $this->serializer = new JsonSerializer(
             SerializerBuilder::create()
@@ -49,6 +51,8 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
                 )
                 ->build()
         );
+        $this->destroySnapshotStore();
+        $this->createTestDatabase();
     }
 
     /**
@@ -56,7 +60,7 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function tearDown()
     {
-        $this->destroyTestDatabaseIfExists();
+        $this->destroySnapshotStore();
     }
 
     private function createTestDatabase()
@@ -69,12 +73,14 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
         );
         $config = new Configuration();
         $this->connection = DriverManager::getConnection($connectionParams, $config);
-        $this->connection->exec(
-            file_get_contents(__DIR__ . '/../../TestData/doctrine_dbal_snapshot_store_schema.sql')
+        $this->snapshotStore = new DoctrineDbalSnapshotStore(
+            $this->connection,
+            $this->serializer
         );
+        $this->snapshotStore->initialize();
     }
 
-    private function destroyTestDatabaseIfExists()
+    private function destroySnapshotStore()
     {
         if (file_exists(self::TEST_DB_PATH)) {
             unlink(self::TEST_DB_PATH);
@@ -98,14 +104,10 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             10
         );
-        $snapshotStore = new DoctrineDbalSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
-        $snapshotStore->addSnapshot($snapshot);
-        $snapshotStore->addSnapshot($lastSnapshot);
+        $this->snapshotStore->addSnapshot($snapshot);
+        $this->snapshotStore->addSnapshot($lastSnapshot);
 
-        $retrievedSnapshot = $snapshotStore->findLastSnapshot(
+        $retrievedSnapshot = $this->snapshotStore->findLastSnapshot(
             DummyEventSourcedAggregate::class,
             'id'
         );
@@ -125,14 +127,10 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
             'description',
             3
         );
-        $snapshotStore = new DoctrineDbalSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
 
-        $snapshotStore->addSnapshot($snapshot);
+        $this->snapshotStore->addSnapshot($snapshot);
 
-        $retrievedSnapshot = $snapshotStore->findLastSnapshot(
+        $retrievedSnapshot = $this->snapshotStore->findLastSnapshot(
             DummyEventSourcedAggregate::class,
             'id'
         );
@@ -148,18 +146,14 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForEventVersion()
     {
-        $snapshotStore = new DoctrineDbalSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
-        $snapshotStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'new name', 'description', 2)
         );
-        $snapshotStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'another name', 'new description', 4)
         );
 
-        $snapshot = $snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
+        $snapshot = $this->snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 3);
 
         $this->assertEquals(2, $snapshot->version());
     }
@@ -169,18 +163,14 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function findSnapshotForAnotherEventVersion()
     {
-        $snapshotStore = new DoctrineDbalSnapshotStore(
-            $this->connection,
-            $this->serializer
-        );
-        $snapshotStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'new name', 'description', 2)
         );
-        $snapshotStore->addSnapshot(
+        $this->snapshotStore->addSnapshot(
             new DummySnapshot('id', 'another name', 'new description', 4)
         );
 
-        $snapshot = $snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
+        $snapshot = $this->snapshotStore->findNearestSnapshotToVersion(DummyEventSourcedAggregate::class, 'id', 5);
 
         $this->assertEquals(4, $snapshot->version());
     }
