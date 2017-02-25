@@ -4,7 +4,7 @@ namespace DDDominio\EventSourcing\Versioning;
 
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 
-class EventUpgrader
+class EventUpgrader implements EventUpgraderInterface
 {
     /**
      * @var array
