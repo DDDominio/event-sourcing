@@ -16,6 +16,7 @@ use DDDominio\EventSourcing\Snapshotting\InMemorySnapshotStore;
 use DDDominio\EventSourcing\Snapshotting\SnapshotStoreInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\Version;
+use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
 use DDDominio\Tests\EventSourcing\TestData\DummyCreated;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregate;
 use DDDominio\Tests\EventSourcing\TestData\DummyEventSourcedAggregateRepository;
@@ -170,7 +171,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findAnAggregateUsesAggregateReconstructor()
+    public function findAnAggregate()
     {
         $domainEvents = [
             DomainEvent::record(
@@ -208,7 +209,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findAnAggregateThatHasStoredSnapshotsShouldUseItsLastSnapshot()
+    public function findAnAggregateUsingLastSnapshot()
     {
         $snapshot = new DummySnapshot(
             'id',
@@ -243,6 +244,82 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         );
 
         $repository->findById('id');
+    }
+
+    /**
+     * @test
+     */
+    public function findAnAggregateByIdAndVersion()
+    {
+        $domainEvents = [
+            DomainEvent::record(new DummyCreated('id', 'name', 'description')),
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new DescriptionChanged('another name')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
+        $eventStore = $this->buildEventStoreWithStream($stream);
+        $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['reconstitute'])
+            ->getMock();
+        $aggregateReconstructor
+            ->expects($this->once())
+            ->method('reconstitute')
+            ->willReturn(new DummyEventSourcedAggregate('id', 'new name', 'new description'));
+        $snapshotStore = new InMemorySnapshotStore();
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $snapshotStore,
+            $aggregateReconstructor
+        );
+
+        $aggregate = $repository->findByIdAndVersion('id', 3);
+
+        $this->assertEquals('id', $aggregate->id());
+        $this->assertEquals('new name', $aggregate->name());
+        $this->assertEquals('new description', $aggregate->description());
+    }
+
+    /**
+     * @test
+     */
+    public function findAnAggregateByIdAndVersionUsingTheClosestSnapshotToThatVersion()
+    {
+        $snapshot = new DummySnapshot(
+            'id',
+            'new name',
+            'description',
+            2
+        );
+        $stream = [
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ];
+        $eventStore = $this->createMock(EventStoreInterface::class);
+        $eventStore
+            ->expects($this->once())
+            ->method('readStreamEventsForward')
+            ->with(DummyEventSourcedAggregate::class . '-id', $snapshot->version() + 1)
+            ->willReturn($stream);
+        $snapshotStore = $this->createMock(SnapshotStoreInterface::class);
+        $snapshotStore
+            ->expects($this->once())
+            ->method('findNearestSnapshotToVersion')
+            ->willReturn($snapshot);
+        $aggregateReconstructor = $this->createMock(AggregateReconstructor::class);
+        $aggregateReconstructor
+            ->expects($this->once())
+            ->method('reconstitute')
+            ->with(DummyEventSourcedAggregate::class, $stream, $snapshot);
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $snapshotStore,
+            $aggregateReconstructor
+        );
+
+        $repository->findByIdAndVersion('id', 4);
     }
 
     /**
