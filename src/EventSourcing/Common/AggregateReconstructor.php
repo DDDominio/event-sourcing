@@ -61,7 +61,7 @@ class AggregateReconstructor
         }
 
         foreach ($eventStream as $event) {
-            $aggregate->apply($event, false);
+            $aggregate->apply($event);
         }
 
         return $aggregate;

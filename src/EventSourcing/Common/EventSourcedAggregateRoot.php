@@ -16,23 +16,47 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
 
     /**
      * @param mixed $domainEvent
-     * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply($domainEvent, $trackChanges = true)
+    public function applyAndRecord($domainEvent)
     {
-        if (!$domainEvent instanceof DomainEvent) {
-            $domainEvent = DomainEvent::record($domainEvent);
-        }
-        if ($trackChanges) {
-            $this->changes[] = $domainEvent;
-        }
+        $domainEvent = $this->ensureDomainEvent($domainEvent);
+        $this->apply($domainEvent);
+        $this->record($domainEvent);
+    }
+
+    /**
+     * @param mixed $domainEvent
+     */
+    private function record($domainEvent)
+    {
+        $this->changes[] = $domainEvent;
+    }
+
+    /**
+     * @param mixed $domainEvent
+     */
+    public function apply($domainEvent)
+    {
+        $domainEvent = $this->ensureDomainEvent($domainEvent);
         $eventHandlerName = $this->getEventHandlerName($domainEvent);
         if (method_exists($this, $eventHandlerName)) {
             $this->executeEventHandler($this, $eventHandlerName, $domainEvent);
         } else {
             $this->applyRecursively($eventHandlerName, $domainEvent);
         }
+    }
+
+    /**
+     * @param $domainEvent
+     * @return DomainEvent
+     */
+    private function ensureDomainEvent($domainEvent)
+    {
+        if (!$domainEvent instanceof DomainEvent) {
+            $domainEvent = DomainEvent::record($domainEvent);
+        }
+        return $domainEvent;
     }
 
     /**
