@@ -125,7 +125,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
                 $streamId,
                 get_class($event->data()),
                 $this->serializer->serialize($event->data()),
-                json_encode($event->metadata()->all()),
+                json_encode($event->metadata()->all(), JSON_FORCE_OBJECT),
                 $event->occurredOn(),
                 is_null($event->version()) ? Version::fromString('1.0') : $event->version()
             );
