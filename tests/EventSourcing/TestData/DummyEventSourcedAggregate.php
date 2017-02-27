@@ -45,7 +45,7 @@ class DummyEventSourcedAggregate extends EventSourcedAggregateRoot
     public function __construct($id, $name, $description)
     {
         $this->assertValidName($name);
-        $this->apply(new DummyCreated($id, $name, $description));
+        $this->applyAndRecord(new DummyCreated($id, $name, $description));
     }
 
     /**
@@ -91,7 +91,7 @@ class DummyEventSourcedAggregate extends EventSourcedAggregateRoot
     public function changeName($name)
     {
         $this->assertValidName($name);
-        $this->apply(new NameChanged($name));
+        $this->applyAndRecord(new NameChanged($name));
     }
 
     /**
@@ -127,7 +127,7 @@ class DummyEventSourcedAggregate extends EventSourcedAggregateRoot
      */
     public function changeDescription($description)
     {
-        $this->apply(new DescriptionChanged($description));
+        $this->applyAndRecord(new DescriptionChanged($description));
     }
 
     /**
@@ -153,7 +153,7 @@ class DummyEventSourcedAggregate extends EventSourcedAggregateRoot
      */
     public function addDummyEntity($id, $name)
     {
-        $this->apply(new DummyEntityAdded($id, $name));
+        $this->applyAndRecord(new DummyEntityAdded($id, $name));
     }
 
     /**

@@ -29,7 +29,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
     {
         $nameChangedEvent = new NameChanged('new name', new \DateTimeImmutable());
 
-        $this->eventSourcedAggregate->apply($nameChangedEvent, false);
+        $this->eventSourcedAggregate->apply($nameChangedEvent);
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(0, count($changes));
@@ -43,7 +43,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
     {
         $nameChangedEvent = new NameChanged('new name', new \DateTimeImmutable());
 
-        $this->eventSourcedAggregate->apply($nameChangedEvent);
+        $this->eventSourcedAggregate->applyAndRecord($nameChangedEvent);
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(1, count($changes));
@@ -66,7 +66,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
     {
         $oldEvent = new DummyCreated('id', 'a', 'description', new \DateTimeImmutable());
 
-        $this->eventSourcedAggregate->apply($oldEvent, false);
+        $this->eventSourcedAggregate->applyAndRecord($oldEvent);
 
         $this->assertEquals('a', $oldEvent->name());
     }
@@ -91,7 +91,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
         $events[] = new NameChanged('new new name', new \DateTimeImmutable());
 
         foreach ($events as $event) {
-            $this->eventSourcedAggregate->apply($event, false);
+            $this->eventSourcedAggregate->apply($event);
         }
 
         $changes = $this->eventSourcedAggregate->changes();
@@ -106,7 +106,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
     {
         $descriptionChangedEvent = new DescriptionChanged('new description');
 
-        $this->eventSourcedAggregate->apply($descriptionChangedEvent, false);
+        $this->eventSourcedAggregate->apply($descriptionChangedEvent);
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(0, count($changes));
@@ -218,7 +218,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
     {
         $oldDomainEvent = new NameChanged('a', new \DateTimeImmutable());
 
-        $this->eventSourcedAggregate->apply($oldDomainEvent, false);
+        $this->eventSourcedAggregate->apply($oldDomainEvent);
 
         $this->assertEquals('a', $this->eventSourcedAggregate->name());
     }
@@ -286,7 +286,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
         $nameChangedEvent = new NameChanged('new name');
         $nameChangedAtBeforeApplyEvent = $this->eventSourcedAggregate->nameChangedAt();
 
-        $this->eventSourcedAggregate->apply($nameChangedEvent, false);
+        $this->eventSourcedAggregate->apply($nameChangedEvent);
 
         $this->assertNull($nameChangedAtBeforeApplyEvent);
         $this->assertGreaterThan(new \DateTimeImmutable(), $this->eventSourcedAggregate->nameChangedAt());

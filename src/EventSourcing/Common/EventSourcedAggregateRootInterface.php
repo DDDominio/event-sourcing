@@ -6,10 +6,15 @@ interface EventSourcedAggregateRootInterface
 {
     /**
      * @param mixed $domainEvent
-     * @param bool $trackChanges
      * @throws DomainEventNotUnderstandableException
      */
-    public function apply($domainEvent, $trackChanges = true);
+    public function apply($domainEvent);
+
+    /**
+     * @param mixed $domainEvent
+     * @throws DomainEventNotUnderstandableException
+     */
+    public function applyAndRecord($domainEvent);
 
     /**
      * @return DomainEvent[]
