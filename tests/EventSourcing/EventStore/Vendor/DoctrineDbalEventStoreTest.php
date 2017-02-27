@@ -197,7 +197,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findStreamEventsForward()
+    public function findStreamEvents()
     {
         $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
@@ -218,7 +218,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findStreamEventsForwardWithEventCount()
+    public function findStreamEventsWithEventCount()
     {
         $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
@@ -238,7 +238,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
+    public function findStreamEventsShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
         $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
@@ -342,5 +342,50 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
         $this->assertEquals('Name', $event->data()->username());
         $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
+     */
+    public function findStreamEventVersionAtDatetimeOfNonExistingStream()
+    {
+        $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+
+        $this->assertEquals(3, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetimeThatMatchWithEventOccurredOnTime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertEquals(2, $version);
     }
 }

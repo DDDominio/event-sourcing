@@ -6,6 +6,7 @@ use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\AbstractEventStore;
 use DDDominio\EventSourcing\EventStore\ConcurrencyException;
+use DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use Doctrine\DBAL\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
@@ -216,6 +217,29 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
 
     /**
      * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     * @throws EventStreamDoesNotExistException
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
+    {
+        if (!$this->streamExists($streamId)) {
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
+        }
+        $stmt = $this->connection->prepare(
+            'SELECT COUNT(*)
+             FROM events
+             WHERE stream_id = :streamId
+             AND occurred_on <= :occurred_on'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':occurred_on', $datetime->format('Y-m-d H:i:s'));
+        $stmt->execute();
+        return intval($stmt->fetchColumn());
+    }
+
+    /**
+     * @param string $streamId
      * @return bool
      */
     protected function streamExists($streamId)
@@ -265,15 +289,5 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
     public function initialized()
     {
         return $this->connection->getSchemaManager()->tablesExist([self::STREAMS_TABLE]);
-    }
-
-    /**
-     * @param string $streamId
-     * @param \DateTimeImmutable $datetime
-     * @return int
-     */
-    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
-    {
-        // TODO: Implement findStreamVersionAt() method.
     }
 }

@@ -61,6 +61,7 @@ interface EventStoreInterface
      * @param string $streamId
      * @param \DateTimeImmutable $datetime
      * @return int
+     * @throws EventStreamDoesNotExistException
      */
     public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime);
 }
