@@ -78,17 +78,6 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
 
     /**
      * @param string $streamId
-     * @param \DateTimeImmutable $datetime
-     * @param int $start
-     * @return EventStreamInterface
-     */
-    public function readStreamEventsUntil($streamId, $datetime, $start = 1)
-    {
-        // TODO: Implement readStreamEventsUntil() method.
-    }
-
-    /**
-     * @param string $streamId
      * @return EventStreamInterface
      */
     public function readFullStream($streamId)

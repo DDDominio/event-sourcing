@@ -81,27 +81,6 @@ class InMemoryEventStore extends AbstractEventStore
     }
 
     /**
-     * @param string $streamId
-     * @param \DateTimeImmutable $datetime
-     * @param int $start
-     * @return EventStreamInterface
-     */
-    public function readStreamEventsUntil($streamId, $datetime, $start = 1)
-    {
-        if (!$this->streamExists($streamId)) {
-            return EventStream::buildEmpty();
-        }
-        $storedEvents = $this->streams[$streamId]->events();
-
-        $filteredStoredEvents = array_splice($storedEvents, $start - 1);
-        $filteredStoredEvents = array_filter($filteredStoredEvents, function(StoredEvent $event) use ($datetime) {
-            return $event->occurredOn()->getTimestamp() <= $datetime->getTimestamp();
-        });
-
-        return $this->domainEventStreamFromStoredEvents($filteredStoredEvents);
-    }
-
-    /**
      * @return EventStreamInterface[]
      */
     public function readAllStreams()

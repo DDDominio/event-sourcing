@@ -29,14 +29,6 @@ interface EventStoreInterface
 
     /**
      * @param string $streamId
-     * @param \DateTimeImmutable $datetime
-     * @param int $start
-     * @return EventStreamInterface
-     */
-    public function readStreamEventsUntil($streamId, $datetime, $start = 1);
-
-    /**
-     * @param string $streamId
      * @return EventStreamInterface
      */
     public function readFullStream($streamId);

@@ -290,4 +290,68 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());
     }
+
+    /**
+     * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
+     */
+    public function findStreamEventVersionAtDatetimeOfNonExistingStream()
+    {
+        $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+
+        $this->assertEquals(3, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetimeThatMatchWithEventOccurredOnTime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertEquals(2, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function initializedEventStore()
+    {
+        $this->assertTrue($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function notInitializedDatabase()
+    {
+        $this->connection->exec('DROP TABLE events');
+        $this->connection->exec('DROP TABLE streams');
+
+        $this->assertFalse($this->eventStore->initialized());
+    }
 }

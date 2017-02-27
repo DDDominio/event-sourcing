@@ -6,6 +6,7 @@ use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\AbstractEventStore;
 use DDDominio\EventSourcing\EventStore\ConcurrencyException;
+use DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException;
 use DDDominio\EventSourcing\EventStore\InitializableInterface;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
@@ -74,17 +75,6 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
         }, $results);
 
         return $this->domainEventStreamFromStoredEvents($storedEvents);
-    }
-
-    /**
-     * @param string $streamId
-     * @param \DateTimeImmutable $datetime
-     * @param int $start
-     * @return EventStreamInterface
-     */
-    public function readStreamEventsUntil($streamId, $datetime, $start = 1)
-    {
-        // TODO: Implement readStreamEventsUntil() method.
     }
 
     /**
@@ -285,9 +275,22 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
      * @param string $streamId
      * @param \DateTimeImmutable $datetime
      * @return int
+     * @throws EventStreamDoesNotExistException
      */
     public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
     {
-        // TODO: Implement findStreamVersionAt() method.
+        if (!$this->streamExists($streamId)) {
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
+        }
+        $stmt = $this->connection->prepare(
+            'SELECT COUNT(*)
+             FROM events
+             WHERE stream_id = :streamId
+             AND occurred_on <= :occurred_on'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':occurred_on', $datetime->format('Y-m-d H:i:s'));
+        $stmt->execute();
+        return intval($stmt->fetchColumn());
     }
 }

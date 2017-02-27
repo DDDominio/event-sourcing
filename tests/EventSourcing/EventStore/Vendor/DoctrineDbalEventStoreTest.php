@@ -388,4 +388,23 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(2, $version);
     }
+
+    /**
+     * @test
+     */
+    public function initializedEventStore()
+    {
+        $this->assertTrue($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function notInitializedDatabase()
+    {
+        $this->connection->exec('DROP TABLE events');
+        $this->connection->exec('DROP TABLE streams');
+
+        $this->assertFalse($this->eventStore->initialized());
+    }
 }
