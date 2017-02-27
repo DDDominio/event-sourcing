@@ -174,4 +174,22 @@ class DoctrineSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(4, $snapshot->version());
     }
+
+    /**
+     * @test
+     */
+    public function initializedEventStore()
+    {
+        $this->assertTrue($this->snapshotStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function notInitializedEventStore()
+    {
+        $this->connection->exec('DROP TABLE snapshots');
+
+        $this->assertFalse($this->snapshotStore->initialized());
+    }
 }

@@ -400,7 +400,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function notInitializedDatabase()
+    public function notInitializedEventStore()
     {
         $this->connection->exec('DROP TABLE events');
         $this->connection->exec('DROP TABLE streams');

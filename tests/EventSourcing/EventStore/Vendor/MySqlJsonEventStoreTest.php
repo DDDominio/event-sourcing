@@ -347,10 +347,26 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function notInitializedDatabase()
+    public function notInitializedEventStore()
     {
         $this->connection->exec('DROP TABLE events');
         $this->connection->exec('DROP TABLE streams');
+
+        $this->assertFalse($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function whenEventStoreThrowsAnExceptionItIsConsideredNotInitialized()
+    {
+        $connection = $this->createMock(\PDO::class);
+        $connection->method('query')->willThrowException(new \Exception());
+        $this->eventStore = new MySqlJsonEventStore(
+            $connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
 
         $this->assertFalse($this->eventStore->initialized());
     }

@@ -167,4 +167,37 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(4, $snapshot->version());
     }
+
+    /**
+     * @test
+     */
+    public function initializedEventStore()
+    {
+        $this->assertTrue($this->snapshotStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function notInitializedEventStore()
+    {
+        $this->connection->exec('DROP TABLE snapshots');
+
+        $this->assertFalse($this->snapshotStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function whenEventStoreThrowsAnExceptionItIsConsideredNotInitialized()
+    {
+        $connection = $this->createMock(\PDO::class);
+        $connection->method('query')->willThrowException(new \Exception());
+        $this->snapshotStore = new MySqlJsonSnapshotStore(
+            $connection,
+            $this->serializer
+        );
+
+        $this->assertFalse($this->snapshotStore->initialized());
+    }
 }
