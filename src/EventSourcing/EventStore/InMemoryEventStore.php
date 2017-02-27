@@ -64,7 +64,7 @@ class InMemoryEventStore extends AbstractEventStore
      * @param int $count
      * @return EventStreamInterface
      */
-    public function readStreamEventsForward($streamId, $start = 1, $count = null)
+    public function readStreamEvents($streamId, $start = 1, $count = null)
     {
         if (!$this->streamExists($streamId)) {
             return EventStream::buildEmpty();
@@ -77,6 +77,27 @@ class InMemoryEventStore extends AbstractEventStore
         } else {
             $filteredStoredEvents = array_splice($storedEvents, $start - 1);
         }
+        return $this->domainEventStreamFromStoredEvents($filteredStoredEvents);
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @param int $start
+     * @return EventStreamInterface
+     */
+    public function readStreamEventsUntil($streamId, $datetime, $start = 1)
+    {
+        if (!$this->streamExists($streamId)) {
+            return EventStream::buildEmpty();
+        }
+        $storedEvents = $this->streams[$streamId]->events();
+
+        $filteredStoredEvents = array_splice($storedEvents, $start - 1);
+        $filteredStoredEvents = array_filter($filteredStoredEvents, function(StoredEvent $event) use ($datetime) {
+            return $event->occurredOn()->getTimestamp() <= $datetime->getTimestamp();
+        });
+
         return $this->domainEventStreamFromStoredEvents($filteredStoredEvents);
     }
 
@@ -141,5 +162,25 @@ class InMemoryEventStore extends AbstractEventStore
     protected function streamExists($streamId)
     {
         return isset($this->streams[$streamId]);
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     * @throws EventStreamDoesNotExistException
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
+    {
+        if (!$this->streamExists($streamId)) {
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
+        }
+        $storedEvents = $this->streams[$streamId]->events();
+
+        $filteredStoredEvents = array_filter($storedEvents, function(StoredEvent $event) use ($datetime) {
+            return $event->occurredOn()->getTimestamp() <= $datetime->getTimestamp();
+        });
+
+        return count($filteredStoredEvents);
     }
 }

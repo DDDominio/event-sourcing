@@ -206,7 +206,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 2);
+        $stream = $this->eventStore->readStreamEvents('streamId', 2);
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
@@ -227,7 +227,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 2, 2);
+        $stream = $this->eventStore->readStreamEvents('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
@@ -247,7 +247,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 5);
+        $stream = $this->eventStore->readStreamEvents('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
     }
@@ -302,7 +302,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId');
+        $stream = $this->eventStore->readStreamEvents('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());

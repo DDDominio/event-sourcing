@@ -25,7 +25,15 @@ interface EventStoreInterface
      * @param int $count
      * @return EventStreamInterface
      */
-    public function readStreamEventsForward($streamId, $start = 1, $count = null);
+    public function readStreamEvents($streamId, $start = 1, $count = null);
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @param int $start
+     * @return EventStreamInterface
+     */
+    public function readStreamEventsUntil($streamId, $datetime, $start = 1);
 
     /**
      * @param string $streamId
@@ -48,4 +56,11 @@ interface EventStoreInterface
      * @return EventStreamInterface
      */
     public function readAllEvents();
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime);
 }

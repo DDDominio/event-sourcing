@@ -42,7 +42,7 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
      * @param int $count
      * @return EventStreamInterface
      */
-    public function readStreamEventsForward($streamId, $start = 1, $count = null)
+    public function readStreamEvents($streamId, $start = 1, $count = null)
     {
         if (!isset($count)) {
             $count = self::MAX_UNSIGNED_BIG_INT;
@@ -73,6 +73,17 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
         }, $results);
 
         return $this->domainEventStreamFromStoredEvents($storedEvents);
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @param int $start
+     * @return EventStreamInterface
+     */
+    public function readStreamEventsUntil($streamId, $datetime, $start = 1)
+    {
+        // TODO: Implement readStreamEventsUntil() method.
     }
 
     /**
@@ -190,7 +201,6 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
             }
         });
     }
-
     /**
      * @param string $streamId
      * @return int
@@ -203,6 +213,7 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
         $stmt->execute();
         return intval($stmt->fetchColumn());
     }
+
     /**
      * @param string $streamId
      * @return bool
@@ -254,5 +265,15 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
     public function initialized()
     {
         return $this->connection->getSchemaManager()->tablesExist([self::STREAMS_TABLE]);
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
+    {
+        // TODO: Implement findStreamVersionAt() method.
     }
 }

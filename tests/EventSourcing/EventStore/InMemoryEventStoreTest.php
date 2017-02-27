@@ -182,7 +182,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             ['streamId' => $storedEventStream]
         );
 
-        $stream = $eventStore->readStreamEventsForward('streamId', 2);
+        $stream = $eventStore->readStreamEvents('streamId', 2);
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
@@ -211,7 +211,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             ['streamId' => $storedEventStream]
         );
 
-        $stream = $eventStore->readStreamEventsForward('streamId', 2, 2);
+        $stream = $eventStore->readStreamEvents('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
@@ -239,7 +239,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             ['streamId' => $storedEventStream]
         );
 
-        $stream = $eventStore->readStreamEventsForward('streamId', 5);
+        $stream = $eventStore->readStreamEvents('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
     }
@@ -294,10 +294,174 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             $streams
         );
 
-        $stream = $eventStore->readStreamEventsForward('streamId');
+        $stream = $eventStore->readStreamEvents('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());
+    }
+
+    /**
+     * @test
+     */
+    public function readEmptyStreamEventsUntil()
+    {
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $stream = $eventStore->readStreamEventsUntil('streamId', new \DateTimeImmutable('2017-02-16 12:30:00'));
+
+        $this->assertCount(0, $stream);
+    }
+
+    /**
+     * @test
+     */
+    public function readStreamEventsUntil()
+    {
+        $domainEvents = [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            ['streamId' => $storedEventStream]
+        );
+
+        $stream = $eventStore->readStreamEventsUntil('streamId', new \DateTimeImmutable('2017-02-16 12:30:00'));
+
+        $this->assertCount(3, $stream);
+        $events = $stream->events();
+        $this->assertEquals('name', $events[0]->data()->name());
+        $this->assertEquals('new name', $events[1]->data()->name());
+        $this->assertEquals('new description', $events[2]->data()->description());
+    }
+
+    /**
+     * @test
+     */
+    public function readStreamEventsUntilADatetimeThatIsEqualToAnEventOccurredOnTime()
+    {
+        $domainEvents = [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            ['streamId' => $storedEventStream]
+        );
+
+        $stream = $eventStore->readStreamEventsUntil('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertCount(2, $stream);
+        $events = $stream->events();
+        $this->assertEquals('name', $events[0]->data()->name());
+        $this->assertEquals('new name', $events[1]->data()->name());
+    }
+
+    /**
+     * @test
+     */
+    public function readStreamEventsUntilUsingStart()
+    {
+        $domainEvents = [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            ['streamId' => $storedEventStream]
+        );
+
+        $stream = $eventStore->readStreamEventsUntil('streamId', new \DateTimeImmutable('2017-02-16 23:50:00'), 3);
+
+        $this->assertCount(2, $stream);
+        $events = $stream->events();
+        $this->assertEquals('new description', $events[0]->data()->description());
+        $this->assertEquals('another name', $events[1]->data()->name());
+    }
+
+    /**
+     * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
+     */
+    public function findStreamEventVersionAtDatetimeOfNonExistingStream()
+    {
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetime()
+    {
+        $domainEvents = [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            ['streamId' => $storedEventStream]
+        );
+
+        $version = $eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+
+        $this->assertEquals(3, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetimeThatMatchWithEventOccurredOnTime()
+    {
+        $domainEvents = [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ];
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $storedEventStream = new StoredEventStream('streamId', $storedEvents);
+        $eventStore = new InMemoryEventStore(
+            $this->serializer,
+            $this->eventUpgrader,
+            ['streamId' => $storedEventStream]
+        );
+
+        $version = $eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertEquals(2, $version);
     }
 
     /**

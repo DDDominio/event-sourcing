@@ -81,7 +81,7 @@ class EventSourcedAggregateRepository
         $streamId = $this->streamIdFromAggregateId($id);
         if ($snapshot) {
             $stream = $this->eventStore
-                ->readStreamEventsForward($streamId, $snapshot->version() + 1);
+                ->readStreamEvents($streamId, $snapshot->version() + 1);
         } else {
             $stream = $this->eventStore->readFullStream($streamId);
         }
@@ -106,14 +106,14 @@ class EventSourcedAggregateRepository
         $streamId = $this->streamIdFromAggregateId($id);
         if ($snapshot) {
             $stream = $this->eventStore
-                ->readStreamEventsForward(
+                ->readStreamEvents(
                     $streamId,
                     $snapshot->version() + 1,
                     $version - $snapshot->version()
                 );
         } else {
             $stream = $this->eventStore
-                ->readStreamEventsForward(
+                ->readStreamEvents(
                     $streamId,
                     1,
                     $version
@@ -124,6 +124,18 @@ class EventSourcedAggregateRepository
             $stream,
             $snapshot
         );
+    }
+
+    /**
+     * @param string $id
+     * @param \DateTimeImmutable $datetime
+     * @return EventSourcedAggregateRootInterface
+     */
+    public function findByIdAndDatetime($id, $datetime)
+    {
+        $streamId = $this->streamIdFromAggregateId($id);
+        $version = $this->eventStore->getStreamVersionAt($streamId, $datetime);
+        return $this->findByIdAndVersion($id, $version);
     }
 
     /**

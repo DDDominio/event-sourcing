@@ -43,7 +43,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
      * @param int $count
      * @return EventStreamInterface
      */
-    public function readStreamEventsForward($streamId, $start = 1, $count = null)
+    public function readStreamEvents($streamId, $start = 1, $count = null)
     {
         if (!isset($count)) {
             $count = self::MAX_UNSIGNED_BIG_INT;
@@ -74,6 +74,17 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
         }, $results);
 
         return $this->domainEventStreamFromStoredEvents($storedEvents);
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @param int $start
+     * @return EventStreamInterface
+     */
+    public function readStreamEventsUntil($streamId, $datetime, $start = 1)
+    {
+        // TODO: Implement readStreamEventsUntil() method.
     }
 
     /**
@@ -177,7 +188,6 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
         $stmt->execute();
         return boolval($stmt->fetchColumn());
     }
-
     /**
      * @param string $streamId
      * @return int
@@ -190,6 +200,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
         $stmt->execute();
         return intval($stmt->fetchColumn());
     }
+
     /**
      * @param string $type
      * @param Version $version
@@ -268,5 +279,15 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
             return false;
         }
         return $result !== false;
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
+    {
+        // TODO: Implement findStreamVersionAt() method.
     }
 }
