@@ -4,6 +4,7 @@ namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\EventStore\Vendor\MySqlJsonEventStore;
+use DDDominio\EventSourcing\Versioning\Version;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
@@ -334,6 +335,42 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
 
         $this->assertEquals(2, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function itShouldUpgradeEventsInEventStore()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':metadata', '{}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', Version::fromString('1.0'));
+        $stmt->execute();
+
+        $this->eventStore->migrate(
+            VersionedEvent::class,
+            Version::fromString('1.0'),
+            Version::fromString('2.0')
+        );
+
+        $stream = $this->eventStore->readFullStream('streamId');
+        $this->assertCount(1, $stream);
+        $event = $stream->events()[0];
+        $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
+        $this->assertEquals('Name', $event->data()->username());
+        $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
     }
 
     /**
