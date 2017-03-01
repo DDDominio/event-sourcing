@@ -119,7 +119,26 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
      */
     public function readAllEvents()
     {
-        // TODO: Implement readAllEvents() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events'
+        );
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        $storedEvents = array_map(function($result) {
+            return new StoredEvent(
+                $result['id'],
+                $result['stream_id'],
+                $result['type'],
+                $result['event'],
+                $result['metadata'],
+                new \DateTimeImmutable($result['occurred_on']),
+                Version::fromString($result['version'])
+            );
+        }, $results);
+
+        return $this->domainEventStreamFromStoredEvents($storedEvents);
     }
 
     /**

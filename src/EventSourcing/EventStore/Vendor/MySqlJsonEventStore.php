@@ -120,7 +120,26 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
      */
     public function readAllEvents()
     {
-        // TODO: Implement readAllEvents() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events'
+        );
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        $storedEvents = array_map(function($event) {
+            return new StoredEvent(
+                $event['id'],
+                $event['stream_id'],
+                $event['type'],
+                $event['event'],
+                $event['metadata'],
+                new \DateTimeImmutable($event['occurred_on']),
+                Version::fromString($event['version'])
+            );
+        }, $results);
+
+        return $this->domainEventStreamFromStoredEvents($storedEvents);
     }
 
     /**

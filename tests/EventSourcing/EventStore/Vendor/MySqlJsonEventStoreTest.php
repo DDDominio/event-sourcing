@@ -373,6 +373,30 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
     }
 
+
+    /**
+     * @test
+     */
+    public function readAllEvents()
+    {
+        $this->eventStore->appendToStream('stream1', [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ]);
+        $this->eventStore->appendToStream('stream2', [
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ]);
+
+        $stream = $this->eventStore->readAllEvents();
+
+        $this->assertCount(4, $stream);
+        $this->assertEquals('new name', $stream->events()[0]->data()->name());
+        $this->assertEquals('new description', $stream->events()[1]->data()->description());
+        $this->assertEquals('another name', $stream->events()[2]->data()->name());
+        $this->assertEquals('my name', $stream->events()[3]->data()->name());
+    }
+
     /**
      * @test
      */
