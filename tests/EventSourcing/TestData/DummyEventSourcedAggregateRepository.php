@@ -2,6 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\TestData;
 
+use DDDominio\EventSourcing\Common\AggregateIdExtractorInterface;
 use DDDominio\EventSourcing\Common\AggregateReconstructor;
 use DDDominio\EventSourcing\Common\EventSourcedAggregateRepository;
 use DDDominio\EventSourcing\EventStore\EventStoreInterface;
@@ -12,10 +13,15 @@ class DummyEventSourcedAggregateRepository extends EventSourcedAggregateReposito
     public function __construct(
         EventStoreInterface $eventStore,
         SnapshotStoreInterface $snapshotStore,
-        AggregateReconstructor $aggregateReconstructor
+        AggregateReconstructor $aggregateReconstructor,
+        AggregateIdExtractorInterface $aggregateIdExtractor
     ) {
         parent::__construct(
-            $eventStore, $snapshotStore, $aggregateReconstructor, DummyEventSourcedAggregate::class
+            $eventStore,
+            $snapshotStore,
+            $aggregateReconstructor,
+            $aggregateIdExtractor,
+            DummyEventSourcedAggregate::class
         );
     }
 }
