@@ -111,7 +111,17 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
      */
     public function readAllStreams()
     {
-        // TODO: Implement readAllStreams() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM streams'
+        );
+        $stmt->execute();
+
+        $streams = [];
+        foreach ($stmt->fetchAll() as $result) {
+            $streams[] = $this->readFullStream($result['id']);
+        }
+        return $streams;
     }
 
     /**

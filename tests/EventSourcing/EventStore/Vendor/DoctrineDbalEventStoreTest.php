@@ -415,6 +415,29 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function readAllStreams()
+    {
+        $this->eventStore->appendToStream('stream1', [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ]);
+        $this->eventStore->appendToStream('stream2', [
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ]);
+
+        $streams = $this->eventStore->readAllStreams();
+
+        $this->assertCount(2, $streams);
+        $this->assertEquals('new name', $streams[0]->events()[0]->data()->name());
+        $this->assertEquals('new description', $streams[0]->events()[1]->data()->description());
+        $this->assertEquals('another name', $streams[1]->events()[0]->data()->name());
+        $this->assertEquals('my name', $streams[1]->events()[1]->data()->name());
+    }
+
+    /**
+     * @test
+     */
     public function initializedEventStore()
     {
         $this->assertTrue($this->eventStore->initialized());
