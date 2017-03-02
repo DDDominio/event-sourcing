@@ -156,6 +156,22 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     */
+    public function afterAppendingEventsIfTheFinalVersionIsGreaterThanExpectedAConcurrencyExceptionMustBeThown()
+    {
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $this->eventStore = new ConcurrencyExceptionMySqlJsonEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent]);
+    }
+
+    /**
+     * @test
      */
     public function readAnEventStream()
     {
@@ -442,7 +458,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function whenEventStoreThrowsAnExceptionItIsConsideredNotInitialized()
+    public function whenCheckingIfEventStoreIsInitializedIfAnExceptionIsThrownItIsConsideredNotInitialized()
     {
         $connection = $this->createMock(\PDO::class);
         $connection->method('query')->willThrowException(new \Exception());
@@ -453,5 +469,32 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertFalse($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function whenInitializingEventStoreIfAnExceptionIsThrownTheConnectionIsRolledBack()
+    {
+        $connection = $this->createMock(\PDO::class);
+        $connection->method('exec')->willThrowException(new \Exception());
+        $connection->expects($this->once())->method('rollback');
+        $this->eventStore = new MySqlJsonEventStore(
+            $connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        try {
+            $this->eventStore->initialize();
+        } catch (\Exception $e) {}
+    }
+}
+
+class ConcurrencyExceptionMySqlJsonEventStore extends MySqlJsonEventStore
+{
+    protected function streamVersion($streamId)
+    {
+        return 1000;
     }
 }

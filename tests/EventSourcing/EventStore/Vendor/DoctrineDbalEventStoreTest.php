@@ -170,6 +170,22 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     */
+    public function afterAppendingEventsIfTheFinalVersionIsGreaterThanExpectedAConcurrencyExceptionMustBeThown()
+    {
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $this->eventStore = new ConcurrencyExceptionDoctrineDbalEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent]);
+    }
+
+    /**
+     * @test
      */
     public function readAnEventStream()
     {
@@ -452,5 +468,13 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->connection->exec('DROP TABLE streams');
 
         $this->assertFalse($this->eventStore->initialized());
+    }
+}
+
+class ConcurrencyExceptionDoctrineDbalEventStore extends DoctrineDbalEventStore
+{
+    protected function streamVersion($streamId)
+    {
+        return 1000;
     }
 }
