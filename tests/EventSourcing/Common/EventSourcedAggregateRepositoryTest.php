@@ -45,7 +45,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function addAnAggregate()
+    public function addANewAggregate()
     {
         $eventStore = $this->buildEmptyEventStore();
         $snapshotStore = new InMemorySnapshotStore();
@@ -58,7 +58,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $changes = $this->buildDummyDomainEvents(3);
         $aggregate = $this->buildAggregateMock('id', $changes);
 
-        $repository->add($aggregate);
+        $repository->save($aggregate);
 
         $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class . '-id');
         $this->assertCount(3, $stream);
@@ -67,7 +67,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function addAnotherAggregate()
+    public function addAnotherNewAggregate()
     {
         $eventStore = $this->buildEmptyEventStore();
         $snapshotStore = new InMemorySnapshotStore();
@@ -80,7 +80,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $changes = $this->buildDummyDomainEvents(3);
         $aggregate = $this->buildAggregateMock('anotherId', $changes);
 
-        $repository->add($aggregate);
+        $repository->save($aggregate);
 
         $stream = $eventStore->readFullStream(DummyEventSourcedAggregate::class . '-anotherId');
         $this->assertCount(3, $stream);
@@ -137,7 +137,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function afterAddAnAggregateItShouldNotContainChanges()
+    public function afterAddANewAggregateItShouldNotContainChanges()
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
         $eventStore = $this->createMock(EventStoreInterface::class);
@@ -149,7 +149,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             new MethodAggregateIdExtractor('id')
         );
 
-        $repository->add($aggregate);
+        $repository->save($aggregate);
 
         $this->assertCount(0, $aggregate->changes());
     }
@@ -467,7 +467,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->willReturn($id);
         if (isset($changes)) {
             $aggregate
-                ->expects($this->once())
+                ->expects($this->any())
                 ->method('changes')
                 ->willReturn($changes);
         }

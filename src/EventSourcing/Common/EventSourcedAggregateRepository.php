@@ -56,18 +56,6 @@ class EventSourcedAggregateRepository
     /**
      * @param EventSourcedAggregateRootInterface $aggregate
      */
-    public function add($aggregate)
-    {
-        $this->eventStore->appendToStream(
-            $this->streamIdFromAggregate($aggregate),
-            $aggregate->changes()
-        );
-        $aggregate->clearChanges();
-    }
-
-    /**
-     * @param EventSourcedAggregateRootInterface $aggregate
-     */
     public function save($aggregate)
     {
         $this->eventStore->appendToStream(
