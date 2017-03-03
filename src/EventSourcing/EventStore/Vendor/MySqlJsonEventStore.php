@@ -6,6 +6,7 @@ use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\AbstractEventStore;
 use DDDominio\EventSourcing\EventStore\ConcurrencyException;
+use DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException;
 use DDDominio\EventSourcing\EventStore\InitializableInterface;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
@@ -43,7 +44,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
      * @param int $count
      * @return EventStreamInterface
      */
-    public function readStreamEventsForward($streamId, $start = 1, $count = null)
+    public function readStreamEvents($streamId, $start = 1, $count = null)
     {
         if (!isset($count)) {
             $count = self::MAX_UNSIGNED_BIG_INT;
@@ -111,7 +112,17 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
      */
     public function readAllStreams()
     {
-        // TODO: Implement readAllStreams() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM streams'
+        );
+        $stmt->execute();
+
+        $streams = [];
+        foreach ($stmt->fetchAll() as $result) {
+            $streams[] = $this->readFullStream($result['id']);
+        }
+        return $streams;
     }
 
     /**
@@ -119,7 +130,26 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
      */
     public function readAllEvents()
     {
-        // TODO: Implement readAllEvents() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events'
+        );
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        $storedEvents = array_map(function($event) {
+            return new StoredEvent(
+                $event['id'],
+                $event['stream_id'],
+                $event['type'],
+                $event['event'],
+                $event['metadata'],
+                new \DateTimeImmutable($event['occurred_on']),
+                Version::fromString($event['version'])
+            );
+        }, $results);
+
+        return $this->domainEventStreamFromStoredEvents($storedEvents);
     }
 
     /**
@@ -177,7 +207,6 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
         $stmt->execute();
         return boolval($stmt->fetchColumn());
     }
-
     /**
      * @param string $streamId
      * @return int
@@ -190,6 +219,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
         $stmt->execute();
         return intval($stmt->fetchColumn());
     }
+
     /**
      * @param string $type
      * @param Version $version
@@ -268,5 +298,28 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
             return false;
         }
         return $result !== false;
+    }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     * @throws EventStreamDoesNotExistException
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
+    {
+        if (!$this->streamExists($streamId)) {
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
+        }
+        $stmt = $this->connection->prepare(
+            'SELECT COUNT(*)
+             FROM events
+             WHERE stream_id = :streamId
+             AND occurred_on <= :occurred_on'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':occurred_on', $datetime->format('Y-m-d H:i:s'));
+        $stmt->execute();
+        return intval($stmt->fetchColumn());
     }
 }

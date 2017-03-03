@@ -2,6 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\Common;
 
+use DDDominio\EventSourcing\Common\MethodAggregateIdExtractor;
 use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
@@ -51,7 +52,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $this->createMock(AggregateReconstructor::class)
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
         );
         $changes = $this->buildDummyDomainEvents(3);
         $aggregate = $this->buildAggregateMock('id', $changes);
@@ -72,7 +74,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $this->createMock(AggregateReconstructor::class)
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
         );
         $changes = $this->buildDummyDomainEvents(3);
         $aggregate = $this->buildAggregateMock('anotherId', $changes);
@@ -94,7 +97,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $this->createMock(AggregateReconstructor::class)
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
         );
         $changes = $this->buildDummyDomainEvents(3);
         $expectedVersion = 2;
@@ -117,7 +121,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $this->createMock(AggregateReconstructor::class)
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
         );
         $changes = $this->buildDummyDomainEvents(3);
         $expectedVersion = 2;
@@ -140,7 +145,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $this->createMock(AggregateReconstructor::class)
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
         );
 
         $repository->add($aggregate);
@@ -159,7 +165,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $this->createMock(AggregateReconstructor::class)
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
         );
 
         $repository->save($aggregate);
@@ -196,7 +203,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $aggregateReconstructor
+            $aggregateReconstructor,
+            new MethodAggregateIdExtractor('id')
         );
 
         $aggregate = $repository->findById('id');
@@ -224,7 +232,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $eventStore = $this->createMock(EventStoreInterface::class);
         $eventStore
             ->expects($this->once())
-            ->method('readStreamEventsForward')
+            ->method('readStreamEvents')
             ->with(DummyEventSourcedAggregate::class . '-id', $snapshot->version() + 1)
             ->willReturn($stream);
         $snapshotStore = $this->createMock(SnapshotStoreInterface::class);
@@ -240,7 +248,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $aggregateReconstructor
+            $aggregateReconstructor,
+            new MethodAggregateIdExtractor('id')
         );
 
         $repository->findById('id');
@@ -273,7 +282,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $aggregateReconstructor
+            $aggregateReconstructor,
+            new MethodAggregateIdExtractor('id')
         );
 
         $aggregate = $repository->findByIdAndVersion('id', 3);
@@ -300,7 +310,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $eventStore = $this->createMock(EventStoreInterface::class);
         $eventStore
             ->expects($this->once())
-            ->method('readStreamEventsForward')
+            ->method('readStreamEvents')
             ->with(DummyEventSourcedAggregate::class . '-id', $snapshot->version() + 1)
             ->willReturn($stream);
         $snapshotStore = $this->createMock(SnapshotStoreInterface::class);
@@ -316,10 +326,97 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $repository = new DummyEventSourcedAggregateRepository(
             $eventStore,
             $snapshotStore,
-            $aggregateReconstructor
+            $aggregateReconstructor,
+            new MethodAggregateIdExtractor('id')
         );
 
         $repository->findByIdAndVersion('id', 4);
+    }
+
+    /**
+     * @test
+     */
+    public function findAggregateByIdAndDatetime()
+    {
+        $domainEventsUntil = [
+            new DomainEvent(new DummyCreated('id', 'name', 'description'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00'))
+        ];
+        $domainEvents = array_merge($domainEventsUntil, [
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+        $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
+        $stream = new StoredEventStream(DummyEventSourcedAggregate::class.'-id', $storedEvents);
+        $eventStore = $this->buildEventStoreWithStream($stream);
+        $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['reconstitute'])
+            ->getMock();
+        $aggregateReconstructor
+            ->expects($this->once())
+            ->method('reconstitute')
+            ->willReturn(new DummyEventSourcedAggregate('id', 'new name', 'description'));
+        $snapshotStore = new InMemorySnapshotStore();
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $snapshotStore,
+            $aggregateReconstructor,
+            new MethodAggregateIdExtractor('id')
+        );
+
+        $aggregate = $repository->findByIdAndDatetime('id', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertEquals('id', $aggregate->id());
+        $this->assertEquals('new name', $aggregate->name());
+        $this->assertEquals('description', $aggregate->description());
+    }
+
+    /**
+     * @test
+     */
+    public function findAggregateByIdAndDatetimeUsingTheClosestSnapshotToThatDatetime()
+    {
+        $snapshot = new DummySnapshot(
+            'id',
+            'new name',
+            'description',
+            2
+        );
+        $stream = [
+            new DomainEvent(new DummyCreated('id', 'name', 'description'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00'))
+        ];
+        $datetime = new \DateTimeImmutable('2017-02-16 11:00:00');
+        $eventStore = $this->createMock(EventStoreInterface::class);
+        $eventStore
+            ->expects($this->once())
+            ->method('getStreamVersionAt')
+            ->willReturn(4);
+        $eventStore
+            ->expects($this->once())
+            ->method('readStreamEvents')
+            ->with(DummyEventSourcedAggregate::class . '-id', 3, 2)
+            ->willReturn($stream);
+        $snapshotStore = $this->createMock(SnapshotStoreInterface::class);
+        $snapshotStore
+            ->expects($this->once())
+            ->method('findNearestSnapshotToVersion')
+            ->willReturn($snapshot);
+        $aggregateReconstructor = $this->createMock(AggregateReconstructor::class);
+        $aggregateReconstructor
+            ->expects($this->once())
+            ->method('reconstitute')
+            ->with(DummyEventSourcedAggregate::class, $stream, $snapshot);
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $snapshotStore,
+            $aggregateReconstructor,
+            new MethodAggregateIdExtractor('id')
+        );
+
+        $repository->findByIdAndDatetime('id', $datetime);
     }
 
     /**

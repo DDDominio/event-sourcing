@@ -6,6 +6,7 @@ use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\EventStore\AbstractEventStore;
 use DDDominio\EventSourcing\EventStore\ConcurrencyException;
+use DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use Doctrine\DBAL\Connection;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
@@ -42,7 +43,7 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
      * @param int $count
      * @return EventStreamInterface
      */
-    public function readStreamEventsForward($streamId, $start = 1, $count = null)
+    public function readStreamEvents($streamId, $start = 1, $count = null)
     {
         if (!isset($count)) {
             $count = self::MAX_UNSIGNED_BIG_INT;
@@ -110,7 +111,17 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
      */
     public function readAllStreams()
     {
-        // TODO: Implement readAllStreams() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM streams'
+        );
+        $stmt->execute();
+
+        $streams = [];
+        foreach ($stmt->fetchAll() as $result) {
+            $streams[] = $this->readFullStream($result['id']);
+        }
+        return $streams;
     }
 
     /**
@@ -118,7 +129,26 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
      */
     public function readAllEvents()
     {
-        // TODO: Implement readAllEvents() method.
+        $stmt = $this->connection->prepare(
+            'SELECT *
+             FROM events'
+        );
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        $storedEvents = array_map(function($result) {
+            return new StoredEvent(
+                $result['id'],
+                $result['stream_id'],
+                $result['type'],
+                $result['event'],
+                $result['metadata'],
+                new \DateTimeImmutable($result['occurred_on']),
+                Version::fromString($result['version'])
+            );
+        }, $results);
+
+        return $this->domainEventStreamFromStoredEvents($storedEvents);
     }
 
     /**
@@ -190,7 +220,6 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
             }
         });
     }
-
     /**
      * @param string $streamId
      * @return int
@@ -203,6 +232,30 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
         $stmt->execute();
         return intval($stmt->fetchColumn());
     }
+
+    /**
+     * @param string $streamId
+     * @param \DateTimeImmutable $datetime
+     * @return int
+     * @throws EventStreamDoesNotExistException
+     */
+    public function getStreamVersionAt($streamId, \DateTimeImmutable $datetime)
+    {
+        if (!$this->streamExists($streamId)) {
+            throw EventStreamDoesNotExistException::fromStreamId($streamId);
+        }
+        $stmt = $this->connection->prepare(
+            'SELECT COUNT(*)
+             FROM events
+             WHERE stream_id = :streamId
+             AND occurred_on <= :occurred_on'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':occurred_on', $datetime->format('Y-m-d H:i:s'));
+        $stmt->execute();
+        return intval($stmt->fetchColumn());
+    }
+
     /**
      * @param string $streamId
      * @return bool

@@ -4,6 +4,7 @@ namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\EventStore\Vendor\MySqlJsonEventStore;
+use DDDominio\EventSourcing\Versioning\Version;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\JsonSerializer;
@@ -155,6 +156,22 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     */
+    public function afterAppendingEventsIfTheFinalVersionIsGreaterThanExpectedAConcurrencyExceptionMustBeThown()
+    {
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $this->eventStore = new ConcurrencyExceptionMySqlJsonEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent]);
+    }
+
+    /**
+     * @test
      */
     public function readAnEventStream()
     {
@@ -189,7 +206,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 2);
+        $stream = $this->eventStore->readStreamEvents('streamId', 2);
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
@@ -210,7 +227,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 2, 2);
+        $stream = $this->eventStore->readStreamEvents('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
@@ -230,7 +247,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 5);
+        $stream = $this->eventStore->readStreamEvents('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
     }
@@ -285,9 +302,199 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':version', '1.0');
         $stmt->execute();
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId');
+        $stream = $this->eventStore->readStreamEvents('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());
+    }
+
+    /**
+     * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
+     */
+    public function findStreamEventVersionAtDatetimeOfNonExistingStream()
+    {
+        $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+
+        $this->assertEquals(3, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetimeThatMatchWithEventOccurredOnTime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertEquals(2, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function itShouldUpgradeEventsInEventStore()
+    {
+        $streamId = 'streamId';
+        $stmt = $this->connection
+            ->prepare('INSERT INTO streams (id) VALUES (:streamId)');
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->execute();
+        $stmt = $this->connection->prepare(
+            'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+                 VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
+        );
+        $stmt->bindValue(':streamId', $streamId);
+        $stmt->bindValue(':type', VersionedEvent::class);
+        $stmt->bindValue(':event', '{"name":"Name","occurred_on":"2016-12-04 17:35:35"}');
+        $stmt->bindValue(':metadata', '{}');
+        $stmt->bindValue(':occurredOn', '2016-12-04 17:35:35');
+        $stmt->bindValue(':version', Version::fromString('1.0'));
+        $stmt->execute();
+
+        $this->eventStore->migrate(
+            VersionedEvent::class,
+            Version::fromString('1.0'),
+            Version::fromString('2.0')
+        );
+
+        $stream = $this->eventStore->readFullStream('streamId');
+        $this->assertCount(1, $stream);
+        $event = $stream->events()[0];
+        $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
+        $this->assertEquals('Name', $event->data()->username());
+        $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
+    }
+
+
+    /**
+     * @test
+     */
+    public function readAllEvents()
+    {
+        $this->eventStore->appendToStream('stream1', [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ]);
+        $this->eventStore->appendToStream('stream2', [
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ]);
+
+        $stream = $this->eventStore->readAllEvents();
+
+        $this->assertCount(4, $stream);
+        $this->assertEquals('new name', $stream->events()[0]->data()->name());
+        $this->assertEquals('new description', $stream->events()[1]->data()->description());
+        $this->assertEquals('another name', $stream->events()[2]->data()->name());
+        $this->assertEquals('my name', $stream->events()[3]->data()->name());
+    }
+
+    /**
+     * @test
+     */
+    public function readAllStreams()
+    {
+        $this->eventStore->appendToStream('stream1', [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ]);
+        $this->eventStore->appendToStream('stream2', [
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ]);
+
+        $streams = $this->eventStore->readAllStreams();
+
+        $this->assertCount(2, $streams);
+        $this->assertEquals('new name', $streams[0]->events()[0]->data()->name());
+        $this->assertEquals('new description', $streams[0]->events()[1]->data()->description());
+        $this->assertEquals('another name', $streams[1]->events()[0]->data()->name());
+        $this->assertEquals('my name', $streams[1]->events()[1]->data()->name());
+    }
+
+    /**
+     * @test
+     */
+    public function initializedEventStore()
+    {
+        $this->assertTrue($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function notInitializedEventStore()
+    {
+        $this->connection->exec('DROP TABLE events');
+        $this->connection->exec('DROP TABLE streams');
+
+        $this->assertFalse($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function whenCheckingIfEventStoreIsInitializedIfAnExceptionIsThrownItIsConsideredNotInitialized()
+    {
+        $connection = $this->createMock(\PDO::class);
+        $connection->method('query')->willThrowException(new \Exception());
+        $this->eventStore = new MySqlJsonEventStore(
+            $connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->assertFalse($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function whenInitializingEventStoreIfAnExceptionIsThrownTheConnectionIsRolledBack()
+    {
+        $connection = $this->createMock(\PDO::class);
+        $connection->method('exec')->willThrowException(new \Exception());
+        $connection->expects($this->once())->method('rollback');
+        $this->eventStore = new MySqlJsonEventStore(
+            $connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        try {
+            $this->eventStore->initialize();
+        } catch (\Exception $e) {}
+    }
+}
+
+class ConcurrencyExceptionMySqlJsonEventStore extends MySqlJsonEventStore
+{
+    protected function streamVersion($streamId)
+    {
+        return 1000;
     }
 }

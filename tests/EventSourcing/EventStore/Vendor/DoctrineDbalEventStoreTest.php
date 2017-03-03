@@ -170,6 +170,22 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     */
+    public function afterAppendingEventsIfTheFinalVersionIsGreaterThanExpectedAConcurrencyExceptionMustBeThown()
+    {
+        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $this->eventStore = new ConcurrencyExceptionDoctrineDbalEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent]);
+    }
+
+    /**
+     * @test
      */
     public function readAnEventStream()
     {
@@ -197,7 +213,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findStreamEventsForward()
+    public function findStreamEvents()
     {
         $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
@@ -206,7 +222,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 2);
+        $stream = $this->eventStore->readStreamEvents('streamId', 2);
 
         $this->assertCount(3, $stream);
         $events = $stream->events();
@@ -218,7 +234,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findStreamEventsForwardWithEventCount()
+    public function findStreamEventsWithEventCount()
     {
         $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
@@ -227,7 +243,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 2, 2);
+        $stream = $this->eventStore->readStreamEvents('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
         $events = $stream->events();
@@ -238,7 +254,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
+    public function findStreamEventsShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
         $this->eventStore->appendToStream('streamId', [
             DomainEvent::record(new NameChanged('new name')),
@@ -247,7 +263,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
             DomainEvent::record(new NameChanged('my name')),
         ]);
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId', 5);
+        $stream = $this->eventStore->readStreamEvents('streamId', 5);
 
         $this->assertTrue($stream->isEmpty());
     }
@@ -302,7 +318,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $stmt->bindValue(':version', Version::fromString('1.0'));
         $stmt->execute();
 
-        $stream = $this->eventStore->readStreamEventsForward('streamId');
+        $stream = $this->eventStore->readStreamEvents('streamId');
 
         $domainEvent = $stream->events()[0];
         $this->assertEquals('Name', $domainEvent->data()->username());
@@ -342,5 +358,123 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
         $this->assertEquals('Name', $event->data()->username());
         $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @test
+     * @expectedException \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
+     */
+    public function findStreamEventVersionAtDatetimeOfNonExistingStream()
+    {
+        $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 12:00:00'));
+
+        $this->assertEquals(3, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function findStreamEventVersionAtDatetimeThatMatchWithEventOccurredOnTime()
+    {
+        $this->eventStore->appendToStream('streamId', [
+            new DomainEvent(new NameChanged('name'), [], new \DateTimeImmutable('2017-02-15 12:00:00')),
+            new DomainEvent(new NameChanged('new name'), [], new \DateTimeImmutable('2017-02-16 11:00:00')),
+            new DomainEvent(new DescriptionChanged('new description'), [], new \DateTimeImmutable('2017-02-16 11:00:01')),
+            new DomainEvent(new NameChanged('another name'), [], new \DateTimeImmutable('2017-02-16 23:00:00')),
+            new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
+        ]);
+
+        $version = $this->eventStore->getStreamVersionAt('streamId', new \DateTimeImmutable('2017-02-16 11:00:00'));
+
+        $this->assertEquals(2, $version);
+    }
+
+    /**
+     * @test
+     */
+    public function readAllEvents()
+    {
+        $this->eventStore->appendToStream('stream1', [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ]);
+        $this->eventStore->appendToStream('stream2', [
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ]);
+
+        $stream = $this->eventStore->readAllEvents();
+
+        $this->assertCount(4, $stream);
+        $this->assertEquals('new name', $stream->events()[0]->data()->name());
+        $this->assertEquals('new description', $stream->events()[1]->data()->description());
+        $this->assertEquals('another name', $stream->events()[2]->data()->name());
+        $this->assertEquals('my name', $stream->events()[3]->data()->name());
+    }
+
+    /**
+     * @test
+     */
+    public function readAllStreams()
+    {
+        $this->eventStore->appendToStream('stream1', [
+            DomainEvent::record(new NameChanged('new name')),
+            DomainEvent::record(new DescriptionChanged('new description')),
+        ]);
+        $this->eventStore->appendToStream('stream2', [
+            DomainEvent::record(new NameChanged('another name')),
+            DomainEvent::record(new NameChanged('my name')),
+        ]);
+
+        $streams = $this->eventStore->readAllStreams();
+
+        $this->assertCount(2, $streams);
+        $this->assertEquals('new name', $streams[0]->events()[0]->data()->name());
+        $this->assertEquals('new description', $streams[0]->events()[1]->data()->description());
+        $this->assertEquals('another name', $streams[1]->events()[0]->data()->name());
+        $this->assertEquals('my name', $streams[1]->events()[1]->data()->name());
+    }
+
+    /**
+     * @test
+     */
+    public function initializedEventStore()
+    {
+        $this->assertTrue($this->eventStore->initialized());
+    }
+
+    /**
+     * @test
+     */
+    public function notInitializedEventStore()
+    {
+        $this->connection->exec('DROP TABLE events');
+        $this->connection->exec('DROP TABLE streams');
+
+        $this->assertFalse($this->eventStore->initialized());
+    }
+}
+
+class ConcurrencyExceptionDoctrineDbalEventStore extends DoctrineDbalEventStore
+{
+    protected function streamVersion($streamId)
+    {
+        return 1000;
     }
 }

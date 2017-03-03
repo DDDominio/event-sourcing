@@ -33,7 +33,7 @@ class Version
      */
     public static function fromString($version)
     {
-        $versionPattern = '/(\d+)\.(\d+)/';
+        $versionPattern = '/^(\d+)\.(\d+)$/';
         if (preg_match($versionPattern, $version, $matches) !== 1) {
             throw new \InvalidArgumentException('Invalid version format.');
         }
