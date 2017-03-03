@@ -26,6 +26,8 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     }
 
     /**
+     * Record a Domain Event
+     *
      * @param mixed $domainEvent
      */
     private function record($domainEvent)
@@ -34,6 +36,8 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     }
 
     /**
+     * Apply a Domain Event to the aggregate
+     *
      * @param mixed $domainEvent
      */
     public function apply($domainEvent)
@@ -99,7 +103,15 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
      */
     private function getEventHandlerName($domainEvent)
     {
-        return 'when' . (new \ReflectionClass($domainEvent->data()))->getShortName();
+        return $this->eventHandlerPrefix() . (new \ReflectionClass($domainEvent->data()))->getShortName();
+    }
+
+    /**
+     * @return string
+     */
+    protected function eventHandlerPrefix()
+    {
+        return 'when';
     }
 
     /**
@@ -119,6 +131,8 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     }
 
     /**
+     * Recorded domain events
+     *
      * @return DomainEvent[]
      */
     public function changes()
@@ -127,6 +141,8 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     }
 
     /**
+     * Current version of the aggregate
+     *
      * @return int
      */
     public function version()
@@ -135,6 +151,8 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     }
 
     /**
+     * The version of the aggregate before applying changes
+     *
      * @return int
      */
     public function originalVersion()
@@ -142,6 +160,9 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
         return $this->version - count($this->changes());
     }
 
+    /**
+     * Removes recorded domain events
+     */
     public function clearChanges()
     {
         $this->changes = [];
