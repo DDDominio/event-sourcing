@@ -48,7 +48,7 @@ class DomainEvent implements EventInterface, VersionableInterface
      * @param Version|null $version
      * @return DomainEvent
      */
-    public static function record($data, array $metadata = [], $version = null)
+    public static function produceNow($data, array $metadata = [], $version = null)
     {
         return new self($data, $metadata, new \DateTimeImmutable(), $version);
     }

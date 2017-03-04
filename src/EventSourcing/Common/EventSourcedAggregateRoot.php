@@ -58,7 +58,7 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     private function ensureDomainEvent($domainEvent)
     {
         if (!$domainEvent instanceof DomainEvent) {
-            $domainEvent = DomainEvent::record($domainEvent);
+            $domainEvent = DomainEvent::produceNow($domainEvent);
         }
         return $domainEvent;
     }

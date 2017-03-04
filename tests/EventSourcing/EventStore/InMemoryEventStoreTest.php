@@ -66,7 +66,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
         $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
-        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $stream = $eventStore->readFullStream('streamId');
@@ -81,7 +81,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function appendAnEventToAnExistentStream()
     {
         $eventStore = new InMemoryEventStore($this->serializer, $this->eventUpgrader);
-        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
 
         $eventStore->appendToStream('streamId', [$domainEvent]);
         $eventStore->appendToStream('streamId', [$domainEvent], 1);
@@ -127,7 +127,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEventStream()
     {
-        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
         $storedEvent = new StoredEvent(
             'id',
             'streamId',
@@ -169,10 +169,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsForward()
     {
         $domainEvents = [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -197,10 +197,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsForwardWithEventCount()
     {
         $domainEvents = [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -225,10 +225,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsForwardShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
         $domainEvents = [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -416,7 +416,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->eventUpgrader
         );
         $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $eventListener);
-        $events = [DomainEvent::record(new NameChanged('name'))];
+        $events = [DomainEvent::produceNow(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
@@ -436,7 +436,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->eventUpgrader
         );
         $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $eventListener);
-        $events = [DomainEvent::record(new NameChanged('name'))];
+        $events = [DomainEvent::produceNow(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
@@ -464,7 +464,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
         );
         $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $anEventListener);
         $eventStore->addEventListener(EventStoreEvents::POST_APPEND, $anotherEventListener);
-        $events = [DomainEvent::record(new NameChanged('name'))];
+        $events = [DomainEvent::produceNow(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
@@ -488,7 +488,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
             $this->eventUpgrader
         );
         $eventStore->addEventListener(EventStoreEvents::PRE_APPEND, $eventListener);
-        $events = [DomainEvent::record(new NameChanged('name'))];
+        $events = [DomainEvent::produceNow(new NameChanged('name'))];
 
         $eventStore->appendToStream('streamId', $events);
 
@@ -503,10 +503,10 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     public function appendEventsWithoutTakeIntoAccountExpectedVersion()
     {
         $domainEvents = [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $storedEventStream = new StoredEventStream('streamId', $storedEvents);
@@ -518,7 +518,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $eventStore->appendToStream(
             'streamId',
-            [DomainEvent::record(new NameChanged('name'))],
+            [DomainEvent::produceNow(new NameChanged('name'))],
             EventStoreInterface::EXPECTED_VERSION_ANY
         );
     }

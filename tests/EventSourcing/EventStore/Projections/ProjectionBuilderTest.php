@@ -298,7 +298,7 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
         foreach ($streams as $streamId => $eventsData) {
             $domainEvents = [];
             foreach ($eventsData as $eventData) {
-                $domainEvents[] = DomainEvent::record($eventData);
+                $domainEvents[] = DomainEvent::produceNow($eventData);
             }
             $storedEventStreams[$streamId] = new StoredEventStream(
                 $streamId,

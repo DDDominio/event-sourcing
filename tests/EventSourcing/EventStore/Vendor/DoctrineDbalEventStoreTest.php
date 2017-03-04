@@ -116,7 +116,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToANewStreamShouldCreateAStreamContainingTheEvent()
     {
-        $domainEvent = DomainEvent::record(
+        $domainEvent = DomainEvent::produceNow(
             new NameChanged('name')
         );
 
@@ -132,7 +132,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function appendAnEventToAnExistentStream()
     {
-        $domainEvent = DomainEvent::record(
+        $domainEvent = DomainEvent::produceNow(
             new NameChanged('name')
         );
 
@@ -149,7 +149,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function ifTheExpectedVersionOfTheStreamDoesNotMatchWithRealVersionAConcurrencyExceptionShouldBeThrown()
     {
-        $domainEvent = DomainEvent::record(
+        $domainEvent = DomainEvent::produceNow(
             new NameChanged('name')
         );
         $this->eventStore->appendToStream('streamId', [$domainEvent]);
@@ -163,7 +163,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function whenAppendingToANewStreamIfAVersionIsSpecifiedAnExceptionShouldBeThrown()
     {
-        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
 
         $this->eventStore->appendToStream('newStreamId', [$domainEvent], 10);
     }
@@ -174,7 +174,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function afterAppendingEventsIfTheFinalVersionIsGreaterThanExpectedAConcurrencyExceptionMustBeThown()
     {
-        $domainEvent = DomainEvent::record(new NameChanged('name'));
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
         $this->eventStore = new ConcurrencyExceptionDoctrineDbalEventStore(
             $this->connection,
             $this->serializer,
@@ -189,7 +189,7 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
      */
     public function readAnEventStream()
     {
-        $event = DomainEvent::record(
+        $event = DomainEvent::produceNow(
             new NameChanged('name')
         );
         $this->eventStore->appendToStream('streamId', [$event]);
@@ -216,10 +216,10 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEvents()
     {
         $this->eventStore->appendToStream('streamId', [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ]);
 
         $stream = $this->eventStore->readStreamEvents('streamId', 2);
@@ -237,10 +237,10 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsWithEventCount()
     {
         $this->eventStore->appendToStream('streamId', [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ]);
 
         $stream = $this->eventStore->readStreamEvents('streamId', 2, 2);
@@ -257,10 +257,10 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     public function findStreamEventsShouldReturnEmptyStreamIfStartVersionIsGreaterThanStreamVersion()
     {
         $this->eventStore->appendToStream('streamId', [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ]);
 
         $stream = $this->eventStore->readStreamEvents('streamId', 5);
@@ -411,12 +411,12 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     public function readAllEvents()
     {
         $this->eventStore->appendToStream('stream1', [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
         ]);
         $this->eventStore->appendToStream('stream2', [
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ]);
 
         $stream = $this->eventStore->readAllEvents();
@@ -434,12 +434,12 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     public function readAllStreams()
     {
         $this->eventStore->appendToStream('stream1', [
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
         ]);
         $this->eventStore->appendToStream('stream2', [
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new NameChanged('my name')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new NameChanged('my name')),
         ]);
 
         $streams = $this->eventStore->readAllStreams();

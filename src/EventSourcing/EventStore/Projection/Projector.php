@@ -17,7 +17,7 @@ class Projector
      */
     public function emit($stream, $event)
     {
-        $this->emittedEventsByStream[$stream][] = DomainEvent::record($event);
+        $this->emittedEventsByStream[$stream][] = DomainEvent::produceNow($event);
     }
 
     /**

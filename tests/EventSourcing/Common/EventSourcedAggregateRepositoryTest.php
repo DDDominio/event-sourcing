@@ -181,10 +181,10 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function findAnAggregate()
     {
         $domainEvents = [
-            DomainEvent::record(
+            DomainEvent::produceNow(
                 new DummyCreated('id', 'name', 'description')
             ),
-            DomainEvent::record(
+            DomainEvent::produceNow(
                 new NameChanged('new name')
             )
         ];
@@ -261,11 +261,11 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function findAnAggregateByIdAndVersion()
     {
         $domainEvents = [
-            DomainEvent::record(new DummyCreated('id', 'name', 'description')),
-            DomainEvent::record(new NameChanged('new name')),
-            DomainEvent::record(new DescriptionChanged('new description')),
-            DomainEvent::record(new NameChanged('another name')),
-            DomainEvent::record(new DescriptionChanged('another name')),
+            DomainEvent::produceNow(new DummyCreated('id', 'name', 'description')),
+            DomainEvent::produceNow(new NameChanged('new name')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new NameChanged('another name')),
+            DomainEvent::produceNow(new DescriptionChanged('another name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
         $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
@@ -305,7 +305,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             2
         );
         $stream = [
-            DomainEvent::record(new DescriptionChanged('new description')),
+            DomainEvent::produceNow(new DescriptionChanged('new description')),
         ];
         $eventStore = $this->createMock(EventStoreInterface::class);
         $eventStore
@@ -498,7 +498,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     private function buildDummyDomainEvents($eventCount)
     {
-        $event = DomainEvent::record(new NameChanged('name'));
+        $event = DomainEvent::produceNow(new NameChanged('name'));
         $events = [];
         while ($eventCount > 0) {
             $events[] = $event;
