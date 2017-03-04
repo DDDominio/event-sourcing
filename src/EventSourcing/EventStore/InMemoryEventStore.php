@@ -11,14 +11,14 @@ use DDDominio\EventSourcing\Versioning\Version;
 class InMemoryEventStore extends AbstractEventStore
 {
     /**
-     * @var StoredEventStream[]
+     * @var IdentifiedEventStream[]
      */
     private $streams;
 
     /**
      * @param SerializerInterface $serializer
      * @param EventUpgrader $eventUpgrader
-     * @param StoredEventStream[] $streams
+     * @param IdentifiedEventStream[] $streams
      */
     public function __construct(
         $serializer,
@@ -39,7 +39,7 @@ class InMemoryEventStore extends AbstractEventStore
         if ($this->streamExists($streamId)) {
             $this->streams[$streamId] = $this->streams[$streamId]->append($storedEvents);
         } else {
-            $this->streams[$streamId] = new StoredEventStream($streamId, $storedEvents);
+            $this->streams[$streamId] = new IdentifiedEventStream($streamId, $storedEvents);
         }
     }
 
@@ -50,9 +50,7 @@ class InMemoryEventStore extends AbstractEventStore
     public function readFullStream($streamId)
     {
         if ($this->streamExists($streamId)) {
-            return $this->domainEventStreamFromStoredEvents(
-                $this->streams[$streamId]->events()
-            );
+            return $this->domainEventStreamFromStoredEvents($this->streams[$streamId]);
         } else {
             return EventStream::buildEmpty();
         }
@@ -70,14 +68,9 @@ class InMemoryEventStore extends AbstractEventStore
             return EventStream::buildEmpty();
         }
 
-        $storedEvents = $this->streams[$streamId]->events();
-
-        if (isset($count)) {
-            $filteredStoredEvents = array_splice($storedEvents, $start - 1, $count);
-        } else {
-            $filteredStoredEvents = array_splice($storedEvents, $start - 1);
-        }
-        return $this->domainEventStreamFromStoredEvents($filteredStoredEvents);
+        return $this->domainEventStreamFromStoredEvents(
+            $this->streams[$streamId]->slice($start - 1, $count)
+        );
     }
 
     /**
@@ -87,7 +80,7 @@ class InMemoryEventStore extends AbstractEventStore
     {
         $allStreams = [];
         foreach ($this->streams as $stream) {
-            $allStreams[] = $this->domainEventStreamFromStoredEvents($stream->events());
+            $allStreams[] = $this->domainEventStreamFromStoredEvents($stream);
         }
         return $allStreams;
     }
@@ -99,7 +92,7 @@ class InMemoryEventStore extends AbstractEventStore
     {
         $allEventsStream = EventStream::buildEmpty();
         foreach ($this->streams as $stream) {
-            $streamEvents = $this->domainEventStreamFromStoredEvents($stream->events());
+            $streamEvents = $this->domainEventStreamFromStoredEvents($stream);
             $allEventsStream = $allEventsStream->append($streamEvents->events());
         }
         return $allEventsStream;
@@ -112,7 +105,7 @@ class InMemoryEventStore extends AbstractEventStore
     protected function streamVersion($streamId)
     {
         return $this->streamExists($streamId) ?
-            count($this->streams[$streamId]->events()) : 0;
+            $this->streams[$streamId]->count() : 0;
     }
 
     /**
@@ -154,9 +147,8 @@ class InMemoryEventStore extends AbstractEventStore
         if (!$this->streamExists($streamId)) {
             throw EventStreamDoesNotExistException::fromStreamId($streamId);
         }
-        $storedEvents = $this->streams[$streamId]->events();
 
-        $filteredStoredEvents = array_filter($storedEvents, function(StoredEvent $event) use ($datetime) {
+        $filteredStoredEvents = $this->streams[$streamId]->filter(function(StoredEvent $event) use ($datetime) {
             return $event->occurredOn()->getTimestamp() <= $datetime->getTimestamp();
         });
 

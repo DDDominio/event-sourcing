@@ -5,9 +5,9 @@ namespace DDDominio\EventSourcing\Common;
 abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInterface
 {
     /**
-     * @var DomainEvent[]
+     * @var EventStream
      */
-    private $changes = [];
+    private $changes;
 
     /**
      * @var int
@@ -32,7 +32,15 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
      */
     private function record($domainEvent)
     {
-        $this->changes[] = $domainEvent;
+        $this->ensureChangesEventStream();
+        $this->changes = $this->changes->append($domainEvent);
+    }
+
+    private function ensureChangesEventStream()
+    {
+        if (is_null($this->changes())) {
+            $this->clearChanges();
+        }
     }
 
     /**
@@ -131,9 +139,9 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
     }
 
     /**
-     * Recorded domain events
+     * Recorded stream of Domain Events
      *
-     * @return DomainEvent[]
+     * @return EventStream
      */
     public function changes()
     {
@@ -165,6 +173,6 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
      */
     public function clearChanges()
     {
-        $this->changes = [];
+        $this->changes = EventStream::buildEmpty();
     }
 }

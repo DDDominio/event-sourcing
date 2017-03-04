@@ -74,7 +74,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
             );
         }, $results);
 
-        return $this->domainEventStreamFromStoredEvents($storedEvents);
+        return $this->domainEventStreamFromStoredEvents(new EventStream($storedEvents));
     }
 
     /**
@@ -104,7 +104,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
             );
         }, $results);
 
-        return $this->domainEventStreamFromStoredEvents($storedEvents);
+        return $this->domainEventStreamFromStoredEvents(new EventStream($storedEvents));
     }
 
     /**
@@ -149,7 +149,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
             );
         }, $results);
 
-        return $this->domainEventStreamFromStoredEvents($storedEvents);
+        return $this->domainEventStreamFromStoredEvents(new EventStream($storedEvents));
     }
 
     /**

@@ -5,7 +5,7 @@ namespace DDDominio\Tests\EventSourcing\EventStore\Projections;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\Projection\Projector;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
-use DDDominio\EventSourcing\EventStore\StoredEventStream;
+use DDDominio\EventSourcing\EventStore\IdentifiedEventStream;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\Tests\EventSourcing\TestData\DescriptionChanged;
 use DDDominio\Tests\EventSourcing\TestData\NameChanged;
@@ -74,11 +74,11 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 
         $longNamesStream = $eventStore->readFullStream('longNamesStream');
         $this->assertCount(2, $longNamesStream);
-        $this->assertEquals('name with more than 20 characters', $longNamesStream->events()[0]->data()->name());
-        $this->assertEquals('another name with more than 20 characters', $longNamesStream->events()[1]->data()->name());
+        $this->assertEquals('name with more than 20 characters', $longNamesStream->get(0)->data()->name());
+        $this->assertEquals('another name with more than 20 characters', $longNamesStream->get(1)->data()->name());
         $shortNamesStream = $eventStore->readFullStream('shortNamesStream');
         $this->assertCount(1, $shortNamesStream);
-        $this->assertEquals('name', $shortNamesStream->events()[0]->data()->name());
+        $this->assertEquals('name', $shortNamesStream->get(0)->data()->name());
     }
 
     /**
@@ -283,9 +283,9 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
 
         $shortNamesStream = $eventStore->readFullStream('twoSortNameInARow');
         $this->assertCount(3, $shortNamesStream);
-        $this->assertEquals('name2', $shortNamesStream->events()[0]->data()->name());
-        $this->assertEquals('name3', $shortNamesStream->events()[1]->data()->name());
-        $this->assertEquals('name3', $shortNamesStream->events()[1]->data()->name());
+        $this->assertEquals('name2', $shortNamesStream->get(0)->data()->name());
+        $this->assertEquals('name3', $shortNamesStream->get(1)->data()->name());
+        $this->assertEquals('name3', $shortNamesStream->get(2)->data()->name());
     }
 
     /**
@@ -300,7 +300,7 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
             foreach ($eventsData as $eventData) {
                 $domainEvents[] = DomainEvent::produceNow($eventData);
             }
-            $storedEventStreams[$streamId] = new StoredEventStream(
+            $storedEventStreams[$streamId] = new IdentifiedEventStream(
                 $streamId,
                 $this->storedEventsFromDomainEvents($domainEvents)
             );

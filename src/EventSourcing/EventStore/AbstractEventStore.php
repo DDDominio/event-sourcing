@@ -3,7 +3,6 @@
 namespace DDDominio\EventSourcing\EventStore;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
-use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
@@ -64,12 +63,12 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
     }
 
     /**
-     * @param StoredEvent[] $storedEvents
+     * @param EventStreamInterface $eventStream
      * @return EventStreamInterface
      */
-    protected function domainEventStreamFromStoredEvents($storedEvents)
+    protected function domainEventStreamFromStoredEvents($eventStream)
     {
-        $domainEvents = array_map(function (StoredEvent $storedEvent) {
+        return $eventStream->map(function (StoredEvent $storedEvent) {
             $this->eventUpgrader->migrate($storedEvent);
             return new DomainEvent(
                 $this->serializer->deserialize(
@@ -80,8 +79,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
                 $storedEvent->occurredOn(),
                 $storedEvent->version()
             );
-        }, $storedEvents);
-        return new EventStream($domainEvents);
+        });
     }
 
     /**

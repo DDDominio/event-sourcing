@@ -42,11 +42,9 @@ class AggregateReconstructor
             return null;
         }
 
-        $events = $eventStream->events();
         if (!$eventStream->isEmpty()) {
-            $lastEvent = end($events);
             $aggregateDeleterAnnotation = $this->annotationReader->getClassAnnotation(
-                new \ReflectionClass(get_class($lastEvent)),
+                new \ReflectionClass(get_class($eventStream->last())),
                 AggregateDeleter::class
             );
             if (!is_null($aggregateDeleterAnnotation)) {

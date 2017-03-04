@@ -133,9 +133,8 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(1, count($changes));
-        $change = $changes[0];
-        $this->assertInstanceOf(NameChanged::class, $change->data());
-        $this->assertEquals('new name', $change->data()->name());
+        $this->assertInstanceOf(NameChanged::class, $changes->get(0)->data());
+        $this->assertEquals('new name', $changes->get(0)->data()->name());
     }
 
     /**
@@ -148,12 +147,10 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
 
         $changes = $this->eventSourcedAggregate->changes();
         $this->assertEquals(2, count($changes));
-        $firstChange = $changes[0];
-        $this->assertInstanceOf(NameChanged::class, $firstChange->data());
-        $this->assertEquals('new name', $firstChange->data()->name());
-        $secondChange = $changes[1];
-        $this->assertInstanceOf(DescriptionChanged::class, $secondChange->data());
-        $this->assertEquals('new description', $secondChange->data()->description());
+        $this->assertInstanceOf(NameChanged::class, $changes->get(0)->data());
+        $this->assertEquals('new name', $changes->get(0)->data()->name());
+        $this->assertInstanceOf(DescriptionChanged::class, $changes->get(1)->data());
+        $this->assertEquals('new description', $changes->get(1)->data()->description());
     }
 
     /**
@@ -258,8 +255,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
 
         $entity->changeName('new entity name');
 
-        $changes = $aggregate->changes();
-        $lastChange = end($changes);
+        $lastChange = $aggregate->changes()->last();
         $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange->data());
         $this->assertEquals('new entity name', $lastChange->data()->name());
     }
@@ -275,8 +271,7 @@ class EventSourcedAggregateRootTest extends \PHPUnit_Framework_TestCase
 
         $entity->changeName('new entity name');
 
-        $changes = $aggregate->changes();
-        $lastChange = end($changes);
+        $lastChange = $aggregate->changes()->last();
         $this->assertInstanceOf(DummyEntityNameChanged::class, $lastChange->data());
         $this->assertEquals('new entity name', $lastChange->data()->name());
     }

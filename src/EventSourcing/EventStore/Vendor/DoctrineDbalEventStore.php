@@ -73,7 +73,7 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
             );
         }, $results);
 
-        return $this->domainEventStreamFromStoredEvents($storedEvents);
+        return $this->domainEventStreamFromStoredEvents(new EventStream($storedEvents));
     }
 
     /**
@@ -103,7 +103,7 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
             );
         }, $results);
 
-        return $this->domainEventStreamFromStoredEvents($storedEvents);
+        return $this->domainEventStreamFromStoredEvents(new EventStream($storedEvents));
     }
 
     /**
@@ -148,7 +148,7 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
             );
         }, $results);
 
-        return $this->domainEventStreamFromStoredEvents($storedEvents);
+        return $this->domainEventStreamFromStoredEvents(new EventStream($storedEvents));
     }
 
     /**

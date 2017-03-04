@@ -2,9 +2,10 @@
 
 namespace DDDominio\EventSourcing\EventStore;
 
+use DDDominio\Common\EventInterface;
 use DDDominio\EventSourcing\Common\EventStream;
 
-class StoredEventStream extends EventStream
+class IdentifiedEventStream extends EventStream
 {
     /**
      * @var string
@@ -13,12 +14,12 @@ class StoredEventStream extends EventStream
 
     /**
      * @param string $id
-     * @param StoredEvent[] $storedEvents
+     * @param EventInterface[] $events
      */
-    public function __construct($id, $storedEvents)
+    public function __construct($id, $events)
     {
         $this->id = $id;
-        parent::__construct($storedEvents);
+        parent::__construct($events);
     }
 
     /**

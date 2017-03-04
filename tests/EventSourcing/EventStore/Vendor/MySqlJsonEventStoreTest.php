@@ -209,10 +209,9 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $this->eventStore->readStreamEvents('streamId', 2);
 
         $this->assertCount(3, $stream);
-        $events = $stream->events();
-        $this->assertEquals('new description', $events[0]->data()->description());
-        $this->assertEquals('another name', $events[1]->data()->name());
-        $this->assertEquals('my name', $events[2]->data()->name());
+        $this->assertEquals('new description', $stream->get(0)->data()->description());
+        $this->assertEquals('another name', $stream->get(1)->data()->name());
+        $this->assertEquals('my name', $stream->get(2)->data()->name());
     }
 
     /**
@@ -230,9 +229,8 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $this->eventStore->readStreamEvents('streamId', 2, 2);
 
         $this->assertCount(2, $stream);
-        $events = $stream->events();
-        $this->assertEquals('new description', $events[0]->data()->description());
-        $this->assertEquals('another name', $events[1]->data()->name());
+        $this->assertEquals('new description', $stream->get(0)->data()->description());
+        $this->assertEquals('another name', $stream->get(1)->data()->name());
     }
 
     /**
@@ -276,8 +274,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $stream = $this->eventStore->readFullStream('streamId');
 
-        $domainEvent = $stream->events()[0];
-        $this->assertEquals('Name', $domainEvent->data()->username());
+        $this->assertEquals('Name', $stream->get(0)->data()->username());
     }
 
     /**
@@ -304,8 +301,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $stream = $this->eventStore->readStreamEvents('streamId');
 
-        $domainEvent = $stream->events()[0];
-        $this->assertEquals('Name', $domainEvent->data()->username());
+        $this->assertEquals('Name', $stream->get(0)->data()->username());
     }
 
     /**
@@ -383,7 +379,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
         $stream = $this->eventStore->readFullStream('streamId');
         $this->assertCount(1, $stream);
-        $event = $stream->events()[0];
+        $event = $stream->get(0);
         $this->assertTrue(Version::fromString('2.0')->equalTo($event->version()));
         $this->assertEquals('Name', $event->data()->username());
         $this->assertEquals('2016-12-04 17:35:35', $event->occurredOn()->format('Y-m-d H:i:s'));
@@ -407,10 +403,10 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $stream = $this->eventStore->readAllEvents();
 
         $this->assertCount(4, $stream);
-        $this->assertEquals('new name', $stream->events()[0]->data()->name());
-        $this->assertEquals('new description', $stream->events()[1]->data()->description());
-        $this->assertEquals('another name', $stream->events()[2]->data()->name());
-        $this->assertEquals('my name', $stream->events()[3]->data()->name());
+        $this->assertEquals('new name', $stream->get(0)->data()->name());
+        $this->assertEquals('new description', $stream->get(1)->data()->description());
+        $this->assertEquals('another name', $stream->get(2)->data()->name());
+        $this->assertEquals('my name', $stream->get(3)->data()->name());
     }
 
     /**
@@ -430,10 +426,10 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         $streams = $this->eventStore->readAllStreams();
 
         $this->assertCount(2, $streams);
-        $this->assertEquals('new name', $streams[0]->events()[0]->data()->name());
-        $this->assertEquals('new description', $streams[0]->events()[1]->data()->description());
-        $this->assertEquals('another name', $streams[1]->events()[0]->data()->name());
-        $this->assertEquals('my name', $streams[1]->events()[1]->data()->name());
+        $this->assertEquals('new name', $streams[0]->get(0)->data()->name());
+        $this->assertEquals('new description', $streams[0]->get(1)->data()->description());
+        $this->assertEquals('another name', $streams[1]->get(0)->data()->name());
+        $this->assertEquals('my name', $streams[1]->get(1)->data()->name());
     }
 
     /**

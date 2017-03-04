@@ -6,7 +6,7 @@ use DDDominio\EventSourcing\Common\MethodAggregateIdExtractor;
 use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
-use DDDominio\EventSourcing\EventStore\StoredEventStream;
+use DDDominio\EventSourcing\EventStore\IdentifiedEventStream;
 use DDDominio\EventSourcing\Versioning\EventUpgraderInterface;
 use DDDominio\EventSourcing\Common\AggregateReconstructor;
 use DDDominio\EventSourcing\Common\DomainEvent;
@@ -227,7 +227,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             )
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
+        $stream = new IdentifiedEventStream('DummyEventSourcedAggregate-id', $storedEvents);
         $eventStore = $this->buildEventStoreWithStream($stream);
         $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
             ->disableOriginalConstructor()
@@ -306,7 +306,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             DomainEvent::produceNow(new DescriptionChanged('another name')),
         ];
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        $stream = new StoredEventStream('DummyEventSourcedAggregate-id', $storedEvents);
+        $stream = new IdentifiedEventStream('DummyEventSourcedAggregate-id', $storedEvents);
         $eventStore = $this->buildEventStoreWithStream($stream);
         $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
             ->disableOriginalConstructor()
@@ -386,7 +386,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             new DomainEvent(new DescriptionChanged('another name'), [], new \DateTimeImmutable('2017-02-17 11:00:00')),
         ]);
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        $stream = new StoredEventStream(DummyEventSourcedAggregate::class.'-id', $storedEvents);
+        $stream = new IdentifiedEventStream(DummyEventSourcedAggregate::class.'-id', $storedEvents);
         $eventStore = $this->buildEventStoreWithStream($stream);
         $aggregateReconstructor = $this->getMockBuilder(AggregateReconstructor::class)
             ->disableOriginalConstructor()
@@ -522,13 +522,13 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $id
      * @param int $eventCount
-     * @return StoredEventStream
+     * @return IdentifiedEventStream
      */
     private function buildDummyStoredEventStream($id, $eventCount)
     {
         $domainEvents = $this->buildDummyDomainEvents($eventCount);
         $storedEvents = $this->storedEventsFromDomainEvents($domainEvents);
-        return new StoredEventStream($id, $storedEvents);
+        return new IdentifiedEventStream($id, $storedEvents);
     }
 
     /**
