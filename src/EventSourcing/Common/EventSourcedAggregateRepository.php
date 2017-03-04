@@ -58,12 +58,25 @@ class EventSourcedAggregateRepository
      */
     public function save($aggregate)
     {
+        $this->assertValidAggregate($aggregate);
         $this->eventStore->appendToStream(
             $this->streamIdFromAggregate($aggregate),
             $aggregate->changes(),
             $aggregate->originalVersion()
         );
         $aggregate->clearChanges();
+    }
+
+    /**
+     * @param $aggregate
+     */
+    private function assertValidAggregate($aggregate)
+    {
+        if (!($aggregate instanceof $this->aggregateClass)) {
+            throw new \InvalidArgumentException(
+                sprintf('EventSourcedAggregateRepository expects an aggregate of type "%s" but "%s" given', $this->aggregateClass, get_class($aggregate))
+            );
+        }
     }
 
     /**

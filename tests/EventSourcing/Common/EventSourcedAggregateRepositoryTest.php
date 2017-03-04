@@ -9,7 +9,6 @@ use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\EventStore\StoredEventStream;
 use DDDominio\EventSourcing\Versioning\EventUpgraderInterface;
 use DDDominio\EventSourcing\Common\AggregateReconstructor;
-use DDDominio\EventSourcing\Common\EventSourcedAggregateRoot;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
@@ -174,6 +173,45 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(0, $aggregate->changes());
     }
 
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function ifTheAggregateTypeBeingSavedIsNoEqualToRepositoryTypeAnExceptionIsThrown()
+    {
+        $aggregate = new \stdClass();
+
+        $eventStore = $this->createMock(EventStoreInterface::class);
+        $snapshotStore = new InMemorySnapshotStore();
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $snapshotStore,
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
+        );
+
+        $repository->save($aggregate);
+    }
+
+    /**
+     * @test
+     * @expectedException \InvalidArgumentException
+     */
+    public function whenSavingNullAnExceptionIsTrown()
+    {
+        $aggregate = null;
+
+        $eventStore = $this->createMock(EventStoreInterface::class);
+        $snapshotStore = new InMemorySnapshotStore();
+        $repository = new DummyEventSourcedAggregateRepository(
+            $eventStore,
+            $snapshotStore,
+            $this->createMock(AggregateReconstructor::class),
+            new MethodAggregateIdExtractor('id')
+        );
+
+        $repository->save($aggregate);
+    }
 
     /**
      * @test
@@ -459,7 +497,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         if (isset($originalVersion)) {
             $methods[] = 'originalVersion';
         }
-        $aggregate = $this->getMockBuilder(EventSourcedAggregateRoot::class)
+        $aggregate = $this->getMockBuilder(DummyEventSourcedAggregate::class)
+            ->disableOriginalConstructor()
             ->setMethods($methods)
             ->getMock();
         $aggregate
