@@ -508,7 +508,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             $aggregate
                 ->expects($this->any())
                 ->method('changes')
-                ->willReturn($changes);
+                ->willReturn(new EventStream($changes));
         }
         if (isset($originalVersion)) {
             $aggregate

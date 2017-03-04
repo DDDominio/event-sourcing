@@ -17,7 +17,7 @@ interface EventSourcedAggregateRootInterface
     public function applyAndRecord($domainEvent);
 
     /**
-     * @return DomainEvent[]
+     * @return EventStream
      */
     public function changes();
 

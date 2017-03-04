@@ -61,7 +61,7 @@ class EventSourcedAggregateRepository
         $this->assertValidAggregate($aggregate);
         $this->eventStore->appendToStream(
             $this->streamIdFromAggregate($aggregate),
-            $aggregate->changes(),
+            $aggregate->changes()->events(),
             $aggregate->originalVersion()
         );
         $aggregate->clearChanges();
