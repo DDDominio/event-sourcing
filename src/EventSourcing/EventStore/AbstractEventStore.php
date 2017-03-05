@@ -71,10 +71,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
         return $eventStream->map(function (StoredEvent $storedEvent) {
             $this->eventUpgrader->migrate($storedEvent);
             return new DomainEvent(
-                $this->serializer->deserialize(
-                    $storedEvent->data(),
-                    $storedEvent->type()
-                ),
+                $this->serializer->deserialize($storedEvent->data(), $storedEvent->type()),
                 json_decode($storedEvent->metadata(), true),
                 $storedEvent->occurredOn(),
                 $storedEvent->version()
@@ -117,7 +114,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
      */
     private function storedEventsFromEvents($streamId, $events)
     {
-        $storedEvents = array_map(function (DomainEvent $event) use ($streamId) {
+        return array_map(function (DomainEvent $event) use ($streamId) {
             return new StoredEvent(
                 $this->nextStoredEventId(),
                 $streamId,
@@ -128,7 +125,6 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
                 is_null($event->version()) ? Version::fromString('1.0') : $event->version()
             );
         }, $events);
-        return $storedEvents;
     }
 
     /**
@@ -146,9 +142,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
      */
     public function migrate($type, $from, $to)
     {
-        $stream = $this->readStoredEventsOfTypeAndVersion($type, $from);
-
-        foreach ($stream as $event) {
+        foreach ($this->readStoredEventsOfTypeAndVersion($type, $from) as $event) {
             $this->eventUpgrader->migrate($event, $to);
         }
     }
