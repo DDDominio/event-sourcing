@@ -37,6 +37,11 @@ interface EventStreamInterface extends \IteratorAggregate, \Countable
 
     /**
      * @param \Closure $closure
+     */
+    public function each(\Closure $closure);
+
+    /**
+     * @param \Closure $closure
      * @return EventStream
      */
     public function filter(\Closure $closure);

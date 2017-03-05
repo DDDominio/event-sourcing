@@ -98,6 +98,16 @@ class EventStream implements EventStreamInterface
 
     /**
      * @param \Closure $closure
+     */
+    public function each(\Closure $closure)
+    {
+        foreach ($this->events as $event) {
+            $closure($event);
+        }
+    }
+
+    /**
+     * @param \Closure $closure
      * @return EventStream
      */
     public function filter(\Closure $closure)

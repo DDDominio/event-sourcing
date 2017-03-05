@@ -102,6 +102,25 @@ class EventStreamTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function eachElementOfEventStream()
+    {
+        $stream = new EventStream([
+            DomainEvent::produceNow('data1'),
+            DomainEvent::produceNow('data2'),
+            DomainEvent::produceNow('data3')
+        ]);
+
+        $result = '';
+        $stream->each(function(EventInterface $event) use (&$result) {
+            $result .= $event->data();
+        });
+
+        $this->assertEquals('data1data2data3', $result);
+    }
+
+    /**
+     * @test
+     */
     public function filterEventStream()
     {
         $stream = new EventStream([
