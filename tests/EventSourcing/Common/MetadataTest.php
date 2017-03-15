@@ -46,8 +46,16 @@ class MetadataTest extends \PHPUnit_Framework_TestCase
         $metadata = new Metadata();
 
         $metadata->set('name', 'value');
+        $metadata->set('null', null);
+        $metadata->set('false', false);
 
+        $this->assertTrue($metadata->has('name'));
         $this->assertEquals('value', $metadata->get('name'));
+        $this->assertTrue($metadata->has('null'));
+        $this->assertNull($metadata->get('null'));
+        $this->assertTrue($metadata->has('false'));
+        $this->assertFalse($metadata->get('false'));
+        $this->assertFalse($metadata->has('foo'));
     }
 
     /**

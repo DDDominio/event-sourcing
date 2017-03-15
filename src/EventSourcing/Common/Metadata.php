@@ -36,8 +36,16 @@ class Metadata implements MetadataInterface
      */
     public function get($key)
     {
-        return isset($this->metadata[$key]) ?
-            $this->metadata[$key] : null;
+        return $this->has($key) ? $this->metadata[$key] : null;
+    }
+
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function has($key)
+    {
+        return isset($this->metadata[$key]) || array_key_exists($key, $this->metadata);
     }
 
     /**
