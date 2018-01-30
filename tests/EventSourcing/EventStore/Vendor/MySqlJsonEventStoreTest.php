@@ -3,6 +3,7 @@
 namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\Vendor\MySqlJsonEventStore;
 use DDDominio\EventSourcing\Versioning\Version;
 use Doctrine\Common\Annotations\AnnotationRegistry;
@@ -168,6 +169,21 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->eventStore->appendToStream('newStreamId', [$domainEvent]);
+    }
+
+    /**
+     * @test
+     */
+    public function doNotThrowConcurrencyExceptionWhenAnyVersionIsExpected()
+    {
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
+        $this->eventStore = new ConcurrencyExceptionMySqlJsonEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent], EventStoreInterface::EXPECTED_VERSION_ANY);
     }
 
     /**

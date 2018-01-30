@@ -3,6 +3,7 @@
 namespace DDDominio\Tests\EventSourcing\EventStore\Vendor;
 
 use DDDominio\EventSourcing\Common\DomainEvent;
+use DDDominio\EventSourcing\EventStore\EventStoreInterface;
 use DDDominio\EventSourcing\EventStore\Vendor\DoctrineDbalEventStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\DBAL\Configuration;
@@ -182,6 +183,21 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->eventStore->appendToStream('newStreamId', [$domainEvent]);
+    }
+
+    /**
+     * @test
+     */
+    public function doNotThrowConcurrencyExceptionWhenAnyVersionIsExpected()
+    {
+        $domainEvent = DomainEvent::produceNow(new NameChanged('name'));
+        $this->eventStore = new ConcurrencyExceptionDoctrineDbalEventStore(
+            $this->connection,
+            $this->serializer,
+            $this->eventUpgrader
+        );
+
+        $this->eventStore->appendToStream('newStreamId', [$domainEvent], EventStoreInterface::EXPECTED_VERSION_ANY);
     }
 
     /**

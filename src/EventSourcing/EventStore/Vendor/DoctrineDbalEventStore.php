@@ -211,12 +211,15 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
                 $stmt->bindValue(':version', $storedEvent->version());
                 $stmt->execute();
             }
-            $streamFinalVersion = $this->streamVersion($streamId);
-            if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
-                throw ConcurrencyException::fromVersions(
-                    $this->streamVersion($streamId),
-                    $expectedVersion
-                );
+
+            if ($expectedVersion !== self::EXPECTED_VERSION_ANY) {
+                $streamFinalVersion = $this->streamVersion($streamId);
+                if (count($storedEvents) !== $streamFinalVersion - $expectedVersion) {
+                    throw ConcurrencyException::fromVersions(
+                        $this->streamVersion($streamId),
+                        $expectedVersion
+                    );
+                }
             }
         });
     }
