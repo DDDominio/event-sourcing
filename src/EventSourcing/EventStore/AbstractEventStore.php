@@ -5,7 +5,7 @@ namespace DDDominio\EventSourcing\EventStore;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
-use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\EventUpgraderInterface;
 use DDDominio\EventSourcing\Versioning\UpgradableEventStoreInterface;
 use DDDominio\EventSourcing\Versioning\Version;
 use Ramsey\Uuid\Uuid;
@@ -18,7 +18,7 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
     private $serializer;
 
     /**
-     * @var EventUpgrader
+     * @var EventUpgraderInterface
      */
     private $eventUpgrader;
 
@@ -29,11 +29,11 @@ abstract class AbstractEventStore implements EventStoreInterface, UpgradableEven
 
     /**
      * @param SerializerInterface $serializer
-     * @param EventUpgrader $eventUpgrader
+     * @param EventUpgraderInterface $eventUpgrader
      */
     public function __construct(
-        $serializer,
-        $eventUpgrader
+        SerializerInterface $serializer,
+        EventUpgraderInterface $eventUpgrader
     ) {
         $this->serializer = $serializer;
         $this->eventUpgrader = $eventUpgrader;

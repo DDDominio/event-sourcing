@@ -10,7 +10,7 @@ use DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException;
 use DDDominio\EventSourcing\EventStore\InitializableInterface;
 use DDDominio\EventSourcing\EventStore\StoredEvent;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
-use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\EventUpgraderInterface;
 use DDDominio\EventSourcing\Versioning\Version;
 
 class MySqlJsonEventStore extends AbstractEventStore implements InitializableInterface
@@ -27,12 +27,12 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
     /**
      * @param \PDO $connection
      * @param SerializerInterface $serializer
-     * @param EventUpgrader $eventUpgrader
+     * @param EventUpgraderInterface $eventUpgrader
      */
     public function __construct(
         \PDO $connection,
         SerializerInterface $serializer,
-        $eventUpgrader
+        EventUpgraderInterface $eventUpgrader
     ) {
         $this->connection = $connection;
         parent::__construct($serializer, $eventUpgrader);
