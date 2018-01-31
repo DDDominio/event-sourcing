@@ -5,7 +5,7 @@ namespace DDDominio\EventSourcing\EventStore;
 use DDDominio\EventSourcing\Common\EventStream;
 use DDDominio\EventSourcing\Common\EventStreamInterface;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
-use DDDominio\EventSourcing\Versioning\EventUpgrader;
+use DDDominio\EventSourcing\Versioning\EventUpgraderInterface;
 use DDDominio\EventSourcing\Versioning\Version;
 
 class InMemoryEventStore extends AbstractEventStore
@@ -17,12 +17,12 @@ class InMemoryEventStore extends AbstractEventStore
 
     /**
      * @param SerializerInterface $serializer
-     * @param EventUpgrader $eventUpgrader
+     * @param EventUpgraderInterface $eventUpgrader
      * @param IdentifiedEventStream[] $streams
      */
     public function __construct(
-        $serializer,
-        $eventUpgrader,
+        SerializerInterface $serializer,
+        EventUpgraderInterface $eventUpgrader,
         array $streams = []
     ) {
         parent::__construct($serializer, $eventUpgrader);
