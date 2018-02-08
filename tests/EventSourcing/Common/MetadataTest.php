@@ -113,4 +113,37 @@ class MetadataTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(\Countable::class, $metadata);
         $this->assertCount(2, $metadata);
     }
+
+    /**
+     * @test
+     */
+    public function removeMetadata()
+    {
+        $metadata = new Metadata([
+            'name1' => 'value1',
+            'name2' => 'value2'
+        ]);
+
+        $metadata->remove('name2');
+
+        $this->assertCount(1, $metadata->all());
+        $this->assertEquals('value1', $metadata->get('name1'));
+    }
+
+    /**
+     * @test
+     */
+    public function removeNonExistingMetadata()
+    {
+        $metadata = new Metadata([
+            'name1' => 'value1',
+            'name2' => 'value2'
+        ]);
+
+        $metadata->remove('non_existing_key');
+
+        $this->assertCount(2, $metadata->all());
+        $this->assertEquals('value1', $metadata->get('name1'));
+        $this->assertEquals('value2', $metadata->get('name2'));
+    }
 }
