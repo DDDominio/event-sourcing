@@ -198,11 +198,11 @@ class DoctrineDbalEventStore extends AbstractEventStore implements Initializable
                 $stmt->bindValue(':streamId', $streamId);
                 $stmt->execute();
             }
-            foreach ($storedEvents as $storedEvent) {
-                $stmt = $this->connection->prepare(
-                    'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
+            $stmt = $this->connection->prepare(
+                'INSERT INTO events (stream_id, type, event, metadata, occurred_on, version)
                  VALUES (:streamId, :type, :event, :metadata, :occurredOn, :version)'
-                );
+            );
+            foreach ($storedEvents as $storedEvent) {
                 $stmt->bindValue(':streamId', $streamId);
                 $stmt->bindValue(':type', $storedEvent->type());
                 $stmt->bindValue(':event', $storedEvent->data());
