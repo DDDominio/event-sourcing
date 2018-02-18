@@ -38,7 +38,7 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
 
     private function ensureChangesEventStream()
     {
-        if (is_null($this->changes())) {
+        if (is_null($this->changes)) {
             $this->clearChanges();
         }
     }
@@ -145,6 +145,7 @@ abstract class EventSourcedAggregateRoot implements EventSourcedAggregateRootInt
      */
     public function changes()
     {
+        $this->ensureChangesEventStream();
         return $this->changes;
     }
 
