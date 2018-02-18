@@ -108,6 +108,9 @@ class DoctrineDbalEventStoreTest extends \PHPUnit_Framework_TestCase
     private function destroyEventStore()
     {
         if (file_exists(self::TEST_DB_PATH)) {
+            if ($this->connection) {
+                $this->connection->close();
+            }
             unlink(self::TEST_DB_PATH);
         }
     }
