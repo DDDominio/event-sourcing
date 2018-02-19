@@ -72,6 +72,12 @@ class EventSourcedAggregateRepository
      */
     private function assertValidAggregate($aggregate)
     {
+        if (is_null($aggregate)) {
+            throw new \InvalidArgumentException(
+                sprintf('EventSourcedAggregateRepository expects an aggregate of type "%s" but "NULL" given', $this->aggregateClass)
+            );
+        }
+
         if (!($aggregate instanceof $this->aggregateClass)) {
             throw new \InvalidArgumentException(
                 sprintf('EventSourcedAggregateRepository expects an aggregate of type "%s" but "%s" given', $this->aggregateClass, get_class($aggregate))
