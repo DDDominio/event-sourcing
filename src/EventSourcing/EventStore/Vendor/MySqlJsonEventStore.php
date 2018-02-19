@@ -15,7 +15,6 @@ use DDDominio\EventSourcing\Versioning\Version;
 
 class MySqlJsonEventStore extends AbstractEventStore implements InitializableInterface
 {
-    const MAX_UNSIGNED_BIG_INT = 9223372036854775807;
     const STREAMS_TABLE = 'streams';
     const EVENTS_TABLE = 'events';
 
@@ -47,7 +46,7 @@ class MySqlJsonEventStore extends AbstractEventStore implements InitializableInt
     public function readStreamEvents($streamId, $start = 1, $count = null)
     {
         if (!isset($count)) {
-            $count = self::MAX_UNSIGNED_BIG_INT;
+            $count = PHP_INT_MAX;
         }
         $stmt = $this->connection->prepare(
             'SELECT *
