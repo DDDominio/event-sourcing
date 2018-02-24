@@ -12,7 +12,7 @@ use DDDominio\Tests\EventSourcing\TestData\NameChanged;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\EventStore\Projection\ProjectionBuilder;
-use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\JmsSerializer;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
 use DDDominio\EventSourcing\Versioning\JsonTransformer\JsonTransformer;
@@ -35,7 +35,7 @@ class ProjectionBuilderTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         AnnotationRegistry::registerLoader('class_exists');
-        $this->serializer = new JsonSerializer(
+        $this->serializer = new JmsSerializer(
             SerializerBuilder::create()->build()
         );
         $tokenExtractor = new TokenExtractor();

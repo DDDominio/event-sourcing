@@ -4,7 +4,7 @@ namespace DDDominio\Tests\EventSourcing\Snapshotting\Vendor;
 
 use DDDominio\EventSourcing\Snapshotting\Vendor\MySqlJsonSnapshotStore;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\JmsSerializer;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Snapshotting\SnapshotInterface;
 use JMS\Serializer\SerializerBuilder;
@@ -45,7 +45,7 @@ class MySqlJsonSnapshotStoreTest extends \PHPUnit_Framework_TestCase
 
         AnnotationRegistry::registerLoader('class_exists');
 
-        $this->serializer = new JsonSerializer(
+        $this->serializer = new JmsSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
                     __DIR__ . '/../../TestData/Serializer',

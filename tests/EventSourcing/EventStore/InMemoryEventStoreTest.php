@@ -11,7 +11,7 @@ use DDDominio\Tests\EventSourcing\TestData\RecorderEventListener;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\DomainEvent;
 use DDDominio\EventSourcing\Common\EventStream;
-use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\JmsSerializer;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
@@ -39,7 +39,7 @@ class InMemoryEventStoreTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         AnnotationRegistry::registerLoader('class_exists');
-        $this->serializer = new JsonSerializer(
+        $this->serializer = new JmsSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
                     __DIR__ . '/../TestData/Serializer',

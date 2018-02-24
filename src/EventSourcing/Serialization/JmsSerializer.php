@@ -2,19 +2,19 @@
 
 namespace DDDominio\EventSourcing\Serialization;
 
-use JMS\Serializer\Serializer as JmsSerializer;
+use JMS\Serializer\Serializer;
 
-class JsonSerializer implements SerializerInterface
+class JmsSerializer implements SerializerInterface
 {
     /**
-     * @var JmsSerializer
+     * @var Serializer
      */
     private $jmsSerializer;
 
     /**
-     * @param JmsSerializer $jmsSerializer
+     * @param Serializer $jmsSerializer
      */
-    public function __construct(JmsSerializer $jmsSerializer)
+    public function __construct(Serializer $jmsSerializer)
     {
         $this->jmsSerializer = $jmsSerializer;
     }

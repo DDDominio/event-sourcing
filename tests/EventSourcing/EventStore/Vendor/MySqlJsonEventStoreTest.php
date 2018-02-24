@@ -8,7 +8,7 @@ use DDDominio\EventSourcing\EventStore\Vendor\MySqlJsonEventStore;
 use DDDominio\EventSourcing\Versioning\Version;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use DDDominio\EventSourcing\Common\EventStream;
-use DDDominio\EventSourcing\Serialization\JsonSerializer;
+use DDDominio\EventSourcing\Serialization\JmsSerializer;
 use DDDominio\EventSourcing\Serialization\SerializerInterface;
 use DDDominio\EventSourcing\Versioning\EventAdapter;
 use DDDominio\EventSourcing\Versioning\EventUpgrader;
@@ -57,7 +57,7 @@ class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 
         AnnotationRegistry::registerLoader('class_exists');
 
-        $this->serializer = new JsonSerializer(
+        $this->serializer = new JmsSerializer(
             SerializerBuilder::create()
                 ->addMetadataDir(
                     __DIR__ . '/../../TestData/Serializer',
