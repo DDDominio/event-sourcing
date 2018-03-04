@@ -7,9 +7,9 @@ use DDDominio\EventSourcing\EventStore\StoredEvent;
 interface EventUpgraderInterface
 {
     /**
-     * @param Upgrade $upgrade
+     * @param UpgradeInterface $upgrade
      */
-    public function registerUpgrade(Upgrade $upgrade);
+    public function registerUpgrade(UpgradeInterface $upgrade);
 
     /**
      * @param StoredEvent $storedEvent

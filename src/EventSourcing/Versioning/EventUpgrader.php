@@ -25,9 +25,9 @@ class EventUpgrader implements EventUpgraderInterface
     }
 
     /**
-     * @param Upgrade $upgrade
+     * @param UpgradeInterface $upgrade
      */
-    public function registerUpgrade(Upgrade $upgrade)
+    public function registerUpgrade(UpgradeInterface $upgrade)
     {
         $this->upgrades[$upgrade->eventClass()][] = $upgrade;
     }
@@ -56,6 +56,7 @@ class EventUpgrader implements EventUpgraderInterface
     public function upgrade(StoredEvent $storedEvent, $version = null)
     {
         if (isset($this->upgrades[$storedEvent->type()])) {
+            /** @var UpgradeInterface $upgrade */
             foreach ($this->upgrades[$storedEvent->type()] as $upgrade) {
                 if ($storedEvent->version()->equalTo($upgrade->from())) {
                     $upgrade->upgrade($storedEvent);
@@ -76,6 +77,7 @@ class EventUpgrader implements EventUpgraderInterface
     {
         if (isset($this->upgrades[$storedEvent->type()])) {
             $upgrades = array_reverse($this->upgrades[$storedEvent->type()]);
+            /** @var UpgradeInterface $upgrade */
             foreach ($upgrades as $upgrade) {
                 if ($storedEvent->version()->equalTo($upgrade->to())) {
                     $upgrade->downgrade($storedEvent);
