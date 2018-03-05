@@ -55,6 +55,8 @@ class EventSourcedAggregateRepository
 
     /**
      * @param EventSourcedAggregateRootInterface $aggregate
+     * @throws \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     * @throws \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function save($aggregate)
     {
@@ -72,9 +74,10 @@ class EventSourcedAggregateRepository
      */
     private function assertValidAggregate($aggregate)
     {
-        if (is_null($aggregate)) {
+        if (is_null($aggregate) || !is_object($aggregate)) {
+
             throw new \InvalidArgumentException(
-                sprintf('EventSourcedAggregateRepository expects an aggregate of type "%s" but "NULL" given', $this->aggregateClass)
+                sprintf('EventSourcedAggregateRepository expects an aggregate of type "%s" but "%s" given', $this->aggregateClass, gettype($aggregate))
             );
         }
 
@@ -91,13 +94,11 @@ class EventSourcedAggregateRepository
      */
     public function findById($id)
     {
-        $snapshot = $this->snapshotStore
-            ->findLastSnapshot($this->aggregateClass, $id);
+        $snapshot = $this->snapshotStore->findLastSnapshot($this->aggregateClass, $id);
 
         $streamId = $this->streamIdFromAggregateId($id);
         if ($snapshot) {
-            $stream = $this->eventStore
-                ->readStreamEvents($streamId, $snapshot->version() + 1);
+            $stream = $this->eventStore->readStreamEvents($streamId, $snapshot->version() + 1);
         } else {
             $stream = $this->eventStore->readFullStream($streamId);
         }
@@ -116,24 +117,17 @@ class EventSourcedAggregateRepository
      */
     public function findByIdAndVersion($id, $version)
     {
-        $snapshot = $this->snapshotStore
-            ->findNearestSnapshotToVersion($this->aggregateClass, $id, $version);
+        $snapshot = $this->snapshotStore->findNearestSnapshotToVersion($this->aggregateClass, $id, $version);
 
         $streamId = $this->streamIdFromAggregateId($id);
         if ($snapshot) {
-            $stream = $this->eventStore
-                ->readStreamEvents(
-                    $streamId,
-                    $snapshot->version() + 1,
-                    $version - $snapshot->version()
-                );
+            $stream = $this->eventStore->readStreamEvents(
+                $streamId,
+                $snapshot->version() + 1,
+                $version - $snapshot->version()
+            );
         } else {
-            $stream = $this->eventStore
-                ->readStreamEvents(
-                    $streamId,
-                    1,
-                    $version
-                );
+            $stream = $this->eventStore->readStreamEvents($streamId, 1, $version);
         }
         return $this->aggregateReconstructor->reconstitute(
             $this->aggregateClass,
@@ -146,6 +140,7 @@ class EventSourcedAggregateRepository
      * @param string $id
      * @param \DateTimeImmutable $datetime
      * @return EventSourcedAggregateRootInterface
+     * @throws \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function findByIdAndDatetime($id, $datetime)
     {

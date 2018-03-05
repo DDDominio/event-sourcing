@@ -75,6 +75,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @throws \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     * @throws \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function saveNewAggregates()
     {
@@ -119,6 +121,8 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @throws \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     * @throws \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function afterSaveAnAggregateItShouldNotContainChanges()
     {
@@ -134,6 +138,9 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider invalidAggregateProvider
      * @expectedException \InvalidArgumentException
+     * @param $aggregate
+     * @throws \DDDominio\EventSourcing\EventStore\ConcurrencyException
+     * @throws \DDDominio\EventSourcing\EventStore\EventStreamDoesNotExistException
      */
     public function ifTheAggregateTypeBeingSavedIsNoEqualToRepositoryTypeAnExceptionIsThrown($aggregate)
     {
@@ -149,7 +156,13 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [new \stdClass()],
-            [null]
+            [null],
+            [5],
+            [5.5],
+            ['aggregate'],
+            [[]],
+            [true],
+            [fopen(__FILE__, 'r')],
         ];
     }
 
