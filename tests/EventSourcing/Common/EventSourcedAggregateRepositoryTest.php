@@ -2,7 +2,7 @@
 
 namespace DDDominio\Tests\EventSourcing\Common;
 
-use DDDominio\EventSourcing\Common\EventSourcedAggregateRepositoryFactory;
+use DDDominio\EventSourcing\Common\EventSourcedAggregateRepository;
 use DDDominio\EventSourcing\Common\MethodAggregateIdExtractor;
 use DDDominio\EventSourcing\EventStore\InMemoryEventStore;
 use DDDominio\EventSourcing\Versioning\EventUpgraderInterface;
@@ -52,11 +52,6 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     private $aggregateIdExtractor;
 
-    /**
-     * @var EventSourcedAggregateRepositoryFactory
-     */
-    private $repositoryFactory;
-
     protected function setUp()
     {
         $this->serializer = new DummySerializer();
@@ -65,12 +60,6 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $this->snapshotStore = new InMemorySnapshotStore();
         $this->aggregateRecontructor = $this->createMock(AggregateReconstructor::class);
         $this->aggregateIdExtractor = new MethodAggregateIdExtractor('id');
-        $this->repositoryFactory = new EventSourcedAggregateRepositoryFactory(
-            $this->eventStore,
-            $this->snapshotStore,
-            $this->aggregateRecontructor,
-            $this->aggregateIdExtractor
-        );
     }
 
     /**
@@ -80,7 +69,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function saveNewAggregates()
     {
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
         $aggregateA = $this->buildAggregateMock('id-A', $this->buildDummyDomainEvents(3));
         $aggregateB = $this->buildAggregateMock('id-B', $this->buildDummyDomainEvents(1));
 
@@ -108,7 +97,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
         $newChangesB = $this->buildDummyDomainEvents(7);
         $aggregateA = $this->buildAggregateMock('id-A', $newChangesA, 2);
         $aggregateB = $this->buildAggregateMock('id-B', $newChangesB, 1);
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
 
         $repository->save($aggregateA);
         $repository->save($aggregateB);
@@ -127,7 +116,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
     public function afterSaveAnAggregateItShouldNotContainChanges()
     {
         $aggregate = new DummyEventSourcedAggregate('id', 'name', 'description');
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
 
         $repository->save($aggregate);
 
@@ -144,7 +133,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function ifTheAggregateTypeBeingSavedIsNoEqualToRepositoryTypeAnExceptionIsThrown($aggregate)
     {
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
 
         $repository->save($aggregate);
     }
@@ -182,7 +171,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->willReturn(new DummyEventSourcedAggregate('id', 'new name', 'description'));
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
 
         /** @var DummyEventSourcedAggregate $aggregate */
         $aggregate = $repository->findById('id');
@@ -212,7 +201,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->with(DummyEventSourcedAggregate::class, new EventStream($streamAfterSnapshot), $snapshot);
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithSnapshotStore();
 
         $repository->findById('id');
     }
@@ -236,7 +225,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->willReturn(new DummyEventSourcedAggregate('id', 'new name', 'new description'));
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
 
         /** @var DummyEventSourcedAggregate $aggregate */
         $aggregate = $repository->findByIdAndVersion('id', 3);
@@ -269,7 +258,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->with(DummyEventSourcedAggregate::class, new EventStream($streamAfterSnapshot), $snapshot);
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithSnapshotStore();
 
         $repository->findByIdAndVersion('id', 4);
     }
@@ -295,7 +284,7 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->willReturn(new DummyEventSourcedAggregate('id', 'new name', 'description'));
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithoutSnapshotStore();
 
         /** @var DummyEventSourcedAggregate $aggregate */
         $aggregate = $repository->findByIdAndDatetime('id', new \DateTimeImmutable('2017-02-16 11:00:00'));
@@ -328,9 +317,33 @@ class EventSourcedAggregateRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('reconstitute')
             ->with(DummyEventSourcedAggregate::class, new EventStream($streamAfterSnapshot), $snapshot);
-        $repository = $this->repositoryFactory->build(DummyEventSourcedAggregate::class);
+        $repository = $this->makeRepositoryWithSnapshotStore();
 
         $repository->findByIdAndDatetime('id', new \DateTimeImmutable('2017-02-16 11:00:00'));
+    }
+
+    private function makeRepositoryWithoutSnapshotStore()
+    {
+        return new EventSourcedAggregateRepository(
+            $this->eventStore,
+            $this->aggregateRecontructor,
+            $this->aggregateIdExtractor,
+            DummyEventSourcedAggregate::class
+        );
+    }
+
+    /**
+     * @return \DDDominio\EventSourcing\Common\EventSourcedAggregateRepository
+     */
+    public function makeRepositoryWithSnapshotStore()
+    {
+        return new EventSourcedAggregateRepository(
+            $this->eventStore,
+            $this->aggregateRecontructor,
+            $this->aggregateIdExtractor,
+            DummyEventSourcedAggregate::class,
+            $this->snapshotStore
+        );
     }
 
     /**

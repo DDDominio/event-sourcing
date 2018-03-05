@@ -13,19 +13,9 @@ class EventSourcedAggregateRepository
     private $eventStore;
 
     /**
-     * @var SnapshotStoreInterface
-     */
-    private $snapshotStore;
-
-    /**
      * @var AggregateReconstructor
      */
     private $aggregateReconstructor;
-
-    /**
-     * @var string
-     */
-    private $aggregateClass;
 
     /**
      * @var AggregateIdExtractorInterface
@@ -33,18 +23,28 @@ class EventSourcedAggregateRepository
     private $aggregateIdExtractor;
 
     /**
+     * @var string
+     */
+    private $aggregateClass;
+
+    /**
+     * @var SnapshotStoreInterface|null
+     */
+    private $snapshotStore;
+
+    /**
      * @param EventStoreInterface $eventStore
-     * @param SnapshotStoreInterface $snapshotStore
      * @param AggregateReconstructor $aggregateReconstructor
      * @param AggregateIdExtractorInterface $aggregateIdExtractor
      * @param string $aggregateClass
+     * @param SnapshotStoreInterface|null $snapshotStore
      */
     public function __construct(
         EventStoreInterface $eventStore,
-        SnapshotStoreInterface $snapshotStore,
-        $aggregateReconstructor,
-        $aggregateIdExtractor,
-        $aggregateClass
+        AggregateReconstructor $aggregateReconstructor,
+        AggregateIdExtractorInterface $aggregateIdExtractor,
+        $aggregateClass,
+        SnapshotStoreInterface $snapshotStore = null
     ) {
         $this->eventStore = $eventStore;
         $this->snapshotStore = $snapshotStore;
@@ -94,13 +94,16 @@ class EventSourcedAggregateRepository
      */
     public function findById($id)
     {
-        $snapshot = $this->snapshotStore->findLastSnapshot($this->aggregateClass, $id);
+        $snapshot = null;
 
-        $streamId = $this->streamIdFromAggregateId($id);
+        if ($this->snapshotStore) {
+            $snapshot = $this->snapshotStore->findLastSnapshot($this->aggregateClass, $id);
+        }
+
         if ($snapshot) {
-            $stream = $this->eventStore->readStreamEvents($streamId, $snapshot->version() + 1);
+            $stream = $this->eventStore->readStreamEvents($this->streamIdFromAggregateId($id), $snapshot->version() + 1);
         } else {
-            $stream = $this->eventStore->readFullStream($streamId);
+            $stream = $this->eventStore->readFullStream($this->streamIdFromAggregateId($id));
         }
 
         return $this->aggregateReconstructor->reconstitute(
@@ -117,17 +120,24 @@ class EventSourcedAggregateRepository
      */
     public function findByIdAndVersion($id, $version)
     {
-        $snapshot = $this->snapshotStore->findNearestSnapshotToVersion($this->aggregateClass, $id, $version);
+        $snapshot = null;
 
-        $streamId = $this->streamIdFromAggregateId($id);
+        if ($this->snapshotStore) {
+            $snapshot = $this->snapshotStore->findNearestSnapshotToVersion($this->aggregateClass, $id, $version);
+        }
+
         if ($snapshot) {
             $stream = $this->eventStore->readStreamEvents(
-                $streamId,
+                $this->streamIdFromAggregateId($id),
                 $snapshot->version() + 1,
                 $version - $snapshot->version()
             );
         } else {
-            $stream = $this->eventStore->readStreamEvents($streamId, 1, $version);
+            $stream = $this->eventStore->readStreamEvents(
+                $this->streamIdFromAggregateId($id),
+                1,
+                $version
+            );
         }
         return $this->aggregateReconstructor->reconstitute(
             $this->aggregateClass,

@@ -13,11 +13,6 @@ class EventSourcedAggregateRepositoryFactory
     private $eventStore;
 
     /**
-     * @var SnapshotStoreInterface
-     */
-    private $snapshotStore;
-
-    /**
      * @var AggregateReconstructor
      */
     private $aggregateReconstructor;
@@ -28,13 +23,18 @@ class EventSourcedAggregateRepositoryFactory
     private $aggregateIdExtractor;
 
     /**
+     * @var SnapshotStoreInterface
+     */
+    private $snapshotStore;
+
+    /**
      * EventSourcedAggregateRepositoryFactory constructor.
      * @param EventStoreInterface $eventStore
-     * @param SnapshotStoreInterface $snapshotStore
      * @param AggregateReconstructor $aggregateReconstructor
      * @param AggregateIdExtractorInterface $aggregateIdExtractor
+     * @param SnapshotStoreInterface|null $snapshotStore
      */
-    public function __construct(EventStoreInterface $eventStore, SnapshotStoreInterface $snapshotStore, AggregateReconstructor $aggregateReconstructor, AggregateIdExtractorInterface $aggregateIdExtractor)
+    public function __construct(EventStoreInterface $eventStore, AggregateReconstructor $aggregateReconstructor, AggregateIdExtractorInterface $aggregateIdExtractor, SnapshotStoreInterface $snapshotStore = null)
     {
         $this->eventStore = $eventStore;
         $this->snapshotStore = $snapshotStore;
@@ -50,10 +50,10 @@ class EventSourcedAggregateRepositoryFactory
     {
         return new EventSourcedAggregateRepository(
             $this->eventStore,
-            $this->snapshotStore,
             $this->aggregateReconstructor,
             $this->aggregateIdExtractor,
-            $aggregateClass
+            $aggregateClass,
+            $this->snapshotStore
         );
     }
 }
