@@ -1,0 +1,21 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: event_sourcing
+      MYSQL_USER: event_sourcing
+      MYSQL_PASSWORD: event_sourcing123
+    volumes:
+      - ./etc/docker/mysql/init:/docker-entrypoint-initdb.d
+
+  php:
+    build:
+      context: .
+      dockerfile: etc/docker/php/Dockerfile
+    volumes:
+      - ./:/opt
+    depends_on:
+      - mysql
