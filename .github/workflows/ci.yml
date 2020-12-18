@@ -16,6 +16,7 @@ jobs:
       - name: Install MySQL
         run: |
           sudo apt-get update && sudo apt-get install mysql-server
+          sleep 15
           mysql -e "CREATE USER 'event_sourcing'@'localhost' IDENTIFIED BY 'event_sourcing123';" -uroot
           mysql -e "GRANT ALL PRIVILEGES ON json_event_store.* TO 'event_sourcing'@'localhost';" -uroot
           mysql -e "GRANT ALL PRIVILEGES ON json_snapshot_store.* TO 'event_sourcing'@'localhost';" -uroot
