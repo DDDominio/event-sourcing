@@ -20,17 +20,18 @@ jobs:
           mysql user: 'event_sourcing' # Required if "mysql root password" is empty, default is empty. The superuser for the specified database. Can use secrets, too
           mysql password: 'event_sourcing123' # Required if "mysql user" exists. The password for the "mysql user"
 
-      - name: Create table
-        run: |
-          mysql -e "CREATE DATABASE IF NOT EXISTS `json_snapshot_store`;" -uroot
-          mysql -e "GRANT ALL PRIVILEGES ON json_snapshot_store.* TO 'event_sourcing'@'localhost';" -uroot
-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
 
       - name: composer
         run: composer install
+
+      - name: Create table
+        run: |
+          mysql -e "CREATE DATABASE IF NOT EXISTS `json_snapshot_store`;" -uroot
+          mysql -e "GRANT ALL PRIVILEGES ON json_snapshot_store.* TO 'event_sourcing'@'localhost';" -uroot
+
 
       - name: tests
         run: ./vendor/bin/phpunit
