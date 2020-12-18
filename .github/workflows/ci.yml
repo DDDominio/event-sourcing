@@ -9,5 +9,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Hello
+      - name: install PHP7
+        run: apt-get purge php-* && apt-get install php-7.4
+
+      - name: composer
         run: composer install
