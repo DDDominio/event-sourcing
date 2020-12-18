@@ -6,11 +6,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        php-versions: [ '7.2', '7.3' ]
+
     steps:
       - uses: actions/checkout@v2
 
-      - name: install PHP7
-        run: sudo apt-get purge php-* && sudo apt-get install php-7.4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
 
       - name: composer
         run: composer install
