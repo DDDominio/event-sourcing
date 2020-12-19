@@ -20,6 +20,13 @@ jobs:
       - name: Setup MySQL database
         run: docker-compose up -d
 
+      - name: Wait until MySQL ready
+        run: |
+          while ! docker exec event-sourcing_mysql_1 mysqladmin --password=event_sourcing ping &> /dev/null ; do
+              echo "Waiting for database connection..."
+              sleep 2
+          done
+
       - name: Install dependencies
         run: composer install
 
