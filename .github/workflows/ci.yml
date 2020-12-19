@@ -23,11 +23,5 @@ jobs:
       - name: composer
         run: composer install
 
-      - name: Create table
-        run: |
-          mysql -e "CREATE DATABASE IF NOT EXISTS `json_snapshot_store`;" -uroot
-          mysql -e "GRANT ALL PRIVILEGES ON json_snapshot_store.* TO 'event_sourcing'@'localhost';" -uroot
-
-
       - name: tests
         run: ./vendor/bin/phpunit
