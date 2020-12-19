@@ -22,7 +22,7 @@ use DDDominio\Tests\EventSourcing\TestData\VersionedEventUpgrade10_20;
 
 class MySqlJsonEventStoreTest extends \PHPUnit_Framework_TestCase
 {
-    const MYSQL_DB_HOST = 'localhost';
+    const MYSQL_DB_HOST = '127.0.0.1';
     const MYSQL_DB_USER = 'event_sourcing';
     const MYSQL_DB_PASS = 'event_sourcing123';
     const MYSQL_DB_NAME = 'json_event_store';
