@@ -17,11 +17,11 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
 
-      - name: Docker
+      - name: Setup MySQL database
         run: docker-compose up -d
 
-      - name: composer
+      - name: Install dependencies
         run: composer install
 
-      - name: tests
+      - name: Run tests
         run: ./vendor/bin/phpunit
