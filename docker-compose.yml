@@ -10,12 +10,3 @@ services:
       MYSQL_PASSWORD: event_sourcing123
     volumes:
       - ./etc/docker/mysql/init:/docker-entrypoint-initdb.d
-
-  php:
-    build:
-      context: .
-      dockerfile: etc/docker/php/Dockerfile
-    volumes:
-      - ./:/opt
-    depends_on:
-      - mysql
